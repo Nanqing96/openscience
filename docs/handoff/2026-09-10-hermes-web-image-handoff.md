@@ -37,7 +37,7 @@
 - 五问63e2acc5未采用：角度冲突、已知参数称未披露、条件缺失，历史细节见Git c742f7a2；原文绑定不能替代科学正确性。
 - 旧8ff/a8局部editorDraft没有自动全文来源；不得用其不完整方法稿替换867/71，历史失败见Git。
 - 代码根因之一：科学写作使用adaptive，而editorDraft共编原来只传temperature0.2，M3兼容默认thinking off。a8已部署，仅共编复用既有SCIENTIFIC_SYNTHESIS_OPTIONS，导航保持原选项；同时修复有长度/语言/主题修饰的明确笔记请求，保留否定/咨询/保存语义。精确diff High静态复核通过。
-- a8新配置实产10799ba3-87c0-450b-971f-6f8dd9f3678f，仅method/183字符符合篇幅，但独立High判NOT ACCEPTED：删正确n(z)→时间压缩起始链，对I直接赋相位漏√I幅度，正峰同步仍不明确。只修对Fourier对象不构成合格，未采用；停止同路线模型重试。
+- 10799ba3未采用：仍丢n(z)起始链、漏√I幅度/同步条件；停止该路线重试，复用已通过的867/71。
 - 普通editorDraft仍不自动加载全文；本次由既有写作任务的原文引用传入goal完成桥接。这是来源引导的共编路径，尚不是端到端自动纠错。
 - 证据本机Temp：xgs-focused-method-v2-result-20260913.json、xgs-focused-case-result-20260913.json、xgs-focused-method-thinking-result-20260913.json、xgs-focused-method-edit-{submit,read}-20260913.sh；服务器/jobs/hermes-focused-*。
 
