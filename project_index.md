@@ -1,6 +1,6 @@
 # OpenScience (XGS) 项目文件索引
 
-> CURRENT 2026-09-14：第二篇发布准备中，实际合并重复附件的保存被媒体继承Prisma写入阻塞，正在局部修复；唯一续作入口为 docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，HEAD/origin c0c31487（代码02d），应用02d67ddf / rollback ef9e6e97。失败事务已确认回滚，图文未改；待用户明确发布身份/署名/PDF权限，未公开/删除/测试，视频/批量暂停。
+> CURRENT 2026-09-14：第二篇保存阻塞已修复，重复附件已整理为1项，私有草稿revision7/72c315af、已审正文/40来源/批准配图保留；唯一续作入口为 docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，代码HEAD/origin/应用0931cf12 / rollback02d67ddf，其后仅文档补记。待用户明确发布身份/署名/PDF权限及许可，未公开/删文件/测试，视频/批量暂停。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
@@ -9,12 +9,12 @@
 | `packages/domain/src/trash/` / `apps/api/src/routes/trash.ts` / `infra/migrations/20260913020000_private_trash/` | 回收站、公开依赖保留、可重试清除与共同写锁；ef9已部署，无真实删除操作 |
 | `apps/web/components/research/{EditHistory,ResearchContentManager,TrashActionButton}.tsx` / `apps/web/app/trash/` | 编辑历史、内容管理与回收站；分析操作并入Hermes；02d最终桌面/窄屏、冻结正文与80项管理列表已实读 |
 | `apps/web/components/research/{useVersionLabels,useContentLabels}.ts` | 历史摘要及内容/删除确认/回收站的已知机器标签本地化；保留原数据与未知用户标题 |
-| `packages/domain/src/commit/carry-media.ts` | 2026-09-14真实草稿保存500：复合关联从嵌套创建改同事务createMany，High静态PASS；候选待部署，续原业务操作 |
+| `packages/domain/src/commit/carry-media.ts` | 2026-09-14真实草稿保存500：复合关联改同事务createMany，High静态PASS，093已部署；同一真实整理201，正文/来源/已批图继承已实读 |
 | `packages/search/src/{purge,lifecycle}.ts` / `apps/agent-worker/src/trash-job-copies.ts` / `infra/private-cleanup/` | 独立搜索库删除/存续过滤、解析副本及宿主受限清理执行器；ef9已部署，清理timer已安装，无实际清除收据 |
 | `docs/decisions/ADR-014-draft-publication-and-private-deletion.md` | 公开版本与内部修订分离、私有删除/公开引用保留的决策及取舍；规则唯一维护于上述spec |
 | `docs/OpenScience_Kimi_Development_Spec.md` §2.2 | 同步上述已确认需求，实施与部署状态由CURRENT跟踪 |
 
-> **最近部署实读 2026-09-13:** 应用02d67ddf；历史桌面/移动截图已看，已知机器名称/内部笔记ID隐藏、冻结正文1617字符可读、管理80项最新在前。复用ef9同后端观察：第二篇private/revision6、四条历史无公开号、core未变、10式/0错误/图1280×720；旧公开v10/1图、Hermes来源、空回收站正常。恢复写入、真实清除、30天到期及新首发v1尚未操作；不冒称完整运行验收。
+> **最近部署实读 2026-09-14:** 应用0931cf12；真实附件整理成功201，第二篇private/revision7/72c315af、1个PDF、40来源内容/定位保留，原配图hash/approved继承、1280×720/0公式错误。新旧来源接口200且响应相同，预览/工作台截图已看。02d的历史/管理/回收站显示证据继续有效；恢复历史写入、真实清除、30天到期及首发v1尚未操作，不冒称完整运行验收。
 > 最新质量推进：867方法笔记与3f68d30b结果/边界笔记均经服务器来源绑定修订及独立High科学/引用PASS，后者1745字符/19引用、实际Markdown20620字符完整。0685已修复Markdown改变TeX间距，实读26/26公式源逐字相等、6处间距保留，正文/引用/导出不变。通用来源机制已固化，具体指导与独立科学复核仍由本会话承担；六字段全自动仍失败，跨论文质量尚未确认，未采用/发布。
 > 唯一入口：docs/handoff/2026-09-10-hermes-web-image-handoff.md。当前自动agent d5c6f699真实字段审校仍失败；4bedbb4b具体方法回读核心科学PASS，但多问与局部共编仍丢条件。a8修复笔记漏路由/科学共编推理配置，10799ba3实产仍经High原文复核拒绝；停止重试，保留人工审校流程。
 > 私有92cafb82人工原文审校稿1118字符/17引用：1e627修复指定任务被较新失败63e正文覆盖，实际打开/只读编辑/回阅读/展开来源/截图均成功，正文和全部引用逐字等保存API与此前复核稿，user_edited保留；原40e23948、公开v10与已批图保留，尚未采用新稿/发布，视频/批量暂停。
