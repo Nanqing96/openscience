@@ -413,7 +413,7 @@ async function eraseResource(tx: Tx, entry: TrashEntry): Promise<string | null> 
     const session = await tx.agentSession.findUnique({ where: { id: entry.resourceId }, include: { tasks: true } });
     if (!session) return null;
     // Scientific outputs keep their existing task IDs and relations; user messages are removed.
-    const retained = [];
+    const retained: typeof session.tasks = [];
     for (const task of session.tasks) {
       if ((!task.deletedAt && (task.kind !== 'workspace.guide' || Boolean(jsonObject(task.result).writingDraft))) || await taskIsAdopted(tx, task.id)) retained.push(task);
     }
