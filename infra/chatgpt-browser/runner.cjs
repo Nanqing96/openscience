@@ -176,9 +176,19 @@ async function imageComposer(page) {
   return rich;
 }
 async function composerText(composer) {
-  return await composer.evaluate(element => element instanceof HTMLTextAreaElement ? element.value : element.innerText);
+  return await composer.evaluate(element => {
+    if (element instanceof HTMLTextAreaElement) return element.value;
+    const content = element.cloneNode(true);
+    // The native image tool pill is UI state, not part of the authored prompt.
+    content.querySelectorAll('[contenteditable="false"][data-system-hint-type="picture_v2"]').forEach(pill => pill.remove());
+    content.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+    content.querySelectorAll('p,div').forEach(block => block.append('\n'));
+    return content.textContent || '';
+  });
 }
 async function imageModeActive(composer) {
+  const nativePill = composer.locator('[contenteditable="false"][data-system-hint-type="picture_v2"]');
+  if (await nativePill.count() === 1 && await nativePill.isVisible().catch(() => false)) return true;
   const form = composer.locator('xpath=ancestor::form[1]');
   if (await form.count() !== 1) return false;
   const marker = form.getByText('Create image', { exact: true });
@@ -313,14 +323,15 @@ let activePage;
   ].join('\n');
   const composer = await waitForImageComposer(page, Math.min(request.deadlineAt, Date.now() + 15000));
   if (!composer) throw Error('IMAGE_COMPOSER_NOT_FOUND');
-  if (!await activateImageMode(page, composer, Math.min(request.deadlineAt, Date.now() + 10000))) throw Error('IMAGE_MODE_NOT_READY');
   // Image mode has its own controls (for example "Extra High"). The 6 Pro
   // requirement belongs to scientific review, not the native image composer.
   if (mode === 'prepare' || mode === 'execute') {
     await composer.fill(prompt);
-    console.log('PREPARED');
-    if (mode === 'prepare') process.exit(0);
   }
+  // Selecting the image tool inserts an inline pill; filling afterwards removes it.
+  if (!await activateImageMode(page, composer, Math.min(request.deadlineAt, Date.now() + 10000))) throw Error('IMAGE_MODE_NOT_READY');
+  if (mode === 'prepare' || mode === 'execute') console.log('PREPARED');
+  if (mode === 'prepare') process.exit(0);
   const normalize = value => value.replace(/\s+/g, ' ').trim();
   const send = page.getByRole('button', { name: 'Send prompt', exact: true });
   const readyDeadline = Math.min(request.deadlineAt, Date.now() + 10000);
@@ -331,6 +342,7 @@ let activePage;
   }
   if (normalize(await composerText(composer).catch(() => '')) !== normalize(prompt)) throw Error('PROMPT_CHANGED');
   if (!await send.isEnabled().catch(() => false)) throw Error('SEND_NOT_READY');
+  if (!await imageModeActive(composer)) throw Error('IMAGE_MODE_LOST');
   once('submitted.json', { phase: 'submitted', provider: 'chatgpt-web', id, promptHash: request.promptHash, source: request.source, submittedAt: new Date().toISOString() });
   await send.click();
   console.log('SUBMITTED');
