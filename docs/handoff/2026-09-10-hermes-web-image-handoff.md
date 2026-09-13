@@ -1,36 +1,30 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 用户要求复用成熟能力，实际核对科学质量；当前第二篇已形成私有v5/revision6，正完成已审图片审批和图文预览。通用自动审校扩展、视频/批量暂停。
+- 用户要求复用成熟能力、实际核对科学质量；第二篇私有v5/revision6图文候选已就绪，待用户图文质量确认后发布。通用自动审校扩展、视频/批量暂停。
 - 生产MiniMax-M3；自动生成、引导共编、人工校正分别标记，独立审核不冒称产品自动审核。
 - 本机仅编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/start与实际产品生成/阅读按授权执行。
 ## Version and workspace
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；应用代码HEAD/origin80809452，后续仅文档提交以Git为准。部署用clean detached .worktrees/reading-ui-release-80809452，原dirty spec保留。
-- 当前应用release80809452117fdb9a71382c28de95c3c4ff84392e / rollback08ed3b35113a512fbd414524ab8958ec4f87deeb；tmp/reading-ui-clean-deploy-20260913.log exit0，必要服务器build/start完成，实际/__release同SHA。dirty交付树首发在传输前被拒，隔离clean树重发，无测试/CI。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码HEAD/origin871ed702，后续文档HEAD以Git为准。部署clean detached .worktrees/reviewed-media-release-871ed702；原dirty spec保留。
+- 当前应用release871ed7025168fdeb68cca98398590d9d3a1e2c03 / rollback80809452117fdb9a71382c28de95c3c4ff84392e；tmp/reviewed-media-deploy-20260913.log exit0，必要服务器build/start完成，实际/__release同SHA；无测试/CI/迁移/新依赖，独立High两文件PASS。
 - 根目录旧dirty main不是生产基线；未合并main。unrelated dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
 - 网页生图base bundle d1630135 / rollback92cc416e；实际image/review runner为501da7a3、page-lifecycle为d369ccc2；image broker为b78fb94d派生bundle，均独立于应用release。video runner0df87c9b、浏览器镜像8aa21251不变；浏览器09-13 07:55:11Z自行重启一次，登录保留，旧target ID失效。
 - TTS a2158409、renderer ff6042f6、模型qwen3-tts-customvoice-0c0e305复用；无新服务/依赖；本轮仅实产第二篇图解，媒体版本不能混作应用release。
 
 ## Protected private and public content
-- 私有92cafb82-73bc-4937-bb9c-bf1228b23dd3《深亚周期光脉冲：六字段审校稿》：1118字符/17引用，user_edited；服务器共编后人工校正，独立High六段原文/引用复核通过，真实UI保存/重载/来源/下载一致。
+- 第一篇私有92cafb82-73bc-4937-bb9c-bf1228b23dd3六字段稿：1118字/17引用、user_edited、High原文PASS，UI/来源/下载一致。
 - 私有入口：https://openscience.428312321.xyz/research-objects/c896802c-35dd-4b59-8db1-5f374f83a6d8/edit?hermesTask=92cafb82-73bc-4937-bb9c-bf1228b23dd3
-- 原40e23948-4b41-4440-a3a1-49dd9acb8824《深亚周期光脉冲：机制与适用条件》：2696字符/41引用/57式0排版错误，人工四处校正且原文复核通过；原来源a1c0da49-d2ea-4407-b3e6-b68eadd72ceb保留。
+- 原40e23948-4b41-4440-a3a1-49dd9acb8824长稿：2696字/41引用/57式正常，四处人工校正、原文PASS；来源a1c0da49-d2ea-4407-b3e6-b68eadd72ceb保留。
 - RO c896802c-35dd-4b59-8db1-5f374f83a6d8，草稿revision11；正式v10 f4e2dc71-1fe8-406f-8c19-e1849503d698，公开OSR-2026-000022/v/10不变。
 - PDF7bb96cc1-bb6f-4d3b-b0bf-352f41971faf；已批图b19a65bd-6497-4b61-bb81-0154b264d58c、plan3a6ed136-002a-4301-8505-ca14e3dbbc53保护。
 - 原确认ingestion2fdb78de-b52b-40f6-832f-faa3fdd9f4e2 / agent1e324308-fd26-4cc1-8612-8a1c269909a9保护。所有新自动产物未采用/发布。
 - 本机证据 C:/Users/Mac/AppData/Local/Temp/xgs-six-field-reviewed-{download,result,reading}-20260912.*、xgs-six-field-final-core-20260912.json；旧真实UI成功不证明当前浏览器长期稳定。
 
 ## Current automatic draft: NOT scientifically accepted
-- ingestion840e24f9-cf9b-471f-a38c-7331705b1003，当前agent d5c6f699-c055-4bb8-a737-8f30932bf585。1bf reviewOnly显式审校当前4b46，SourceMap/旧bridge复用，保留scientific-summary v6与review critical-thinking v2 lineage。
-- 1bf复用既有scientificReviewPrompt/Guard执行真实逐字段审校；不再以重新成稿+issues[]冒充review。保留原事务授权/CAS、引用边界、原schema retry；High静态复核通过。
-- 实产d5c6仍失败：接受已知错误method/limitations，反而以缺其它算例为由把正确代表结果扩成三案，混淆Gaussian比较、遗漏产额条件，repro正文夹P编号。needsMoreEvidence为空不等于科学正确。
-- 历史4b46/v6仍有I→E变换、互证对象和泛化错误，未采用；不因证据导航可用放行。
-- d5c6仅有final usage，调用次数未明；4b46曾两次final，不报单call。
-- 证据：xgs-claim-review-result-20260913.json；服务器/jobs/hermes-claim-review-{refresh,result,ui}-20260913.json。不得再次盲跑整稿review或summary prompt补丁。
+- ingestion840e24f9-cf9b-471f-a38c-7331705b1003 / agent d5c6f699-c055-4bb8-a737-8f30932bf585失败：1bf显式review仍接受错误method/limitations并混淆算例条件。4b46/v6亦未采用；不再盲跑整稿review。证据/jobs/hermes-claim-review-{refresh,result,ui}-20260913.json；科学/调用历史见Git871ed702。
 
 ## Focused source reading and bounded editing
 - 通用服务端基稿→精确SourceMap→M3来源指导修订保留；自动ID/quote合法不保证断言正确，既有失败不再重跑。a8意图/推理选项、1e指定稿恢复、0685数学转义保护均已部署；详细历史见Git c742f7a2。
-- 第一篇方法4bed→797→867ce8b9-1e48-4412-b1bf-1800a5d64dc9：1605字符/19引用，独立High原文PASS；n(z)→n(t,θ)→I(t,θ)/I(t)，√I及继承相位→E(t,θ)/E(t)→Fourier E(ν)，保留远场/正峰同步。真实UI正文/引用等API，Markdown13420字符；未采用SDF。
-- 第一篇结果63e→74→3f68d30b-5cab-44f9-9623-2f057aada7ff：1745字符/19引用，代表1.8μm单电子19as/1.9PHz及边界原文PASS。0685后26/26TeX源相等、6处薄空格恢复，Markdown20620字符与修复前相同；未采用SDF。
+- 第一篇方法867ce8b9-1e48-4412-b1bf-1800a5d64dc9（1605字/19引用）与结果3f68d30b-5cab-44f9-9623-2f057aada7ff（1745字/19引用）均独立High原文PASS、真实UI/下载一致，未采用SDF；0685恢复26/26TeX源及6处薄空格。完整推导/代表值/收据见Git871ed702，保护两稿不重生成。
 - 不回到无全文editorDraft反复自省；旧8ff/10799方法修订未采用。源码没有论文名硬编码，但独立科学核对与具体修订指导仍由本会话承担。
 
 ## 已复用的科学写作能力与边界
@@ -38,8 +32,7 @@
 - 普通editorDraft缺全文绑定和来源回写，不再用无来源反复自省；ingestion scope字段是ingestionTaskId，不能放agentTaskId。来源绑定能力通用，但具体指导/独立科学复核仍由本会话承担，不能称Hermes内部自动审校闭环。
 - 已通过稿件不重跑；第一篇科学/排版证据见上节与Git c742f7a2。
 ## Browser recovery
-- 历史Chrome资源不足根因未定；2026-09-12三锁/空闲确认后重启一次，登录保留。旧压缩override已清理，禁止按整页关键词判断活动或循环重启；历史诊断见server-capabilities，当前修复见下节。
-- 1e627修复私有92误显示最新63e，已实读1118字符/17引用；历史/jobs/hermes-restored-reading-20260913b.json。旧六字段实读不代表科学通过。
+- 09-12三锁/空闲确认后重启、登录保留；旧压缩override已清理，禁按整页关键词判断活动或循环重启。1e627已修复私有92错显示63e；历史/jobs/hermes-restored-reading-20260913b.json。当前浏览器修复见下节。
 ## Second paper and next action
 - 602c6c09接通writingSource.ingestionTaskId：base优先，所选不可用不降级；无选择按artifact分组。真实cee71443选择已观察，多artifact分支尚无真实样本。
 - Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；ingestion cee71443-ae46-4ed1-b4e4-6c5b59e674ef / source agent960ffcc1-75f6-4418-b9a6-8bf413f4e18d / artifact4b94c626-1748-4c5a-934b-2bb94585bd9c。复用15页SourceMap，无新Parser/OCR。
@@ -76,4 +69,5 @@
 
 - 阅读证据/jobs/reading-ui-{before,after,visual-state}-20260913.json及full-{desktop,mobile}截图；Chrome125%使element clip截错，最终viewport截图已看。下述新v5取代旧v2成为候选，旧资料保留。
 - 2026-09-13私有候选：先经现成commit创建staging v4/c8e625c4，仅移除新副本2条早期Claim/30Evidence，再commit生成v5/4266e4ed-9a89-45d8-8c0e-c6393bbc503d；RO revision6，冻结正文等审校SDF、1条完整71正文Claim18bbfa21-4099-49be-9f55-21e0fda960ef/40Evidence。旧v2/原Claim/原图完全保留，staging冻结记录亦保留整理前副本。
-- 现成admin_reviewed_import复用86ffe原字节652786B至v5图56e58572-705b-4182-b064-a9df30f1060f，hash4ee0df4c不变；原generator/version保留，importRun指回旧v2/86ffe，完整prompt/provider来源仍在旧资产。此为人工审阅复用，不是重生成或完整provenance复制。实批400 Saved scene image is invalid：generator前缀误判导入图为本版分镜图；scene-image.ts最小修复待部署，正常显式subtype仍严格校验；ResearchPublication同时去原始内部label。收据/jobs/quantization-version-{before,create,finalize,image-import,image-approval}-20260913.json，脚本本地tmp/quantization-version-*.sh。尚未发布；下一步修复部署后批图并实读完整预览。
+- 现成admin_reviewed_import复用86ffe原字节652786B至v5图56e58572-705b-4182-b064-a9df30f1060f，hash4ee0df4c不变，现approved；原generator/version保留、importRun指回旧v2/86ffe，完整prompt/provider来源仍在旧资产。人工审阅复用，不是重生成或完整provenance复制。首次审批400因generator前缀误判导入图为本版分镜图，871ed702已修复；显式subtype仍严格校验，ResearchPublication去内部label。
+- 新版实读：发布预览明确v5，六项逐字等已审SDF、10式/0错误、唯一新图1280×720且图注“核心概念图”；旧v2冻结record未变。工作台默认新图、Hermes输入可用；桌面及368CSS像素窄屏无横溢出。Chrome125%使fullPage截图横裁切，最终viewport截图已看（mobile正常关闭Hermes、等待lazy图片加载）。收据/jobs/quantization-version-{before,create,finalize,image-import,image-approval,image-approval-repaired,preview,visual}-20260913.json；本地tmp/quantization-version-*.sh/png。当前入口仍上方edit?hermesTask=f34，/publish为v5预览；未设置许可/触发发布审查/状态转移/公开，下一步用户质量确认后发布此v5。
