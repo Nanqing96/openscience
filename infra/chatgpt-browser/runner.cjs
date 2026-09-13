@@ -251,6 +251,7 @@ async function closeStaleOperatorPages(context) {
   }
 }
 let activePage;
+let stage = 'request';
 (async () => {
   const stat = fs.lstatSync(dir);
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw Error('INVALID_JOB_DIRECTORY');
@@ -264,6 +265,7 @@ let activePage;
     request = { ...request, deadlineAt: Date.now() + 5 * 60 * 1000 };
   }
   let browser;
+  stage = 'browser_attach';
   try {
     browser = await chromium.connectOverCDP('http://127.0.0.1:9233', { timeout: 15000 });
   } catch (error) {
@@ -273,6 +275,7 @@ let activePage;
   }
   const context = browser.contexts()[0];
   if (!context) throw Error('BROWSER_CONTEXT_NOT_FOUND');
+  stage = 'page_selection';
   await closeStaleOperatorPages(context);
   if (mode === 'status' || mode === 'download' || mode === 'resume' || mode === 'recover' || mode === 'recover-late') {
     const url = canonicalUrl(read('conversation.json').url);
@@ -323,15 +326,16 @@ let activePage;
   ].join('\n');
   const composer = await waitForImageComposer(page, Math.min(request.deadlineAt, Date.now() + 15000));
   if (!composer) throw Error('IMAGE_COMPOSER_NOT_FOUND');
+  stage = 'prompt_fill';
   // Image mode has its own controls (for example "Extra High"). The 6 Pro
   // requirement belongs to scientific review, not the native image composer.
   if (mode === 'prepare' || mode === 'execute') {
     await composer.fill(prompt);
   }
   // Selecting the image tool inserts an inline pill; filling afterwards removes it.
+  stage = 'image_mode';
   if (!await activateImageMode(page, composer, Math.min(request.deadlineAt, Date.now() + 10000))) throw Error('IMAGE_MODE_NOT_READY');
-  if (mode === 'prepare' || mode === 'execute') console.log('PREPARED');
-  if (mode === 'prepare') process.exit(0);
+  stage = 'send_readiness';
   const normalize = value => value.replace(/\s+/g, ' ').trim();
   const send = page.getByRole('button', { name: 'Send prompt', exact: true });
   const readyDeadline = Math.min(request.deadlineAt, Date.now() + 10000);
@@ -343,21 +347,28 @@ let activePage;
   if (normalize(await composerText(composer).catch(() => '')) !== normalize(prompt)) throw Error('PROMPT_CHANGED');
   if (!await send.isEnabled().catch(() => false)) throw Error('SEND_NOT_READY');
   if (!await imageModeActive(composer)) throw Error('IMAGE_MODE_LOST');
+  if (mode === 'prepare' || mode === 'execute') console.log('PREPARED');
+  if (mode === 'prepare') process.exit(0);
+  stage = 'submit';
   once('submitted.json', { phase: 'submitted', provider: 'chatgpt-web', id, promptHash: request.promptHash, source: request.source, submittedAt: new Date().toISOString() });
   await send.click();
   console.log('SUBMITTED');
   const url = await resolveCanonicalConversation(page, Math.min(request.deadlineAt - 45000, Date.now() + 30000));
   once('conversation.json', { url });
   if (mode === 'execute') {
+    stage = 'image_result';
     await waitAndDownload(browser, page, request);
     await page.close().catch(() => {});
   }
   process.exit(0);
 })().catch(async error => {
+  const failure = { stage, state: fs.existsSync(path.join(dir, 'submitted.json')) ? 'ambiguous_no_resend' : 'not_submitted', error: /^[A-Z0-9_]+$/.test(error.message) ? error.message : error.name };
+  // Preserve the first safe failure code; the broker otherwise returns only EXECUTION_FAILED.
+  try { once('operator-error.json', failure); } catch {}
   if (activePage && !fs.existsSync(path.join(dir, 'submitted.json'))) {
     await bounded(activePage.close({ runBeforeUnload: false }), 3000).catch(() => {});
   }
   // Never print page contents, login data, request payload, conversation URL or CDP transport errors.
-  console.log(JSON.stringify({ state: fs.existsSync(path.join(dir, 'submitted.json')) ? 'ambiguous_no_resend' : 'not_submitted', error: /^[A-Z0-9_]+$/.test(error.message) ? error.message : error.name }));
+  console.log(JSON.stringify(failure));
   process.exit(1);
 });
