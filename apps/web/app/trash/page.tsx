@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { DashboardShell } from '@/components/shell/DashboardShell';
 import { apiRequest } from '@/lib/api';
 import type { TrashResourceKind } from '@/components/research/TrashActionButton';
+import { useContentLabels } from '@/components/research/useContentLabels';
 import styles from '@/components/research/content-management.module.css';
 
 interface Entry { id: string; kind: TrashResourceKind; title: string; deletedAt: string; purgeAfter: string | null; state?: string; retainedReason?: string | null }
@@ -13,6 +14,7 @@ interface Entry { id: string; kind: TrashResourceKind; title: string; deletedAt:
 export default function TrashPage() {
   const t = useTranslations('trash');
   const locale = useLocale();
+  const labels = useContentLabels();
   const [items, setItems] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,7 +24,10 @@ export default function TrashPage() {
   const confirm = useRef<HTMLDialogElement>(null);
   const load = useCallback(async () => {
     setLoading(true); setError('');
-    try { setItems((await apiRequest<{ items: Entry[] }>('/api/trash')).items); }
+    try {
+      const loaded = (await apiRequest<{ items: Entry[] }>('/api/trash')).items;
+      setItems([...loaded].sort((a, b) => (Date.parse(b.deletedAt) || 0) - (Date.parse(a.deletedAt) || 0)));
+    }
     catch { setError(t('loadFailed')); }
     finally { setLoading(false); }
   }, [t]);
@@ -49,8 +54,9 @@ export default function TrashPage() {
         {items.map(entry => {
           const archived = entry.kind === 'research_object' && Boolean(entry.retainedReason);
           const purging = entry.state === 'purge_pending';
+          const title = labels.title(entry);
           return <li className={styles.row} key={entry.id}>
-            <div><strong className={styles.itemTitle}>{entry.title || t(`kind.${entry.kind}`)}</strong><small>{t(`kind.${entry.kind}`)} · {new Date(entry.deletedAt).toLocaleString(locale)}</small><small>{archived ? t('archived') : purging ? t('purging') : entry.retainedReason ? t('retained') : entry.purgeAfter ? t('expires', { date: new Date(entry.purgeAfter).toLocaleString(locale) }) : ''}</small></div>
+            <div><strong className={styles.itemTitle} title={title}>{title}</strong><small>{t(`kind.${entry.kind}`)} · {new Date(entry.deletedAt).toLocaleString(locale)}</small><small>{archived ? t('archived') : purging ? t('purging') : entry.retainedReason ? t('retained') : entry.purgeAfter ? t('expires', { date: new Date(entry.purgeAfter).toLocaleString(locale) }) : ''}</small></div>
             <div className="flex flex-wrap gap-2">
               <button className={styles.action} type="button" disabled={busy !== null || purging} onClick={() => void act(entry, 'restore')}>{t('restore')}</button>
               {!archived && <button className={styles.action} type="button" disabled={busy !== null} onClick={() => { setSelected(entry); confirm.current?.showModal(); }}>{t(purging ? 'retry' : 'purge')}</button>}
@@ -60,7 +66,7 @@ export default function TrashPage() {
       </ul>}
     </div>
     <dialog ref={confirm} className={styles.dialog} aria-label={t('purge')} onCancel={event => { if (busy) event.preventDefault(); }}>
-      <h2>{t('purge')}</h2><p className={styles.itemTitle}>{selected?.title}</p><p>{t('purgeBody')}</p>
+      <h2>{t('purge')}</h2><p className={styles.itemTitle}>{selected ? labels.title(selected) : ''}</p><p>{t('purgeBody')}</p>
       <div className={styles.actions}><button className={styles.action} type="button" disabled={busy !== null} onClick={() => confirm.current?.close()}>{t('cancel')}</button><button className={styles.primary} type="button" disabled={busy !== null} onClick={() => { if (selected) void act(selected, 'purge'); }}>{t(busy ? 'working' : 'purge')}</button></div>
       {error && <p role="alert" className={styles.error}>{error}</p>}
     </dialog>

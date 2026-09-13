@@ -10,7 +10,11 @@
     "loadFailed": "Unable to load. Please try again.", "operationFailed": "The operation did not finish. Refresh the status before retrying.",
     "contentEmpty": "No content to manage yet.", "empty": "Trash and archives are empty.", "adopted": "Adopted; linked work is retained", "retained": "Referenced material retained",
     "intro": "Deleted items are kept for 30 days. Archived published research can be restored at any time and is not automatically erased.", "back": "Back to workspace", "expires": "Restorable until {date}", "archived": "Archived", "purging": "Erasing", "restored": "Restored", "removed": "Permanently deleted", "privateDraft": "Private draft",
-    "kind": { "research_object": "Research", "session": "Hermes conversation", "task": "Note or analysis draft", "asset": "Presentation", "artifact": "Attachment" }
+    "kind": { "research_object": "Research", "session": "Hermes conversation", "task": "Note or analysis draft", "asset": "Presentation", "artifact": "Attachment" },
+    "contentTitle": {
+      "sourceImport": "Source import", "sourceReanalysis": "Source reanalysis", "researchVideo": "Research video creation", "mediaGeneration": "Presentation creation",
+      "analysisDraft": "Paper analysis draft", "researchContent": "Hermes research content", "image": "Image", "chart": "Chart", "interactive": "Interactive presentation", "video": "Video"
+    }
   },
   "hermesConversation": {
     "contentRemoved": "The removed conversation or task is no longer active. Retained research outputs remain available.",
@@ -160,6 +164,8 @@
     "restoreFailed": "The draft could not be restored. Your current content has been kept.",
     "restored": "History restored as a private draft. Published content is unchanged.",
     "savedDraft": "Draft saved",
+    "importConfirmed": "Source import confirmed",
+    "materialsAdded": "Research materials added",
     "privateDraft": "Private draft",
     "dateUnavailable": "Date unavailable",
     "publicVersion": "v{number}",

@@ -1,5 +1,5 @@
 # Hermes Capability Registry
-- 2026-09-13生命周期候选实施中（尚未部署）：分析确认/再分析/恢复集中到Hermes；内部草稿与公开序号分离；个人内容管理及30天回收站；删除存续状态约束后台回写与搜索取文。复用现有解析/生成服务，新增ID范围的宿主副本清理执行器，Worker仍只读供应商结果目录。没有新科研生成或实际删除，部署事实见CURRENT。
+- 2026-09-13生命周期已部署ef9e6e97：分析确认/再分析/恢复集中到Hermes；内部草稿与公开序号分离；个人内容管理及30天回收站；删除存续状态约束后台回写与搜索取文。复用现有解析/生成服务，ID范围宿主副本清理执行器及timer已安装，Worker仍只读供应商结果目录。实读私有图文、旧公开v10、编辑历史、Hermes来源和管理/回收站；无新科研生成或实际删除，不声称已观察到真实清除或30天到期。当前版本对及UI收尾见CURRENT。
 - 2026-09-13当前应用c0bc653d/rollback871ed702：阅读层隐藏Hermes内部来源编号并去媒体制作长文，原文/公式/后台数据保留。必要服务器build/start及独立High复核完成；实际四阅读入口编号0、10式正常，原数据/图片不变。第二篇仍private/v5/revision6；未公开，无测试/CI/迁移/模型调用，浏览器与媒体runner不变。证据和下一步见CURRENT handoff。
 - 2026-09-13历史应用871ed702/rollback80809452：第二篇已审SDF经现成commit与新副本整理形成私有v5；既有reviewed-media-import复用原图86ffe至56e58572，手工审阅复用后approved，原完整provider/prompt记录仍在旧图，importRun仅引用原资产。修复导入图generator误分类，实际同图审批200/图文预览完整；非自动跨版本继承、非自动科学审校、未公开，无新模型生成或服务。
 - 2026-09-13阅读修复已部署80809452（rollback08ed3b35）：edit顶部贡献、overview与VersionRecord正文统一ScientificText，CoreEditor/版本页内部核查面板和链接移除；核查API/资料/保存内容保留。实读lead5式、正文/概览10式，0错误，六字段逐字等API、sourceLinks0、auditPanel=false；桌面与375物理像素窄屏截图已看，Chrome125%导致早期element clip裁切，采用完整viewport截图并正常关闭移动Hermes遮层后确认5式完整。RO仍private/draft/revision4，SDF及冻结record与before逐字一致。无测试/CI/模型重跑。

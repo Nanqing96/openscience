@@ -1,18 +1,19 @@
 # OpenScience (XGS) 项目文件索引
 
-> CURRENT 2026-09-13：草稿/公开版本/删除规则正在实施；唯一续作入口为 docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，实施起点HEAD/origin a3025b8b；本轮只读确认应用c0bc653d / rollback871ed702。候选未提交、未构建部署，不能把本地实现当作线上功能。
+> CURRENT 2026-09-13：草稿/公开版本/删除规则已部署ef9e6e97；唯一续作入口为 docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，HEAD/origin ef9e6e97；应用ef9e6e97，rollback标记c0bc653d不兼容，禁止回退。必要服务器构建/迁移/启动及实际页面读取完成，历史/内容标签正在收尾；没有测试/实际删除/新发布。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
-| `docs/specs/2026-09-13-draft-publication-trash-design.md` | 用户逐项确认的草稿、公开版本、历史入口、个人空间删除与30天回收站方案；正在实施，部署状态见CURRENT |
+| `docs/specs/2026-09-13-draft-publication-trash-design.md` | 用户逐项确认的草稿、公开版本、历史入口、个人空间删除与30天回收站方案；ef9已部署，实际观察边界见CURRENT |
 | `packages/domain/src/commit/{version-history,restore-draft,carry-media}.ts` / `packages/domain/src/publish/publication-metadata.ts` / `infra/migrations/20260913010000_publication_identity/` | 私有历史恢复、完整图文快照、独立公开序号与旧公开元数据兼容；候选未部署 |
-| `packages/domain/src/trash/` / `apps/api/src/routes/trash.ts` / `infra/migrations/20260913020000_private_trash/` | 回收站、公开依赖保留、可重试清除与共同写锁；候选未部署 |
-| `apps/web/components/research/{EditHistory,ResearchContentManager,TrashActionButton}.tsx` / `apps/web/app/trash/` | 编辑历史、内容管理与回收站；分析操作并入Hermes；候选未部署 |
-| `packages/search/src/{purge,lifecycle}.ts` / `apps/agent-worker/src/trash-job-copies.ts` / `infra/private-cleanup/` | 独立搜索库删除/存续过滤、解析任务副本及宿主受限清理执行器；实施中 |
+| `packages/domain/src/trash/` / `apps/api/src/routes/trash.ts` / `infra/migrations/20260913020000_private_trash/` | 回收站、公开依赖保留、可重试清除与共同写锁；ef9已部署，无真实删除操作 |
+| `apps/web/components/research/{EditHistory,ResearchContentManager,TrashActionButton}.tsx` / `apps/web/app/trash/` | 编辑历史、内容管理与回收站；分析操作并入Hermes；ef9实际页面可读，标签收尾中 |
+| `apps/web/components/research/{useVersionLabels,useContentLabels}.ts` | 历史摘要及内容/删除确认/回收站的已知机器标签本地化；保留原数据与未知用户标题 |
+| `packages/search/src/{purge,lifecycle}.ts` / `apps/agent-worker/src/trash-job-copies.ts` / `infra/private-cleanup/` | 独立搜索库删除/存续过滤、解析副本及宿主受限清理执行器；ef9已部署，清理timer已安装，无实际清除收据 |
 | `docs/decisions/ADR-014-draft-publication-and-private-deletion.md` | 公开版本与内部修订分离、私有删除/公开引用保留的决策及取舍；规则唯一维护于上述spec |
 | `docs/OpenScience_Kimi_Development_Spec.md` §2.2 | 同步上述已确认需求，实施与部署状态由CURRENT跟踪 |
 
-> **最近部署实读 2026-09-13:** branch codex/onchip-video-release；应用c0bc653d / rollback871ed702。阅读层内部[S数字]及媒体制作长文已移除，实际四入口编号0/10式正常、桌面/窄屏已看；数据与图片未改。第二篇private/内部快照v5/4266e4ed/revision6，待质量确认，未公开。后续产品规则与实施方向以上方CURRENT为准。
+> **最近部署实读 2026-09-13:** 应用ef9e6e97；第二篇private/revision6、四条历史无公开号、core与旧记录相同、10式/0错误/图1280×720，桌面与368CSS窄屏已看。第一篇旧公开v10/1图可用；Hermes来源、80项内容管理和空回收站已读。恢复写入、真实清除、30天到期及新首发v1尚未操作；不冒称完整运行验收。
 > 最新质量推进：867方法笔记与3f68d30b结果/边界笔记均经服务器来源绑定修订及独立High科学/引用PASS，后者1745字符/19引用、实际Markdown20620字符完整。0685已修复Markdown改变TeX间距，实读26/26公式源逐字相等、6处间距保留，正文/引用/导出不变。通用来源机制已固化，具体指导与独立科学复核仍由本会话承担；六字段全自动仍失败，跨论文质量尚未确认，未采用/发布。
 > 唯一入口：docs/handoff/2026-09-10-hermes-web-image-handoff.md。当前自动agent d5c6f699真实字段审校仍失败；4bedbb4b具体方法回读核心科学PASS，但多问与局部共编仍丢条件。a8修复笔记漏路由/科学共编推理配置，10799ba3实产仍经High原文复核拒绝；停止重试，保留人工审校流程。
 > 私有92cafb82人工原文审校稿1118字符/17引用：1e627修复指定任务被较新失败63e正文覆盖，实际打开/只读编辑/回阅读/展开来源/截图均成功，正文和全部引用逐字等保存API与此前复核稿，user_edited保留；原40e23948、公开v10与已批图保留，尚未采用新稿/发布，视频/批量暂停。
