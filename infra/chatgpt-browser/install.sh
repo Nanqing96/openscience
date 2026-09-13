@@ -26,7 +26,6 @@ if [[ ${1:-} == --confirm-provider ]]; then
     install -o 11040 -g 11040 -m 0600 /dev/null "$root/jobs/runner.lock"
   fi
   exec 9<>"$root/jobs/runner.lock"
-  flock -n 9 || { echo 'Browser operator is active; provider install did not change it'; exit 71; }
   for lock_name in image-runner.lock science-review-runner.lock; do
     if [[ -e "$root/jobs/$lock_name" ]]; then
       [[ -f "$root/jobs/$lock_name" && ! -L "$root/jobs/$lock_name" ]] || exit 68
@@ -34,12 +33,17 @@ if [[ ${1:-} == --confirm-provider ]]; then
       install -o 11040 -g 11040 -m 0600 /dev/null "$root/jobs/$lock_name"
     fi
   done
+  exec 7<>"$root/jobs/image-runner.lock"
+  exec 8<>"$root/jobs/science-review-runner.lock"
+  flock -n 7 && flock -n 8 && flock -n 9 || { echo 'Browser operator is active; provider install did not change it'; exit 71; }
   [[ ! -e $bundle ]] || { echo 'Web image bundle already exists; inspect before reuse'; exit 69; }
   install -d -m 0755 "$bundle/infra/chatgpt-browser" "$bundle/infra/codex-image-runner" "$bundle/packages/ai-gateway/dist"
   install -m 0444 "$source_release/infra/chatgpt-browser/broker.mjs" "$source_release/infra/chatgpt-browser/runner.cjs" "$source_release/infra/chatgpt-browser/review-broker.mjs" "$source_release/infra/chatgpt-browser/review-runner.cjs" "$bundle/infra/chatgpt-browser/"
+  install -m 0444 "$source_release/infra/chatgpt-browser/page-lifecycle.cjs" "$bundle/infra/chatgpt-browser/"
   install -m 0444 "$source_release/infra/codex-image-runner/core.mjs" "$bundle/infra/codex-image-runner/core.mjs"
   find "$source_release/packages/ai-gateway/dist" -maxdepth 1 -type f -name '*.js' -exec install -m 0444 -t "$bundle/packages/ai-gateway/dist" {} +
   install -d -o root -g 11040 -m 0750 "$root/jobs/provider"
+  install -o root -g 11040 -m 0440 "$source_release/infra/chatgpt-browser/page-lifecycle.cjs" "$root/jobs/provider/page-lifecycle.cjs"
   install -o root -g 11040 -m 0440 "$source_release/infra/chatgpt-browser/runner.cjs" "$root/jobs/provider/runner.cjs"
   install -o root -g 11040 -m 0440 "$source_release/infra/chatgpt-browser/review-runner.cjs" "$root/jobs/provider/review-runner.cjs"
   config="$root/config-$release_sha.json"

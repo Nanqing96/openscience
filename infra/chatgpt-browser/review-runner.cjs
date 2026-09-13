@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { chromium } = require('/app/node_modules/playwright-core');
+const { beforeAttach, rememberPage } = require('./page-lifecycle.cjs');
 const [mode, id] = process.argv.slice(2);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SHA256 = /^[a-f0-9]{64}$/;
@@ -232,23 +233,31 @@ let activePage;
 (async () => {
   const stat = fs.lstatSync(dir); if (!stat.isDirectory() || stat.isSymbolicLink()) throw Error('INVALID_JOB_DIRECTORY');
   const request = validateRequest(read('request.json'), mode === 'recover');
+  const instance = await beforeAttach('/jobs/review', 'chatgpt-web-science-review', id);
   const browser = await reconnectBrowser(), context = browser.contexts()[0]; if (!context) throw Error('BROWSER_CONTEXT_NOT_FOUND');
   let page;
   if (mode === 'recover') {
     if (!fs.existsSync(path.join(dir, 'submitted.json')) || !fs.existsSync(path.join(dir, 'conversation.json'))) throw Error('RECOVERY_STATE_MISSING');
     if (fs.existsSync(path.join(dir, 'recovered-result.json'))) process.exit(0);
     const url = canonicalUrl(read('conversation.json').url);
-    page = context.pages().find(candidate => { try { return canonicalUrl(candidate.url()) === url; } catch { return false; } }) || await context.newPage();
+    page = context.pages().find(candidate => { try { return canonicalUrl(candidate.url()) === url; } catch { return false; } });
+    const created = !page;
+    if (!page) {
+      page = await context.newPage();
+      await rememberPage(page, dir, request.provider, id, instance);
+    }
     activePage = page;
     if (page.url() !== url) await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     const recoveryDeadline = Math.min(request.deadlineAt + RECOVERY_GRACE_MS, Date.now() + 30000);
     await recoverUserAnchor(page, request, recoveryDeadline);
     await waitForReview(page, request, recoveryDeadline, true);
-    await page.close().catch(() => {}); process.exit(0);
+    if (created) await bounded(page.close({ runBeforeUnload: false }), 3000).catch(() => {});
+    process.exit(0);
   }
   if (fs.existsSync(path.join(dir, 'submitted.json'))) throw Error('SUBMITTED_DO_NOT_RESEND');
   page = await context.newPage();
   activePage = page;
+  await rememberPage(page, dir, request.provider, id, instance);
   await page.goto('https://chatgpt.com/', { waitUntil: 'domcontentloaded', timeout: 30000 });
   const input = await waitForComposer(page, Math.min(request.deadlineAt, Date.now() + 30000));
   if (!input) throw Error('CHAT_COMPOSER_NOT_FOUND');
@@ -268,11 +277,13 @@ let activePage;
   once('conversation.json', { url });
   await recoverUserAnchor(page, request, Math.min(request.deadlineAt, Date.now() + 30000));
   await waitForReview(page, request, request.deadlineAt);
-  await page.close().catch(() => {}); activePage = undefined; process.exit(0);
+  await bounded(page.close({ runBeforeUnload: false }), 3000).catch(() => {}); activePage = undefined; process.exit(0);
 })().catch(async error => {
   if (!fs.existsSync(path.join(dir, 'submitted.json')) && activePage) {
     await bounded(activePage.close({ runBeforeUnload: false }), 3000).catch(() => {});
   }
-  console.log(JSON.stringify({ state: fs.existsSync(path.join(dir, 'submitted.json')) ? 'ambiguous_no_resend' : 'not_submitted', error: /^[A-Z_]+$/.test(error.message) ? error.message : error.name }));
+  const failure = { state: fs.existsSync(path.join(dir, 'submitted.json')) ? 'ambiguous_no_resend' : 'not_submitted', error: /^[A-Z_]+$/.test(error.message) ? error.message : error.name };
+  try { once('operator-error.json', failure); } catch {}
+  console.log(JSON.stringify(failure));
   process.exit(1);
 });
