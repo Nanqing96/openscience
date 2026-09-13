@@ -30,6 +30,8 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
   const [core, setCore] = useState<SdfCore | null>(null);
   const [assets, setAssets] = useState<PresentationAsset[]>([]);
   const [materialNames, setMaterialNames] = useState<string[]>([]);
+  const [allowArtifactDownloads, setAllowArtifactDownloads] = useState(false);
+  const downloadConflict = allowArtifactDownloads && licenses.data === 'NO-DOWNLOAD';
   const [readyScope, setReadyScope] = useState('');
   const scope = `${researchObjectId}:${selectedId}`;
   const activeScope = useRef(scope); activeScope.current = scope;
@@ -51,24 +53,26 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
 
   useEffect(() => {
     let active = true;
-    setReadyScope(''); setReview(null); setCore(null); setAssets([]); setMaterialNames([]); setConfirmOpen(false); setPublicUrl(''); setError('');
+    setReadyScope(''); setReview(null); setCore(null); setAssets([]); setMaterialNames([]); setAllowArtifactDownloads(false); setConfirmOpen(false); setPublicUrl(''); setError('');
     if (!selectedId) return;
     void Promise.all([
       getLicenses(researchObjectId, selectedId), getPublicationReview(selectedId),
-      apiRequest<{ record: { objectId: string; versionId: string; sdf: SdfCore; manifest?: Array<{ logicalPath: string }> } }>(`/api/research-objects/${encodeURIComponent(researchObjectId)}/versions/${encodeURIComponent(selectedId)}/record`),
+      apiRequest<{ record: { objectId: string; versionId: string; sdf: SdfCore; manifest?: Array<{ logicalPath: string; downloadAccess?: 'workspace_member' | 'public' }> } }>(`/api/research-objects/${encodeURIComponent(researchObjectId)}/versions/${encodeURIComponent(selectedId)}/record`),
       listPresentationAssets(researchObjectId, selectedId),
     ]).then(([licenseResult, reviewResult, recordResult, media]) => {
       if (!active) return;
       if (recordResult.record.objectId !== researchObjectId || recordResult.record.versionId !== selectedId) throw new Error(tw('versionMismatch'));
       setLicenses(licenseResult.licenses ?? defaults); setReview(reviewResult.review); setCore(recordResult.record.sdf);
-      setMaterialNames((recordResult.record.manifest ?? []).map((item) => item.logicalPath));
+      const manifest = recordResult.record.manifest ?? [];
+      setMaterialNames(manifest.map(item => item.logicalPath));
+      setAllowArtifactDownloads(manifest.length > 0 && manifest.every(item => item.downloadAccess === 'public'));
       setAssets(media.assets.filter((asset) => asset.status === 'approved' && !asset.storyboard)); setReadyScope(scope);
     }).catch((cause: Error) => { if (active) setError(cause.message); });
     return () => { active = false; };
   }, [researchObjectId, selectedId, scope, tw]);
 
   async function publish() {
-    if (!selected || !ready || working || selected.publicationNo != null) return;
+    if (!selected || !ready || working || selected.publicationNo != null || downloadConflict) return;
     const target = selected;
     const current = () => activeScope.current === scope;
     setWorking(true); setError('');
@@ -103,7 +107,7 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
           setAssets(reviewed); throw new Error(tc('publicMediaChanged'));
         }
       }
-      const publication = await publishVersion(target.versionId);
+      const publication = await publishVersion(target.versionId, { allowArtifactDownloads });
       if (!current()) return;
       const publicationNo = publication.published.publicationNo ?? Number(publication.published.publicVersionId.match(/-v([1-9]\d*)$/u)?.[1]);
       if (!Number.isSafeInteger(publicationNo) || publicationNo < 1) throw new Error(tw('versionMismatch'));
@@ -139,11 +143,20 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
   const latestResume = useRef(resumeEditing); latestResume.current = resumeEditing;
   useEffect(() => {
     if (!conversation || !onConfirmationChange) return;
-    onConfirmationChange({ kind: 'publication', ready: ready && !working && Boolean(selected) && selected?.publicationNo == null, canDismiss: !working, confirm: () => latestPublish.current(),
+    onConfirmationChange({ kind: 'publication', ready: ready && !working && !downloadConflict && Boolean(selected) && selected?.publicationNo == null, canDismiss: !working, confirm: () => latestPublish.current(),
       ...(['under_review', 'approved'].includes(selected?.status ?? '') ? { resumeEditing: () => latestResume.current() } : {}),
     });
     return () => onConfirmationChange(null);
-  }, [conversation, onConfirmationChange, ready, working, scope, selected?.status, selected?.publicationNo]);
+  }, [conversation, onConfirmationChange, ready, working, downloadConflict, scope, selected?.status, selected?.publicationNo]);
+  const materialChoice = materialNames.length > 0 && <div className="mt-4 text-sm">
+    <details><summary className="cursor-pointer">{tc('publicationMaterials', { count: materialNames.length })}</summary><ul className="mt-2 list-inside list-disc">{materialNames.map((name) => <li className="break-all" key={name}>{name}</li>)}</ul></details>
+    {selected?.publicationNo == null && <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-3">
+      <input type="checkbox" className="h-4 w-4 shrink-0 accent-os-vermilion-ink" checked={allowArtifactDownloads} disabled={working} onChange={event => setAllowArtifactDownloads(event.target.checked)} />
+      <span>{tc('allowArtifactDownloads')}</span>
+    </label>}
+    <p className="mt-2 leading-6" aria-live="polite">{tc(allowArtifactDownloads ? 'artifactDownloadsEnabled' : 'artifactDownloadsDisabled')}</p>
+    {downloadConflict && <p className="mt-2 text-state-danger" role="alert">{tc('artifactDownloadLicenseConflict')}</p>}
+  </div>;
   if (conversation) return <section className="hermes-message hermes-message-assistant" data-conversation-publication="true">
     {error && <p role="alert" className="text-sm text-state-danger">{error}</p>}
     {!ready && !error && <p role="status">{t('state.loadingBody')}</p>}
@@ -152,7 +165,7 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
       {selected?.publicationNo == null && <p className="mt-2 text-sm">{th('publicationNumberOnPublish')}</p>}
       <p className="mt-2 text-sm">{t('publish.permanenceBody')}</p>
       <p className="mt-2 text-sm">{tc('publicationLicense', { text: licenses.text, code: licenses.code, data: licenses.data })}</p>
-      {materialNames.length > 0 && <details className="mt-3 text-sm"><summary>{tc('publicationMaterials', { count: materialNames.length })}</summary><ul className="mt-2 list-inside list-disc">{materialNames.map((name) => <li className="break-all" key={name}>{name}</li>)}</ul></details>}
+      {materialChoice}
       {review?.hardBlocks.map((block, index) => <p className="mt-2 text-sm text-state-danger" key={index}>{block.reason}</p>)}
       {['under_review', 'approved'].includes(selected?.status ?? '') && <p className="mt-2 text-sm">{tc('resumePublicationEditing')}</p>}
       <p className="mt-3 text-sm" role="status">{working ? t('publish.checking') : selected?.publicationNo != null ? t('publish.published') : tc('confirmPublicationInChat')}</p>
@@ -175,14 +188,15 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
         <div className="research-publication-media">{assets.filter((asset) => ['image', 'chart', 'video'].includes(asset.kind)).map((asset) => <figure className="my-7" key={asset.id}>{asset.kind === 'video' ? <video className="h-auto w-full" controls preload="metadata" aria-label={mediaLabel(asset)} src={presentationAssetContentUrl(researchObjectId, selectedId, asset.id)} /> : <img className="h-auto w-full object-contain" src={presentationAssetContentUrl(researchObjectId, selectedId, asset.id)} alt={mediaLabel(asset)} />}<figcaption className="mt-2 text-sm text-os-muted-paper">{mediaLabel(asset)}</figcaption></figure>)}</div>
         {SDF_FIELDS.filter((field) => field !== 'insight').map((field) => <section className="mt-7" key={field}><h3 className="research-section-title">{t(`fields.${field}`)}</h3><ScientificText hideSourceMarkers as="p" className="mt-2 leading-8">{core[field]}</ScientificText></section>)}
       </article>
+      {materialChoice}
       <details className="mt-6 rounded-panel bg-os-paper-strong p-4"><summary className="cursor-pointer text-sm font-semibold">{t('publish.licenses')}</summary><p className="mt-3 text-sm leading-6">{tw('rightsNotice')}</p><fieldset className="mt-4 grid gap-4 sm:grid-cols-3" disabled={working || selected?.publicationNo != null}>{(['text', 'code', 'data'] as const).map((type) => <label className="grid gap-2 text-sm" key={type}>{t(`publish.license.${type}`)}<select className={control} value={licenses[type]} onChange={(event) => { setLicenses((current) => ({ ...current, [type]: event.target.value })); setReview(null); }}>{(type === 'text' ? ['CC-BY-4.0', 'CC-BY-NC-4.0', 'ALL-RIGHTS-RESERVED'] : type === 'code' ? ['MIT', 'Apache-2.0', 'GPL-3.0', 'PROPRIETARY'] : ['CC0-1.0', 'CC-BY-4.0', 'NO-DOWNLOAD']).map((license) => <option key={license}>{license}</option>)}</select></label>)}</fieldset></details>
       <div className="mt-6" aria-live="polite">{review && <p className="text-sm">{t(`publish.reviewStatus.${review.status}`)}</p>}{review?.hardBlocks.map((block, index) => <p className="mt-3 text-sm text-state-danger" key={`${block.code}:${index}`}>{block.reason}</p>)}{review?.status === 'blocked' && <Link className="mt-3 inline-flex min-h-11 items-center text-sm text-os-vermilion-ink underline" href={`/research-objects/${encodeURIComponent(researchObjectId)}/edit?stage=content`}>{tw('resolveBeforePublish')}</Link>}</div>
       <p className="mt-6 text-xs leading-5 text-os-muted-paper">{t('publish.permanenceBody')}</p>
       <div className="sticky bottom-0 z-10 mt-3 flex items-center justify-end gap-3 border-t border-os-rule-paper bg-os-paper-strong px-3 py-3">
-        <button className="min-h-11 w-full rounded-panel bg-os-vermilion-ink px-5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto" disabled={working || !ready} onClick={() => setConfirmOpen(true)}>{working ? t('publish.checking') : t('publish.action')}</button>
+        <button className="min-h-11 w-full rounded-panel bg-os-vermilion-ink px-5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto" disabled={working || !ready || downloadConflict} onClick={() => setConfirmOpen(true)}>{working ? t('publish.checking') : t('publish.action')}</button>
       </div>
     </>}
-    <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}><DialogContent className="max-w-xl rounded-panel bg-os-paper-strong p-6 text-os-ink"><DialogTitle className="text-2xl font-semibold">{t('publish.confirmTitle')}</DialogTitle><DialogDescription className="mt-4 text-base leading-7">{t('publish.confirmBody')}</DialogDescription><p className="mt-3 text-sm leading-6">{tw('rightsNotice')}</p><div className="mt-6 flex justify-end gap-3"><DialogClose className={control}>{t('publish.cancel')}</DialogClose><button disabled={working} className="min-h-11 rounded-panel bg-os-vermilion-ink px-4 text-sm font-semibold text-white disabled:opacity-50" onClick={() => void publish()}>{t('publish.confirm')}</button></div></DialogContent></Dialog>
+    <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}><DialogContent className="max-w-xl rounded-panel bg-os-paper-strong p-6 text-os-ink"><DialogTitle className="text-2xl font-semibold">{t('publish.confirmTitle')}</DialogTitle><DialogDescription className="mt-4 text-base leading-7">{t('publish.confirmBody')}</DialogDescription><p className="mt-3 text-sm leading-6">{tw('rightsNotice')}</p>{materialNames.length > 0 && <p className="mt-3 text-sm leading-6">{tc(allowArtifactDownloads ? 'artifactDownloadsEnabled' : 'artifactDownloadsDisabled')}</p>}<div className="mt-6 flex justify-end gap-3"><DialogClose className={control}>{t('publish.cancel')}</DialogClose><button disabled={working || downloadConflict} className="min-h-11 rounded-panel bg-os-vermilion-ink px-4 text-sm font-semibold text-white disabled:opacity-50" onClick={() => void publish()}>{t('publish.confirm')}</button></div></DialogContent></Dialog>
   </div>;
   return embedded || !object ? content : <ResearchSurfaceShell active="publish" object={object}>{content}</ResearchSurfaceShell>;
 }

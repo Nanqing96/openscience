@@ -99,7 +99,7 @@ export interface InterestContext {
 
 ### 5.1 Claim graph
 
-每个发布版本包含 3–7 个 `core` Claim；一个核心 Claim 可以有 `supporting`、`method`、`boundary` 或 `counter` 子 Claim。禁止通过拆句制造大量同义 Claim。
+核心 Claim 数量要求已由 [开放研究出版物 PRD §3.2](2026-09-07-open-research-publication-prd.md) 取代：3–7 条为整理建议，不作为发布配额，允许一条主要结论。一个核心 Claim 可以有 `supporting`、`method`、`boundary` 或 `counter` 子 Claim。禁止通过拆句制造大量同义 Claim。
 
 ```ts
 export type ClaimKind = 'core' | 'supporting' | 'method' | 'boundary' | 'counter';

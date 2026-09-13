@@ -1,6 +1,6 @@
 # OpenScience (XGS) 项目文件索引
 
-> CURRENT 2026-09-14：第二篇保存阻塞已修复，重复附件已整理为1项，私有草稿revision7/72c315af、已审正文/40来源/批准配图保留；唯一续作入口为 docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，代码HEAD/origin/应用0931cf12 / rollback02d67ddf，其后仅文档补记。待用户明确发布身份/署名/PDF权限及许可，未公开/删文件/测试，视频/批量暂停。
+> CURRENT 2026-09-14：第二篇已按用户选择保存完整原题/DHL署名/CC-BY-4.0文字与数据许可、MIT代码许可，私有revision8/72c315af；已审正文/40来源/配图保留。正在修复实际发布暴露的旧Claim数量配额与公开PDF下载缺口；唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，应用0931cf12 / rollback02d67ddf，候选未部署。未公开/删文件/测试，视频/批量暂停。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
@@ -13,6 +13,8 @@
 | `packages/search/src/{purge,lifecycle}.ts` / `apps/agent-worker/src/trash-job-copies.ts` / `infra/private-cleanup/` | 独立搜索库删除/存续过滤、解析副本及宿主受限清理执行器；ef9已部署，清理timer已安装，无实际清除收据 |
 | `docs/decisions/ADR-014-draft-publication-and-private-deletion.md` | 公开版本与内部修订分离、私有删除/公开引用保留的决策及取舍；规则唯一维护于上述spec |
 | `docs/OpenScience_Kimi_Development_Spec.md` §2.2 | 同步上述已确认需求，实施与部署状态由CURRENT跟踪 |
+| `packages/domain/src/artifact/public-artifact-download.ts` / `packages/domain/src/commit/research-record-snapshot.ts` / `apps/api/src/routes/research.ts` / `apps/web/components/research/ResearchPublication.tsx` | 发布时明确授权全部附件，权限冻结到公开版本；读者按版本下载原件，旧版和私有附件默认不开放。2026-09-14实现中，部署/实际下载以CURRENT为准 |
+| `packages/domain/src/research-intelligence/claim-graph.ts` / `docs/specs/2026-09-07-open-research-publication-prd.md` §3.2 | 允许一条主要结论，3–7仅为组织建议；保留图结构、证据及既有资源数量限制。2026-09-14候选独立High静态PASS，尚未部署 |
 
 > **最近部署实读 2026-09-14:** 应用0931cf12；真实附件整理成功201，第二篇private/revision7/72c315af、1个PDF、40来源内容/定位保留，原配图hash/approved继承、1280×720/0公式错误。新旧来源接口200且响应相同，预览/工作台截图已看。02d的历史/管理/回收站显示证据继续有效；恢复历史写入、真实清除、30天到期及首发v1尚未操作，不冒称完整运行验收。
 > 最新质量推进：867方法笔记与3f68d30b结果/边界笔记均经服务器来源绑定修订及独立High科学/引用PASS，后者1745字符/19引用、实际Markdown20620字符完整。0685已修复Markdown改变TeX间距，实读26/26公式源逐字相等、6处间距保留，正文/引用/导出不变。通用来源机制已固化，具体指导与独立科学复核仍由本会话承担；六字段全自动仍失败，跨论文质量尚未确认，未采用/发布。

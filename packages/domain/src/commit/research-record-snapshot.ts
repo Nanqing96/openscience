@@ -1,6 +1,8 @@
 import type { Prisma } from '@prisma/client';
 import { SDF_NODE_TYPES } from '../research-object/types';
 import type { PublicationMetadata } from '../publish/publication-metadata';
+import { publicArtifactDownloadUrl } from '../artifact/public-artifact-download';
+import { PublishError } from '../publish/errors';
 
 export function recordValue(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
@@ -24,14 +26,14 @@ export async function refreshWorkingResearchRecord(tx: Prisma.TransactionClient,
 /** Final public snapshot, called only inside the publication transaction. */
 export async function finalizePublicationResearchRecord(tx: Prisma.TransactionClient, input: {
   researchObjectId: string; versionId: string;
-  publicId: string; publicVersionId: string; publicationNo: number; publishedAt: Date;
+  publicId: string; publicVersionId: string; publicationNo: number; publishedAt: Date; allowArtifactDownloads?: boolean;
 }) {
   return writeResearchRecord(tx, input, input);
 }
 
 async function writeResearchRecord(tx: Prisma.TransactionClient, input: {
   researchObjectId: string; versionId: string;
-}, publication: false | { publicId: string; publicVersionId: string; publicationNo: number; publishedAt: Date }, refresh = false) {
+}, publication: false | { publicId: string; publicVersionId: string; publicationNo: number; publishedAt: Date; allowArtifactDownloads?: boolean }, refresh = false) {
   const version = await tx.version.findUnique({ where: { id: input.versionId }, include: { researchObject: true, manifest: { include: { entries: true } } } });
   if (!version || version.researchObjectId !== input.researchObjectId
     || (publication ? version.status !== 'approved' : refresh ? version.status !== 'draft' || version.publicVersionId !== null : version.researchRecord != null)) throw new Error('Research record cannot be frozen');
@@ -49,7 +51,15 @@ async function writeResearchRecord(tx: Prisma.TransactionClient, input: {
   const effectiveLicenses = licenseTypes.every(type => versionLicenses.some(l => l.licenseType === type))
     ? versionLicenses : licenses.filter(l => l.versionId === null);
   if (publication && !licenseTypes.every(type => effectiveLicenses.some(l => l.licenseType === type))) throw new Error('Publication licenses are incomplete');
-  const manifest = (version.manifest?.entries ?? []).map(e => ({ logicalPath: e.logicalPath, artifactId: e.artifactId, blobSha256: e.blobSha256, downloadUrl: `/api/artifacts/${e.artifactId}/download`, downloadAccess: 'workspace_member' })).sort((a,b) => compare(a.logicalPath,b.logicalPath));
+  if (publication && publication.allowArtifactDownloads && effectiveLicenses.some(l => l.licenseType === 'data' && l.licenseId === 'NO-DOWNLOAD')) {
+    throw new PublishError('VALIDATION_ERROR', '允许公开下载附件与数据许可 NO-DOWNLOAD 冲突，请先调整许可或关闭附件下载');
+  }
+  const artifactMetadata = await tx.artifact.findMany({ where: { id: { in: (version.manifest?.entries ?? []).map(e => e.artifactId) }, workspaceId: version.researchObject.workspaceId }, select: { id: true, mimeType: true } });
+  const manifest = (version.manifest?.entries ?? []).map(e => ({ logicalPath: e.logicalPath, artifactId: e.artifactId, blobSha256: e.blobSha256,
+    mimeType: artifactMetadata.find(artifact => artifact.id === e.artifactId)?.mimeType ?? null,
+    downloadUrl: publication && publication.allowArtifactDownloads ? publicArtifactDownloadUrl(publication.publicId, publication.publicationNo, e.artifactId) : `/api/artifacts/${e.artifactId}/download`,
+    downloadAccess: publication && publication.allowArtifactDownloads ? 'public' : 'workspace_member',
+  })).sort((a,b) => compare(a.logicalPath,b.logicalPath));
   const entries = new Map(manifest.map(e => [e.artifactId, e]));
   const core = recordValue(version.manifest?.coreJson);
   const sdf = core;

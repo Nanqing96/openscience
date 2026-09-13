@@ -1,6 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 2026-09-14用户“好的，继续”：第二篇发布准备推进，真实保存500已修复并部署0931cf12，同一附件整理操作成功。当前private/revision7；发布身份、署名、PDF下载权限及许可尚未确定，未公开，视频/批量暂停。
+- 2026-09-14用户确认原创、按昵称署名、允许PDF下载，授权研究选许可。真实API已保存完整原题、作者DHL、版本许可text CC-BY-4.0/code MIT/data CC-BY-4.0，当前private/revision8。实际review因旧3–7核心Claim配额阻断；公开附件下载尚无能力，正在实现两项修复后继续发布，视频/批量暂停。
 - 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/migrate/start与真实页面阅读已执行，不通过删除/发布受保护论文验证功能。
 - 服务器MiniMax-M3。自动生成、引导共编、人工校正分别记录；独立High审核不能冒称产品自动审校。
 ## Version and workspace
@@ -19,10 +19,10 @@
 - 02d最后实读：编辑历史四条时间/摘要，无内部笔记UUID/机器英文；桌面/移动截图已看，窄屏dialog354/scroll354/viewport380CSS。打开冻结正文1617字符，恢复入口可用但未点击；管理80项最新在前，已知内部标题0，列表与确认/回收站共用标签。证据tmp/lifecycle-final-reading.{sh,log,json}及四截图，服务器/jobs同名。
 - 证据：本地tmp/lifecycle-{reading,management-reading}.sh/log/json与截图，服务器/jobs同名json/png；原图/正文未重生成。真实清除、历史恢复写入、30天到期及新首发v1尚未实际操作，不冒称完整运行验收。
 ## Protected second paper and next action
-- 本轮实测02d/rollbackef9，七个发布相关GET均200。标题Quantization，作者为空、许可none、发布review无记录；当前manifest同hash两PDF（2b5c92af/4b94c626），40Evidence均指4b。已向用户询问原创研究/文献解读、公开署名、PDF下载权限，尚未答复；不默认替用户选许可或公开。
+- 本轮实测0931/rollback02d，API/Worker healthy、Web running，目标72仍private。用户DHL；标题/作者/许可三个实际写入均200，review132699b5返回blocked，唯一hardBlock claim_graph_invalid。证据tmp/quantization-license-state.log、quantization-save-publication-metadata.log；服务器/jobs同名JSON收据。
 - 真实整理操作：保留4b的来源引用，当前附件列表合一并以文件名展示，不删除任何文件；POST commits(version6)返回500 req-n7，Prisma在carryVersionMedia.create拒绝researchObjectId。随后GET实测revision6、core/history/record/media与此前全等，事务已回滚。收据/jobs/quantization-attachment-deduplicate-20260914.json（原幂等键保留），本地tmp/quantization-draft-save-error.log（很大，只解析err结尾）、quantization-draft-failure-state.log。不得盲重发或改DB绕过保存。
 - 根因/修复：Prisma嵌套CreateWithoutPresentationAssetInput仅接受claimId；093改为同一tx内asset.create→presentationAssetClaim.createMany四个范围字段→原requireValidVersionHistoryCopy，权限/来源/批准判定不变。独立High静态PASS，服务器build/start完成，未测试/迁移；原幂等键续保存返回201，commitd74979fb-9440-416f-8692-df2e829f5e47，没有重复草稿。
-- Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；当前private/draft/revision7、快照72c315af-cd76-452a-8bbb-6e1284612114（内部6，publicationNo=null）；旧已审快照4266e4ed-9a89-45d8-8c0e-c6393bbc503d保留全等。首次公开应v1。
+- Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；当前private/draft/revision8、快照72c315af-cd76-452a-8bbb-6e1284612114（内部6，publicationNo=null）；完整题名Quantization of a Deep-Subwavelength-Aperture-Confined Optical Near Field。旧已审快照4266e4ed-9a89-45d8-8c0e-c6393bbc503d保留全等。首次公开应v1。
 - 实际72读取：core逐字等已审稿、Claim正文不变、40Evidence内容/locator/核对状态保留；只有新证据/Claim ID与版本来源URL改变，抽取新旧来源接口均200且响应相同。manifest仅4b94c626、正常PDF文件名；新继承图a6f51e93-4ce0-4438-b18f-bbe82ed00bfa approved、原hash4ee0df4c/1280×720。0公式错误，预览/工作台截图已看。证据tmp/quantization-deduplicate-{reading,source-reading}.log/json、preview/edit.png，服务器/jobs同名；原始reading.evidenceUnchanged=false因新ID/URL，已用后续逐字段比较解释，不能误报来源丢失。
 - 当前审阅入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=f34d8ee2-5120-4ca1-a22b-a98f3473117a
 - 六项笔记f34d8ee2-5120-4ca1-a22b-a98f3473117a：1523字符/23引用、user_edited、独立High科学/来源PASS；六字段111/251/364/325/210/175字符、10式。人工纠正后经既有无模型save与SDF写入，不能冒称自动正确。
@@ -30,7 +30,7 @@
 - 来源ingestioncee71443-ae46-4ed1-b4e4-6c5b59e674ef、source agent960ffcc1-75f6-4418-b9a6-8bf413f4e18d、artifact4b94c626-1748-4c5a-934b-2bb94585bd9c；15页SourceMap已完整，不重解析。08ed仅压缩重复来源元数据，2201片段/53954全文完整。
 - 正确快照Claim18bbfa21-4099-49be-9f55-21e0fda960ef/40Evidence；已批图56e58572-705b-4182-b064-a9df30f1060f，原字节652786B/hash4ee0df4c、原图1672×941/产品1280×720。
 - 图56经admin_reviewed_import复用原图86ffe202-928e-49fd-8877-7ec0787b69f6；原generator/version与importRun来源保留，非重生成。旧version58a45cb5-758f-4d6f-9e94-533b460e8b06科学正文有误，绝不发布；stagingc8e625c4-39cb-4a6c-a0d1-3129c48558f8冻结内容有历史差异，恢复只用冻结记录。
-- 下一步等待用户发布身份/公开署名/PDF权限答复，补齐文字/代码/数据许可与合适标题，基于当前72准备明确公开流程。作者仍空/许可none；未运行发布review或状态转移。没有明确公开授权前不得发布；不继续测试工程或批量冷启动。
+- 下一步先完成/独立High复核/部署下载授权与Claim配额修复，再继续当前72的真实发布。仅允许1条core符合已授权出版PRD§3.2，保留图结构/来源核查；下载复用冻结manifest权限，默认不开放，只有本次主动允许才公开，旧版本不追溯开放。代码由publication_lifecycle负责下载，主代理负责claim-graph.ts和文档；无测试/预检/本机构建/新生成。
 ## Protected first paper
 - ROc896802c-35dd-4b59-8db1-5f374f83a6d8、草稿revision11；正式v10 f4e2dc71-1fe8-406f-8c19-e1849503d698、公开OSR-2026-000022/v/10保留。PDF7bb96cc1-bb6f-4d3b-b0bf-352f41971faf与已批图b19a65bd-6497-4b61-bb81-0154b264d58c保护。
 - 保护已审92cafb82-73bc-4937-bb9c-bf1228b23dd3（1118字/17引用）、40e23948-4b41-4440-a3a1-49dd9acb8824（2696字/41引用/57式）、方法867ce8b9-1e48-4412-b1bf-1800a5d64dc9（1605字/19引用）、结果3f68d30b-5cab-44f9-9623-2f057aada7ff（1745字/19引用）。均独立原文PASS/真实页面与下载一致；后两稿未采用SDF。

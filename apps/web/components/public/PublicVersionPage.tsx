@@ -319,7 +319,9 @@ export function PublicReadingSurface({ research, activeTab = 'overview', onTabCh
           </details>}
           {research.artifactPaths.length > 0 && <details className="pub-reading-artifacts pub-reading-details" data-print-landmark="provenance">
             <summary>{t('artifactProvenance')}</summary>
-            {research.artifactPaths.map((artifact) => <ProvenanceCaption key={`${artifact.logicalPath}-${artifact.blobSha256}`} label={artifact.logicalPath} value={`${artifact.blobSha256.slice(0, 8)}…${artifact.blobSha256.slice(-8)}`} landmark="provenance" />)}
+            <ul>{research.artifactPaths.map((artifact) => <li className="break-all" key={`${artifact.logicalPath}-${artifact.blobSha256}`}>
+              {artifact.downloadAccess === 'public' && artifact.downloadUrl ? <a className="inline-flex min-h-11 items-center underline" href={artifact.downloadUrl} download>{artifact.logicalPath}</a> : <span>{artifact.logicalPath}</span>}
+            </li>)}</ul>
           </details>}
           <details className="pub-disclaimer" data-print-landmark="provenance"><summary>{t('legalDisclaimer')}</summary><p>{disclaimer}</p></details>
             </div>

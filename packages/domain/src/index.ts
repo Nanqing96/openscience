@@ -7,6 +7,7 @@ export { TrashError } from './trash/errors';
 export { TRASH_KINDS, moveToTrash, listTrash, restoreTrash, purgeTrash, listCleanableContent, purgeExpiredTrash, cleanTrashObjects, lockTrashReferences, lockLiveResearchObject, type TrashDeps, type TrashSearchScope } from './trash/trash';
 export { canAccessPrivateRo, requirePrivateRoAccess } from './visibility/access';
 export { readPublicationMetadata, publicVersionNumber, type PublicationMetadata } from './publish/publication-metadata';
+export { publicArtifactDownloadUrl, readPublicArtifactManifest, getPublicArtifactDownload } from './artifact/public-artifact-download';
 export {
   createTeamWorkspace,
   getWorkspace,

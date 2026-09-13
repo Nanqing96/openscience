@@ -983,8 +983,8 @@ export async function transitionVersionStatus(versionId: string, status: string)
   return request(`/api/versions/${versionId}/status`, { method: 'POST', body: JSON.stringify({ status }) });
 }
 
-export async function publishVersion(versionId: string): Promise<{ published: { versionId: string; publicId: string; publicVersionId: string; publicationNo: number | null; publishedAt: string; status: string; visibility: 'public' } }> {
-  return request(`/api/versions/${versionId}/publish`, { method: 'POST', body: JSON.stringify({ r3Confirmed: true }) });
+export async function publishVersion(versionId: string, options: { allowArtifactDownloads?: boolean } = {}): Promise<{ published: { versionId: string; publicId: string; publicVersionId: string; publicationNo: number | null; publishedAt: string; status: string; visibility: 'public' } }> {
+  return request(`/api/versions/${versionId}/publish`, { method: 'POST', body: JSON.stringify({ r3Confirmed: true, allowArtifactDownloads: options.allowArtifactDownloads === true }) });
 }
 
 // ===== P1C-10：协作 API client（P1C-2~9 端点封装）=====
@@ -1420,7 +1420,7 @@ export interface PublicResearchVersion {
   licenses: Record<string, string>;
   aiReview: { status: string; hardBlocks: unknown[]; warnings: unknown[] } | null;
   citation: string;
-  artifactPaths: Array<{ logicalPath: string; blobSha256: string }>;
+  artifactPaths: Array<{ logicalPath: string; blobSha256: string; artifactId?: string; downloadAccess?: 'workspace_member' | 'public'; downloadUrl?: string }>;
   claims: PublicClaim[];
   evidence: PublicEvidence[];
   presentationAssets: PublicPresentationAsset[];

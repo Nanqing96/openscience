@@ -113,7 +113,7 @@ export async function transitionVersionStatus(
  */
 export async function publishVersion(
   deps: ArtifactDeps,
-  input: { versionId: string; userId: string; r3Confirmed: boolean; publicIdPrefix: string },
+  input: { versionId: string; userId: string; r3Confirmed: boolean; publicIdPrefix: string; allowArtifactDownloads?: boolean },
   ctx: AuditContext = {},
 ) {
   // Serialization/identifier conflicts roll the transaction back, including the
@@ -128,7 +128,7 @@ export async function publishVersion(
 
 async function publishVersionOnce(
   deps: ArtifactDeps,
-  input: { versionId: string; userId: string; r3Confirmed: boolean; publicIdPrefix: string },
+  input: { versionId: string; userId: string; r3Confirmed: boolean; publicIdPrefix: string; allowArtifactDownloads?: boolean },
   ctx: AuditContext = {},
 ): Promise<{
   versionId: string;
@@ -253,6 +253,9 @@ async function publishVersionOnce(
       throw new PublishError('ALREADY_PUBLISHED', '此快照已发行；发布更新须使用新的私有草稿');
     }
     const manifestEntries = currentVersion.manifest?.entries ?? [];
+    if (input.allowArtifactDownloads === true && new Set(manifestEntries.map(entry => entry.artifactId)).size !== manifestEntries.length) {
+      throw new PublishError('VALIDATION_ERROR', '公开下载需要每项附件在本版本清单中唯一，请先整理重复附件路径');
+    }
     const availableArtifacts = await tx.artifact.findMany({ where: {
       id: { in: manifestEntries.map(entry => entry.artifactId) }, workspaceId: currentVersion.researchObject.workspaceId, deletedAt: null, bytesPurgedAt: null,
     }, select: { id: true, blobSha256: true } });
@@ -308,7 +311,7 @@ async function publishVersionOnce(
     });
     const publishedAt = new Date();
     const visibilityFrom = currentVersion.researchObject.visibility;
-    const metadata = await finalizePublicationResearchRecord(tx, { researchObjectId: version.researchObjectId, versionId: version.id, publicId, publicVersionId, publicationNo, publishedAt });
+    const metadata = await finalizePublicationResearchRecord(tx, { researchObjectId: version.researchObjectId, versionId: version.id, publicId, publicVersionId, publicationNo, publishedAt, allowArtifactDownloads: input.allowArtifactDownloads === true });
     const recorded = await tx.version.findUniqueOrThrow({ where: { id: version.id }, select: { researchRecord: true } });
     const mediaPart = publicHistoryMedia(recorded.researchRecord).map(asset => ({ id: asset.id, kind: asset.kind, contentHash: asset.contentHash,
       generator: asset.generator, generatorVersion: asset.generatorVersion, sourceClaimIds: [...asset.sourceClaimIds].sort() })).sort((a, b) => a.id.localeCompare(b.id));
@@ -335,6 +338,7 @@ async function publishVersionOnce(
         publicVersionId,
         publicationNo,
         contentSha256,
+        allowArtifactDownloads: input.allowArtifactDownloads === true,
         visibilityFrom,
         visibilityTo: 'public',
       },

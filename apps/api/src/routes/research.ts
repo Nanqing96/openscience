@@ -3,7 +3,8 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { AuthDeps } from '@openscience/auth';
 import type { StorageAdapter } from '@openscience/storage';
-import { getPublicEvidenceSource, PublicEvidenceSourceError, readPublicationMetadata, publicVersionNumber, publicHistoryMedia } from '@openscience/domain';
+import { getBlob } from '@openscience/storage';
+import { getPublicEvidenceSource, PublicEvidenceSourceError, readPublicationMetadata, publicVersionNumber, publicHistoryMedia, readPublicArtifactManifest, getPublicArtifactDownload } from '@openscience/domain';
 
 /** /research 公开路由依赖：AuthDeps（仅用 prisma）。 */
 export type ResearchRouteDeps = AuthDeps & { storage?: StorageAdapter };
@@ -12,6 +13,7 @@ const roParams = z.object({ publicId: z.string() });
 const versionParams = z.object({ publicId: z.string(), versionNo: z.coerce.number().int().positive() });
 const evidenceSourceParams = versionParams.extend({ evidenceId: z.string().uuid() });
 const presentationAssetParams = versionParams.extend({ assetId: z.string().uuid() });
+const artifactDownloadParams = versionParams.extend({ artifactId: z.string().uuid() });
 const publicLocatorSchema = z.object({
   blockId: z.string().min(1).optional(),
   page: z.number().int().positive().optional(),
@@ -205,7 +207,7 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
           ? { status: version.aiReview.status, hardBlocks: version.aiReview.hardBlocks, warnings: version.aiReview.warnings }
           : null,
         citation: metadata.citation.text ?? '',
-        artifactPaths: (contentAvailable ? version.manifest?.entries ?? [] : []).map((e) => ({ logicalPath: e.logicalPath, blobSha256: e.blobSha256 })),
+        artifactPaths: (contentAvailable ? readPublicArtifactManifest(version.researchRecord, { publicId, versionNo, researchObjectId: ro.id, versionId: version.id }) : []).map(({ logicalPath, artifactId, blobSha256, downloadAccess, downloadUrl }) => ({ logicalPath, artifactId, blobSha256, downloadAccess, ...(downloadUrl ? { downloadUrl } : {}) })),
         claims: orderPublicClaims(contentAvailable ? claims : []).map((claim) => ({
           id: claim.id,
           parentClaimId: claim.parentClaimId,
@@ -240,6 +242,22 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
         }),
       },
     });
+  });
+
+  app.get('/research/:publicId/v/:versionNo/artifacts/:artifactId/download', async (req, reply) => {
+    if (!deps.storage) throw new PublicEvidenceSourceError('SOURCE_UNAVAILABLE', 'Published attachment is temporarily unavailable');
+    const params = artifactDownloadParams.parse(req.params);
+    const download = await getPublicArtifactDownload(deps, params);
+    let blob;
+    try { blob = await getBlob(deps.storage, download.blobSha256); }
+    catch (error) { throw new PublicEvidenceSourceError('SOURCE_UNAVAILABLE', 'Published attachment is temporarily unavailable', { cause: error }); }
+    if (blob.size !== download.size) { blob.body.destroy(); throw new PublicEvidenceSourceError('NOT_FOUND', 'Published attachment not found'); }
+    return reply.header('Content-Type', download.mimeType)
+      .header('Content-Disposition', download.contentDisposition)
+      .header('Content-Length', String(download.size))
+      .header('X-Content-Type-Options', 'nosniff')
+      .header('Cache-Control', 'no-store')
+      .send(blob.body);
   });
 
   app.get('/research/:publicId/v/:versionNo/evidence/:evidenceId/source', async (req, reply) => {
