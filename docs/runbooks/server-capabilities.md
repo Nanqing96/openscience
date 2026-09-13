@@ -1,4 +1,5 @@
 # 服务器能力与复用清单
+- 2026-09-13图解质量推进：同一已审71正文/40引用/Claim848，方案aa05→2a1（未批）→606b99fc（已批）；真实新版图片86ffe202-928e-49fd-8877-7ec0787b69f6于09:05:56Z→09:07:13Z单次自动succeeded100%/draft，retry0、attempt1，无人工恢复或新部署。原图1672×941，产品1280×720完整可见且不横向溢出；独立看图PASS为用户审阅候选，无必要修正，未批准/公开。上轮生图稳定性修复在本次真实任务生效。
 - 2026-09-13生图稳定性：原5260任务单次提交已生成并回收，产品succeeded100%/draft，实读1280×720；b78修复原图下载及旧late marker跳过已完成结果，501部署自有target连接前回收/三锁安装，d369补Chrome异步关闭确认。image/review runner501、helperd369、brokerb78，base bundle d163；应用08ed/rollback df94不变。独立High PASS，无测试/预检/新依赖，具体图片质量/操作证据见CURRENT handoff。
 - 2026-09-13第二篇Quantization复用既有SourceMap；08ed共享kind/parser并逐片保留confidence，使来源JSON353628→143941字符、53954全文/2201片段不丢，180k预算/授权/locator保持。两次模型前budget失败已保留；e758f33f现可生成、来源准确，但科学/引用复核失败（连续脚注误绑等），e758→918→b66→71ed6fae三次来源指导修订后，3643字符/40引用经独立科学/引用PASS；实读正文/quotes等API、57/57 TeX源一致、Markdown27609字符完整，RO仍private/draft/version3。无新Parser/OCR/服务/依赖，不称自动科学质量解决。
 

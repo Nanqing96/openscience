@@ -1,4 +1,5 @@
 # Hermes Capability Registry
+- 2026-09-13图解质量推进：同一已审71正文/40引用/Claim848，方案aa05→2a1（未批）→606b99fc（已批）；真实新版图片86ffe202-928e-49fd-8877-7ec0787b69f6于09:05:56Z→09:07:13Z单次自动succeeded100%/draft，retry0、attempt1，无人工恢复或新部署。原图1672×941，产品1280×720完整可见且不横向溢出；独立看图PASS为用户审阅候选，无必要修正，未批准/公开。上轮生图稳定性修复在本次真实任务生效。
 - 2026-09-13生图稳定性：原5260任务单次提交已生成并回收，产品succeeded100%/draft，实读1280×720；b78修复原图下载及旧late marker跳过已完成结果，501部署自有target连接前回收/三锁安装，d369补Chrome异步关闭确认。image/review runner501、helperd369、brokerb78，base bundle d163；应用08ed/rollback df94不变。独立High PASS，无测试/预检/新依赖，具体图片质量/操作证据见CURRENT handoff。
 
 ## 当前状态（2026-09-13）
