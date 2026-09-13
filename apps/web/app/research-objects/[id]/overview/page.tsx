@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { ResearchSurfaceShell, ResearchSurfaceStateShell } from '@/components/research/ResearchSurfaceShell';
+import { ScientificText } from '@/components/content/ScientificText';
 import { ApiClientError, getResearchIngestion, getResearchObject, listVersions, listPresentationAssets, presentationAssetContentUrl, type PresentationAsset, type ResearchIngestion, type ResearchObjectSummary, type SdfCore, type VersionSummary, type WorkspaceGuidePayload } from '@/lib/api';
 import styles from './overview.module.css';
 
@@ -83,7 +84,7 @@ export default function ResearchOverviewPage({ params }: { params: { id: string 
       {entries.length === 0 ? <section className={styles.start} data-surface-state={hasIngestionTask ? 'actionable' : scopedIngestion.status}><span className={styles.startMark} aria-hidden="true">01</span><h2>{t(hasIngestionTask ? 'overview.ingestionTitle' : scopedIngestion.status === 'loading' ? 'overview.ingestionLoadingTitle' : scopedIngestion.status === 'failed' ? 'overview.ingestionUnknownTitle' : 'overview.emptyTitle')}</h2><p>{t(hasIngestionTask ? 'overview.ingestionBody' : scopedIngestion.status === 'loading' ? 'overview.ingestionLoadingBody' : scopedIngestion.status === 'failed' ? 'overview.ingestionUnknownBody' : 'overview.emptyBody')}</p>{hasIngestionTask ? <Link className={styles.startAssistant} href={ingestionHref}>{t('overview.continueIngestion')} →</Link> : scopedIngestion.status === 'ready' ? <button type="button" className={styles.startAssistant} onClick={() => openAssistant(null)}>{t('overview.ask')} →</button> : <Link className={styles.startAssistant} href={`${root}/hermes`}>{t('overview.openHermes')} →</Link>}<div className={styles.steps}><Link href={`${root}/edit`}><span>02</span><strong>{t('overview.stepOne')}</strong><p>{t('overview.stepOneBody')}</p></Link><Link href={`${root}/presentation`}><span>03</span><strong>{t('overview.stepTwo')}</strong><p>{t('overview.stepTwoBody')}</p></Link></div></section> : null}
       {entries.length === 0 && (assets.length > 0 || mediaFailed || mediaLoading) ? media : null}
       {entries.map((field, index) => <section key={field} id={`overview-${field}`} className={styles.section} data-hermes-protected="true">
-        <h2>{t(`fields.${field}`)}</h2><p className={styles.narrative}>{object.sdf.core[field]}</p>
+        <h2>{t(`fields.${field}`)}</h2><ScientificText as="p" className={styles.narrative}>{object.sdf.core[field]}</ScientificText>
         <button type="button" className={styles.discuss} data-testid={`overview-discuss-${field}`} onClick={() => openAssistant(targets[field])}><img src="/hermes/wanko-static.png" alt="" />{t('overview.discuss')}</button>
         {index === Math.min(1, entries.length - 1) ? media : null}
       </section>)}

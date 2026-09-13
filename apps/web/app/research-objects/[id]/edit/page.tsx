@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import EditorLayout from '../../../../components/editor/EditorLayout';
 import CoreEditor from '../../../../components/editor/CoreEditor';
+import { ScientificText } from '@/components/content/ScientificText';
 import SuggestionsPanel from '../../../../components/editor/SuggestionsPanel';
 import ArtifactUploader from '../../../../components/editor/ArtifactUploader';
 import { ObjectHeader } from '../../../../components/research/ObjectHeader';
@@ -1146,7 +1147,7 @@ function EditorWorkspace({ params, searchParams }: EditorPageProps) {
         main={
           <div className={styles.document}>
             <section className={styles.leadSection} aria-label={tw('contribution')}>
-              <p className={styles.contribution}>{state.core.insight || state.core.results || state.core.problem || tw('contributionPlaceholder')}</p>
+              <ScientificText as="p" className={styles.contribution}>{state.core.insight || state.core.results || state.core.problem || tw('contributionPlaceholder')}</ScientificText>
               {draftPrompt && (
               <div className={styles.notice}>
                 <span>{t('draftFound')}</span>
@@ -1175,7 +1176,7 @@ function EditorWorkspace({ params, searchParams }: EditorPageProps) {
             <section className={styles.contentSection} id="workbench-content" data-workbench-section="content">
 
             {ingestionReviewActive ? sourceReviewPanel : null}
-            {!ingestionReviewActive ? <CoreEditor sourceHref={versions[0] ? `/research-objects/${encodeURIComponent(roId)}/versions?version=${encodeURIComponent(versions[0].versionId)}#version-evidence` : undefined} core={state.core} onEdit={editField} activeField={activeField} onSelectField={setActiveField} /> : null}
+            {!ingestionReviewActive ? <CoreEditor core={state.core} onEdit={editField} activeField={activeField} onSelectField={setActiveField} /> : null}
 
             <details className={styles.disclosure}>
               <summary>{tw('supportingMaterials')}</summary>

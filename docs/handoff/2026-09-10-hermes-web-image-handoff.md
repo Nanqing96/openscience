@@ -6,7 +6,7 @@
 - 本机仅编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/start与实际产品生成/阅读按授权执行。
 
 ## Version and workspace
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；本轮文档提交前HEAD/origin d369ccc2126656fc9de1a4011602d8b154140fb0（代码落点；文档HEAD以Git为准）；应用08ed3b35，浏览器执行器单独热更，后续文档提交不是应用release。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；本轮基线HEAD/origin c847763b，候选修改阅读公式/内部核查显示；应用release以服务器为准，浏览器执行器独立部署。
 - 当前应用release 08ed3b35113a512fbd414524ab8958ec4f87deeb / rollback df94fae0e25b109791f41d71691611bb88d78ebd；xgs-writing-source-confidence-deploy-20260913.log exit0，必要服务器build/start完成，实际页面/__release200同SHA。1e/a8为历史应用版本。
 - 根目录旧dirty main不是生产基线；未合并main。unrelated dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
 - 网页生图base bundle d1630135 / rollback92cc416e；实际image/review runner为501da7a3、page-lifecycle为d369ccc2；image broker为b78fb94d派生bundle，均独立于应用release。video runner0df87c9b、浏览器镜像8aa21251不变；浏览器09-13 07:55:11Z自行重启一次，登录保留，旧target ID失效。
@@ -45,8 +45,8 @@
 ## Second paper and next action
 - 602c6c09接通writingSource.ingestionTaskId：base优先，所选不可用不降级；无选择按artifact分组。真实cee71443选择已观察，多artifact分支尚无真实样本。
 - Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；ingestion cee71443-ae46-4ed1-b4e4-6c5b59e674ef / source agent960ffcc1-75f6-4418-b9a6-8bf413f4e18d / artifact4b94c626-1748-4c5a-934b-2bb94585bd9c。复用15页SourceMap，无新Parser/OCR。
-- eda892b4、c4f3ce06均模型前超180k失败。服务器只读量测：原source JSON353628字符，含confidence连续分组208568/1079组；08ed逐片保留confidence、仅共享kind/parser后143941/70组，2201 id/text、16部分range、53954全文及完整locator保留，180k不变。证据Temp/xgs-quantization-source-budget-confidence-20260913.json，勿重复预估或盲增limit。
-- 首稿e758f33f-1cd1-42f9-b4d1-bb548acf98fb（2374字符/14引用）NOT ACCEPTED：把source IDs按脚注重排、错误基底/亚1nm设定/功率与能流式/极化率算符说法。实际UI来源指导修订链 e758→918b9ca4-6fbc-4493-aae4-a83f8372c40e→b66fc123-cd68-4982-b527-24cdf7c97626→71ed6fae-21c3-49d2-bfff-e394bf307323，均精确base/source；最后仅补S2029/S2030和去裸ID说明，原38引用/其余科学内容不变。最终71独立High科学/引用PASS，无Codex正文替换；不是自动首稿质量通过。
+- eda892b4/c4f3ce06模型前超180k失败保留。08ed仅共享kind/parser、逐片保留confidence，source JSON353628→143941字符；2201片段/53954全文/locator完整，180k上限不变。
+- 来源指导e758→918b9ca4→b66fc123→71ed6fae：修正脚注误绑、基底/亚1nm/功率等科学错误；最终71独立High科学/引用PASS，无Codex正文替换，不代表自动首稿质量通过；完整任务ID与证据见Git c847763b。
 - 最终71《深度亚波长小孔限制光学近场的量子化：Bethe偶极到Weyl角谱》：3643字符/40引用；真实UI正文/quotes逐字等API，57/57 TeX源一致/0排版错误；截图实读可用，Markdown27609字符完整。证据Temp/xgs-quantization-writing-citation-{task,result,reading,math,tail,export,download}-20260913.*及服务器/jobs/hermes-quantization-writing-citation-*。RO实读仍private/draft/version3；sourceStatus仍grounded_with_unresolved_review，外部High结论未冒充产品自动审校状态。
 - 最终私有入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=71ed6fae-21c3-49d2-bfff-e394bf307323 。第一篇92/40e/867/3f68及v10/已批图保留；采用/公开仍待用户质量确认，视频/批量暂停。
 - 2026-09-13用户纠偏：停止把通用引用语义核验/自动审校扩展当交付前置，复用71已通过科学/公式/实读证据，直接推进图解制作、审核与发布预览；Markdown导出是TeX源，平台57式已实渲染，不能承诺所有外部阅读器。实际制作：复用71全文和40条已核对引用，创建制作Claim848479cc-680b-4768-9eaa-5d0b143a4d43；Evidence经API创建/确认，边缘空白裁剪同步调整range，原71不改。旧SDF仍只有错误problem，不能据新图直接发布。
@@ -74,4 +74,4 @@
 - PUT /api/sdf经既有版本锁将六项原样拆分写入私有工作草稿；RO revision3→4、private/draft，六字段字符111/251/364/325/210/175。71原稿和两次未采用稿均保留；已提交媒体version2/58a45与Claim848/40Evidence未改，图片86ffe仍draft，未正式定稿/公开。
 - 真实页面六字段逐字等API、10/10 TeX源保留且0渲染错误、23条引文逐字等API；同一编辑页轮播第3/3张显示86ffe1280×720。默认仍优先旧已批准图eb48809b，未改默认顺序。截图已实际看图，平台渲染不等于外部Markdown阅读器保证。
 - 当前入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=f34d8ee2-5120-4ca1-a22b-a98f3473117a 。/jobs/hermes-quantization-sdf-{before,condense-request,condense-state,final-request,final-state,edited-request,edited-state,stage,reading,reading-complete}-20260913.json；reading-complete初始quoteCount0来自折叠稿卡，sourceReading实际展开23/23。本地tmp/quantization-sdf-*.sh、human-edits.json、edited-review.json及两张reading截图。
-- 下一步：用户确认此版图文质量后，将工作稿与已审图正确绑定到新的待发布快照，再按既有发布流程推进；不能发布仍含旧SDF的version2。当前应用08ed/rollbackdf94及浏览器执行器版本不变，本轮无代码部署/测试/预检/CI。
+- 当前优先修复用户截图：顶部贡献TeX直出、版本页内部核查面板。实际before确认leadMath0、核查链接2、version2核查按钮15；候选四处前端复用ScientificText，去面板/链接/内部说明，不改论文或核查API。待部署后实读；记录/jobs/reading-ui-before-20260913.json。图文快照/公开顺延，不能发旧version2。

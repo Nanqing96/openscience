@@ -72,12 +72,11 @@ function ProseTextarea({ autoFocus = false, field, label, value, placeholder, on
   );
 }
 
-export default function CoreEditor({ core, onEdit, activeField, onSelectField, sourceHref }: {
+export default function CoreEditor({ core, onEdit, activeField, onSelectField }: {
   core: SdfCore;
   onEdit: (field: keyof Omit<SdfCore, 'schemaVersion'>, value: string) => void;
   activeField: keyof Omit<SdfCore, 'schemaVersion'> | null;
   onSelectField: (field: keyof Omit<SdfCore, 'schemaVersion'>) => void;
-  sourceHref?: string;
 }) {
   const t = useTranslations('editor');
   const current = activeField ?? 'problem';
@@ -130,9 +129,6 @@ export default function CoreEditor({ core, onEdit, activeField, onSelectField, s
                 />
               )}
             </HermesAnchor>
-            {sourceHref && (field === 'insight' || field === 'results') ? (
-              <a className={styles.sourceLink} href={sourceHref}>{t('savedVersionSources')}</a>
-            ) : null}
           </section>
         ))}
       </div>
