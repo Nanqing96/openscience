@@ -1,5 +1,5 @@
 # 服务器能力与复用清单
-- 2026-09-13生命周期已部署ef9e6e97：宿主受限清理队列 `/opt/openscience-private-cleanup/{inbox,results,state}` 与systemd timer已安装，复用现有Node和供应商执行锁。Worker只可写队列、只读结果；Parser继续原隔离/权限。独立搜索库按核心存续状态过滤及重试同步。必要服务器build/migrate/start exit0；实际私有图文、旧公开v10、编辑历史、Hermes来源、80项内容管理及空回收站已读。没有删除/发布真实论文，没有新模型生成；真实清除及30天到期尚未观察。首发rollback标记c0bc不兼容，最新状态见CURRENT。
+- 2026-09-13当前应用02d67ddf/兼容rollback ef9e6e97：生命周期在ef9部署，02d完成真实页面发现的标签与弹窗显示修正。宿主受限清理队列 `/opt/openscience-private-cleanup/{inbox,results,state}` 与systemd timer已安装，复用现有Node/供应商锁；Worker只可写队列、只读结果，Parser保持隔离。独立搜索库按核心存续状态过滤/重试同步。必要服务器build/migrate/start exit0，私有图文、旧公开v10、编辑历史、Hermes来源、80项管理和空回收站均实读。无真实删除/新公开/新生成，清除与30天到期未观察；c0bc及以前禁止回退。
 - 2026-09-13历史应用c0bc653d/rollback871ed702：阅读层隐藏Hermes内部来源编号并去媒体制作长文，原文/公式/后台数据保留。必要服务器build/start及独立High复核完成；实际四阅读入口编号0、10式正常，原数据/图片不变。第二篇仍private/内部快照5/revision6；未公开，无测试/CI/迁移/模型调用，浏览器与媒体runner不变。证据和下一步见CURRENT handoff。
 - 2026-09-13历史应用871ed702/rollback80809452：现成admin_reviewed_import复用第二篇图86ffe至私有v5，原字节/hash及原资产完整来源保留；generator前缀误判已修复，同图审批由400恢复200。真实预览/工作台正文、新图、公式已读；无新增服务/依赖/模型调用，无测试/CI/迁移，必要build/start完成。浏览器/provider/media runner不变；来源引用边界和下一步见CURRENT handoff。
 - 2026-09-13阅读修复已部署80809452（rollback08ed3b35）：edit顶部贡献、overview与VersionRecord正文统一ScientificText，CoreEditor/版本页内部核查面板和链接移除；核查API/资料/保存内容保留。实读lead5式、正文/概览10式，0错误，六字段逐字等API、sourceLinks0、auditPanel=false；桌面与375物理像素窄屏截图已看，Chrome125%导致早期element clip裁切，采用完整viewport截图并正常关闭移动Hermes遮层后确认5式完整。RO仍private/draft/revision4，SDF及冻结record与before逐字一致。无测试/CI/模型重跑。
@@ -72,7 +72,7 @@
 
 | 能力 | 已有位置 / 入口 | 状态与复用方式 |
 |---|---|---|
-| 生产应用 | `/opt/openscience`；`openscience-prod-{web,api,agent-worker}-1` | application `f2889c86…` / rollback `7c6b7975…`；真实带图公开成果与剩余范围见CURRENT handoff |
+| 生产应用 | `/opt/openscience`；`openscience-prod-{web,api,agent-worker}-1` | application `02d67ddf…` / compatible rollback `ef9e6e97…`；生命周期/图文实际观察与剩余范围见CURRENT handoff |
 | 主机资源 | ECS 16 CPU、30 GiB RAM、无 NVIDIA GPU | 盘点时约22 GiB可用；CPU解析器必须有界并发。Marker/MinerU等GPU高质量模式不能按GPU吞吐数据推断本机效果 |
 | 完整图形 Chrome | 宿主 `/opt/openscience-tool-cache/playwright/chromium-1234/chrome-linux64/chrome`；ScanSci镜像内 `/opt/scansci-browsers/chromium-1234/chrome-linux64/chrome` | 已静态确认完整二进制。可复用现有镜像与配套资源；不是只存在 headless shell |
 | 无头 Chromium | 宿主 `/root/.cache/ms-playwright/chromium_headless_shell-1234/` 与共享缓存同名目录；ScanSci镜像 `/opt/scansci-browsers/chromium_headless_shell-1234/` | 现成截图/渲染资源；不能用“仅此目录存在”的旧记录推断没有完整浏览器 |
