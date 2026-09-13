@@ -15,6 +15,7 @@ description: "Use when building or modifying any UI page, component, or layout �
 - 发现/首页：使用对应公开版本的已批准图片，完整缩略显示科学图，不裁掉标注。精选必须来自实际编辑选择；“最新公开”不能冒称精选。
 - 操作主要在 Hermes 对话内，正文可直接编辑；保留必要的明确公开授权与撤销，避免同一动作有多套面板。
 - 科研内容的贡献摘要、概览、版本记录等只读入口统一复用 `ScientificText` 渲染公式，不能只核对编辑器正文。内部论断评估、待核查状态与重复来源核查按钮不展示给用户；原文资料可访问，用户通过 Hermes 对话反馈问题，后台核查与来源记录保留。
+- Hermes的`[S数字]`定位编号不进入科研正文及分享摘要；仅隐藏显示层的内部编号，保留公式、普通文献引用和原始来源。图片/视频不输出生成器、任务ID、制作提示词或整段Claim；所有阅读与旧版制作入口统一处理，原文文件仍可访问。
 - 使用项目已安装的 [Apple Design](../apple-design/SKILL.md) 的目的/层级/即时反馈，以及 [Emil Design Engineering](../emil-design-eng/SKILL.md) 的相关动效原则。当前采用冷白、墨色、青绿、统一网格；普通UI响应约120–180ms，不用整页淡出、装饰延迟或大动画掩盖加载。
 
 成熟产品参考：[Apple HIG](https://developer.apple.com/design/human-interface-guidelines)、[Linear Inbox](https://linear.app/docs/inbox)、[Linear My Issues](https://linear.app/docs/my-issues)。借鉴信息层级与任务归类，结合本项目科学阅读目的；不得照搬项目管理软件的密集状态控件。

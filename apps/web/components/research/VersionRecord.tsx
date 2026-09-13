@@ -29,7 +29,7 @@ export function VersionRecord({ researchObjectId, versionId, versionNo }: { rese
     <h2 className="mb-3 text-2xl">{versionT('snapshotVersion', { version: versionNo })}</h2>
     {record.recordState === 'not_recorded' && <p className="text-sm text-os-muted-paper">{t('legacy')}</p>}
     <p><a className="text-os-vermilion-ink underline" href={`${scope}/record`}>{t('api')}</a> · <a className="text-os-vermilion-ink underline" href={`${scope}/record/export`}>{t('export')}</a> · <a className="text-os-vermilion-ink underline" href="/api/research-record/openapi">OpenAPI</a></p><p className="break-all text-sm">{versionId}</p>
-    {fields.map((field) => <section key={field} className="mt-6"><h2 className="text-xl">{fieldT(field)}</h2><ScientificText as="p" className="mt-2 whitespace-pre-wrap">{record.sdf[field] || t('missing')}</ScientificText>
+    {fields.map((field) => <section key={field} className="mt-6"><h2 className="text-xl">{fieldT(field)}</h2><ScientificText hideSourceMarkers as="p" className="mt-2 whitespace-pre-wrap">{record.sdf[field] || t('missing')}</ScientificText>
     </section>)}
     <h2 className="mt-6">{t('materials')}</h2>{record.manifest.map((item) => <p key={item.logicalPath}><a className="text-os-vermilion-ink underline" href={`/api/artifacts/${encodeURIComponent(item.artifactId)}/download`}>{item.logicalPath}</a></p>)}
   </section>;

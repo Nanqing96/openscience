@@ -14,15 +14,14 @@ export function PresentationAssetGallery({ assets, leading = false }: { assets: 
       label,
       url: asset.url,
       description: t('notEvidence'),
-      details: [t('generatedBy', { name: asset.generator.name, version: asset.generator.version }), t('sourceClaimsCount', { count: asset.sourceClaimIds.length })],
     });
     const imageSlides = assets.filter((asset) => asset.kind === 'image' || asset.kind === 'chart').map((asset, index) => toSlide(asset, 'image', index === 0 ? t('coreImageTitle') : t('imageNumber', { number: index + 1 })));
     const videoSlides = assets.filter((asset) => asset.kind === 'video').map((asset, index) => toSlide(asset, 'video', index === 0 ? t('videoTitle') : t('videoNumber', { number: index + 1 })));
     return <section className={`${styles.gallery} ${styles.leadingGallery}`} data-presentation-gallery="true" aria-label={t('title')}>
       <h2 className="sr-only">{t('title')}</h2>
       <div className={styles.leadingMedia} data-has-video={videoSlides.length > 0}>
-        <ResearchMediaDeck title={t('coreImageTitle')} slides={imageSlides} emptyTitle={t('imagePlaceholderTitle')} emptyBody={t('imagePlaceholderBody')} emptyKind="image" openImageLabel={t('viewFullSize')} previousLabel={t('previousSlide')} nextLabel={t('nextSlide')} positionLabel={(current, total) => t('slidePosition', { current, total })} detailsLabel={t('sourceDetails')} eager />
-        <ResearchMediaDeck title={t('videoTitle')} slides={videoSlides} emptyTitle={t('videoPlaceholderTitle')} emptyBody={t('videoPlaceholderBody')} emptyKind="video" openImageLabel={t('viewFullSize')} previousLabel={t('previousSlide')} nextLabel={t('nextSlide')} positionLabel={(current, total) => t('slidePosition', { current, total })} detailsLabel={t('sourceDetails')} />
+        <ResearchMediaDeck title={t('coreImageTitle')} slides={imageSlides} emptyTitle={t('imagePlaceholderTitle')} emptyBody={t('imagePlaceholderBody')} emptyKind="image" openImageLabel={t('viewFullSize')} previousLabel={t('previousSlide')} nextLabel={t('nextSlide')} positionLabel={(current, total) => t('slidePosition', { current, total })} eager />
+        <ResearchMediaDeck title={t('videoTitle')} slides={videoSlides} emptyTitle={t('videoPlaceholderTitle')} emptyBody={t('videoPlaceholderBody')} emptyKind="video" openImageLabel={t('viewFullSize')} previousLabel={t('previousSlide')} nextLabel={t('nextSlide')} positionLabel={(current, total) => t('slidePosition', { current, total })} />
       </div>
     </section>;
   }
@@ -40,7 +39,6 @@ export function PresentationAssetGallery({ assets, leading = false }: { assets: 
         <figcaption>
           <strong>{asset.label}</strong>
           <span data-presentation-label="not-evidence">{t('notEvidence')}</span>
-          <details><summary>{t('sourceClaims')}: {asset.sourceClaimIds.length}</summary><span>{t('generatedBy', { name: asset.generator.name, version: asset.generator.version })}</span></details>
         </figcaption>
       </figure>)}
     </div>

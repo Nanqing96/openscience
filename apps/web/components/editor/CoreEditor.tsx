@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { HermesAnchor } from '@/components/hermes/HermesAnchor';
 import { useOptionalHermesWorkspaceStage } from '@/components/hermes/HermesWorkspaceStage';
-import { hasExplicitMath, ScientificText } from '@/components/content/ScientificText';
+import { hasExplicitMath, ScientificText, withoutInternalSourceMarkers } from '@/components/content/ScientificText';
 import type { HermesAnchorId } from '@/lib/hermes/anchor-registry';
 import type { SdfCore } from '../../lib/api';
 import styles from './editor.module.css';
@@ -100,6 +100,7 @@ export default function CoreEditor({ core, onEdit, activeField, onSelectField }:
             <HermesAnchor id={HERMES_FIELD_ANCHORS[field]}>
               {hasExplicitMath(core[field]) && editingField !== field ? (
                 <ScientificText
+                  hideSourceMarkers
                   aria-label={`${t(field)} · ${t('coreEdit')}`}
                   className={styles.mathSurface}
                   data-reading-role="reading"
@@ -125,7 +126,7 @@ export default function CoreEditor({ core, onEdit, activeField, onSelectField }:
                   onChange={(value) => onEdit(field, value)}
                   onFocus={() => { setEditingField(field); onSelectField(field); }}
                   placeholder={t(`hints.${field}`)}
-                  value={core[field]}
+                  value={withoutInternalSourceMarkers(core[field])}
                 />
               )}
             </HermesAnchor>

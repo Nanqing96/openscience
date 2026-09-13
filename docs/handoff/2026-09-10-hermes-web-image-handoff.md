@@ -1,6 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 用户要求复用成熟能力、实际核对科学质量；第二篇私有v5/revision6图文候选已就绪，待用户图文质量确认后发布。通用自动审校扩展、视频/批量暂停。
+- 用户最新要求隐藏正文[S数字]、移除图片制作长文。阅读层修复候选进行中；第二篇私有v5/revision6图文内容保留，待质量确认后发布。通用自动审校扩展、视频/批量暂停。
 - 生产MiniMax-M3；自动生成、引导共编、人工校正分别标记，独立审核不冒称产品自动审核。
 - 本机仅编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/start与实际产品生成/阅读按授权执行。
 ## Version and workspace
@@ -11,9 +11,9 @@
 - TTS a2158409、renderer ff6042f6、模型qwen3-tts-customvoice-0c0e305复用；无新服务/依赖；本轮仅实产第二篇图解，媒体版本不能混作应用release。
 
 ## Protected private and public content
-- 第一篇私有92cafb82-73bc-4937-bb9c-bf1228b23dd3六字段稿：1118字/17引用、user_edited、High原文PASS，UI/来源/下载一致。
+- 保护第一篇92cafb82-73bc-4937-bb9c-bf1228b23dd3：1118字/17引用、user_edited、High及UI/来源PASS。
 - 私有入口：https://openscience.428312321.xyz/research-objects/c896802c-35dd-4b59-8db1-5f374f83a6d8/edit?hermesTask=92cafb82-73bc-4937-bb9c-bf1228b23dd3
-- 原40e23948-4b41-4440-a3a1-49dd9acb8824长稿：2696字/41引用/57式正常，四处人工校正、原文PASS；来源a1c0da49-d2ea-4407-b3e6-b68eadd72ceb保留。
+- 保护40e23948-4b41-4440-a3a1-49dd9acb8824：2696字/41引用/57式正常，人工校正/原文PASS；来源a1c0da49-d2ea-4407-b3e6-b68eadd72ceb。
 - RO c896802c-35dd-4b59-8db1-5f374f83a6d8，草稿revision11；正式v10 f4e2dc71-1fe8-406f-8c19-e1849503d698，公开OSR-2026-000022/v/10不变。
 - PDF7bb96cc1-bb6f-4d3b-b0bf-352f41971faf；已批图b19a65bd-6497-4b61-bb81-0154b264d58c、plan3a6ed136-002a-4301-8505-ca14e3dbbc53保护。
 - 原确认ingestion2fdb78de-b52b-40f6-832f-faa3fdd9f4e2 / agent1e324308-fd26-4cc1-8612-8a1c269909a9保护。所有新自动产物未采用/发布。
@@ -30,7 +30,6 @@
 ## 已复用的科学写作能力与边界
 - 服务端handleScientificWriting→resolveScientificWritingSource从基稿绑定sourceTaskId，核对同用户/RO/workspace/artifact/hash/旧quote，复用完整SourceMap并重映射引用；scientific-writing v3与research-note-formatting已有，未装新依赖/供应商。
 - 普通editorDraft缺全文绑定和来源回写，不再用无来源反复自省；ingestion scope字段是ingestionTaskId，不能放agentTaskId。来源绑定能力通用，但具体指导/独立科学复核仍由本会话承担，不能称Hermes内部自动审校闭环。
-- 已通过稿件不重跑；第一篇科学/排版证据见上节与Git c742f7a2。
 ## Browser recovery
 - 09-12三锁/空闲确认后重启、登录保留；旧压缩override已清理，禁按整页关键词判断活动或循环重启。1e627已修复私有92错显示63e；历史/jobs/hermes-restored-reading-20260913b.json。当前浏览器修复见下节。
 ## Second paper and next action
@@ -70,4 +69,5 @@
 - 阅读证据/jobs/reading-ui-{before,after,visual-state}-20260913.json及full-{desktop,mobile}截图；Chrome125%使element clip截错，最终viewport截图已看。下述新v5取代旧v2成为候选，旧资料保留。
 - 2026-09-13私有候选：先经现成commit创建staging v4/c8e625c4，仅移除新副本2条早期Claim/30Evidence，再commit生成v5/4266e4ed-9a89-45d8-8c0e-c6393bbc503d；RO revision6，冻结正文等审校SDF、1条完整71正文Claim18bbfa21-4099-49be-9f55-21e0fda960ef/40Evidence。旧v2/原Claim/原图完全保留，staging冻结记录亦保留整理前副本。
 - 现成admin_reviewed_import复用86ffe原字节652786B至v5图56e58572-705b-4182-b064-a9df30f1060f，hash4ee0df4c不变，现approved；原generator/version保留、importRun指回旧v2/86ffe，完整prompt/provider来源仍在旧资产。人工审阅复用，不是重生成或完整provenance复制。首次审批400因generator前缀误判导入图为本版分镜图，871ed702已修复；显式subtype仍严格校验，ResearchPublication去内部label。
-- 新版实读：发布预览明确v5，六项逐字等已审SDF、10式/0错误、唯一新图1280×720且图注“核心概念图”；旧v2冻结record未变。工作台默认新图、Hermes输入可用；桌面及368CSS像素窄屏无横溢出。Chrome125%使fullPage截图横裁切，最终viewport截图已看（mobile正常关闭Hermes、等待lazy图片加载）。收据/jobs/quantization-version-{before,create,finalize,image-import,image-approval,image-approval-repaired,preview,visual}-20260913.json；本地tmp/quantization-version-*.sh/png。当前入口仍上方edit?hermesTask=f34，/publish为v5预览；未设置许可/触发发布审查/状态转移/公开，下一步用户质量确认后发布此v5。
+- v5实读：六项等已审SDF、10式/0错误、唯一图1280×720、默认新图/Hermes可输入；旧v2冻结record未变。Chrome125%仅以viewport截图取证，移动正常关闭Hermes并等待lazy图片加载。收据/jobs/quantization-version-*-20260913.json与本地tmp同名前缀；当前入口上方edit?hermesTask=f34，/publish为v5预览。未设置许可/发布审查/状态转移/公开。
+- 09-13最新截图修复候选：ScientificText显式hideSourceMarkers仅隐藏文本段[S\d{1,4}]，TeX和原文引文默认渲染不变；CoreEditor显示过滤值，focus/blur不写core，真实编辑沿用onChange。所有SDF阅读入口和公开metadata接入；嵌入/旧版/公开媒体去制作长文，后台来源/任务/图片不改。实际before /jobs/reader-clean-before-20260913.json（revision6/1Claim/40Evidence）。下一步部署并实读零内部编号/详情、数学源与数据不变，然后用户确认图文质量。

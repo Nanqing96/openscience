@@ -1,6 +1,6 @@
 # OpenScience (XGS) 项目文件索引
 
-> **CURRENT 2026-09-13:** branch codex/onchip-video-release；应用871ed702 / rollback80809452。第二篇私有v5/4266e4ed、revision6、已审SDF/1Claim/40Evidence与approved图56e58572已对齐；实际图文预览/工作台10式正常、图片完整、默认新图。待用户图文质量确认，尚未公开。旧v2保留但不得发布。唯一CURRENT handoff见下。
+> **CURRENT 2026-09-13:** branch codex/onchip-video-release；应用871ed702 / rollback80809452。当前候选隐藏阅读层[S数字]、移除所有媒体制作长文及分享摘要编号，待部署实读。第二篇私有v5/4266e4ed、revision6、已审内容/approved图56e58572保留，尚未公开。唯一CURRENT handoff见下。
 > 最新质量推进：867方法笔记与3f68d30b结果/边界笔记均经服务器来源绑定修订及独立High科学/引用PASS，后者1745字符/19引用、实际Markdown20620字符完整。0685已修复Markdown改变TeX间距，实读26/26公式源逐字相等、6处间距保留，正文/引用/导出不变。通用来源机制已固化，具体指导与独立科学复核仍由本会话承担；六字段全自动仍失败，跨论文质量尚未确认，未采用/发布。
 > 唯一入口：docs/handoff/2026-09-10-hermes-web-image-handoff.md。当前自动agent d5c6f699真实字段审校仍失败；4bedbb4b具体方法回读核心科学PASS，但多问与局部共编仍丢条件。a8修复笔记漏路由/科学共编推理配置，10799ba3实产仍经High原文复核拒绝；停止重试，保留人工审校流程。
 > 私有92cafb82人工原文审校稿1118字符/17引用：1e627修复指定任务被较新失败63e正文覆盖，实际打开/只读编辑/回阅读/展开来源/截图均成功，正文和全部引用逐字等保存API与此前复核稿，user_edited保留；原40e23948、公开v10与已批图保留，尚未采用新稿/发布，视频/批量暂停。
@@ -609,5 +609,6 @@
 
 | apps/web/app/research-objects/[id]/edit/page.tsx / overview/page.tsx / apps/web/components/editor/CoreEditor.tsx / apps/web/components/research/VersionRecord.tsx | 阅读入口共用安全公式渲染、移除内部核查面板和导航 | DEPLOYED80809452；真实桌面/窄屏及数据未变见CURRENT handoff |
 | packages/domain/src/assets/scene-image.ts / apps/web/components/research/ResearchPublication.tsx | 区分已审导入与本版分镜生图，发布预览使用用户可读图注 | DEPLOYED871ed702；同图审批200和实际图文预览见CURRENT handoff |
+| apps/web/components/content/ScientificText.tsx / editor/CoreEditor.tsx / presentation/{ResearchMediaDeck,PresentationWorkbench,PresentationResultGallery}.tsx / public/{PublicVersionPage,PresentationAssetGallery}.tsx / research/{VersionRecord,ResearchPublication}.tsx；apps/web/app/research* 阅读路由 | 隐藏Hermes内部来源编号与媒体制作详情，保留原文和公式 | CANDIDATE；截图修复见CURRENT handoff |
 
 | .agents/skills/frontend-design/SKILL.md | 科研阅读入口统一公式渲染、内部核查留后台、Hermes反馈规则 | 2026-09-13用户纠偏已固化；无新增工具或测试门禁 |

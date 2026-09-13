@@ -1147,7 +1147,7 @@ function EditorWorkspace({ params, searchParams }: EditorPageProps) {
         main={
           <div className={styles.document}>
             <section className={styles.leadSection} aria-label={tw('contribution')}>
-              <ScientificText as="p" className={styles.contribution}>{state.core.insight || state.core.results || state.core.problem || tw('contributionPlaceholder')}</ScientificText>
+              <ScientificText hideSourceMarkers as="p" className={styles.contribution}>{state.core.insight || state.core.results || state.core.problem || tw('contributionPlaceholder')}</ScientificText>
               {draftPrompt && (
               <div className={styles.notice}>
                 <span>{t('draftFound')}</span>

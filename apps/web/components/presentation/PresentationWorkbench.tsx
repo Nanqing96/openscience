@@ -57,7 +57,6 @@ export function PresentationWorkbench({
   const [selected, setSelected] = useState<string[]>([]);
   const [statement, setStatement] = useState('');
   const eligibleIds = useMemo(() => new Set(claims.filter((claim) => claim.extractionStatus === 'succeeded').map((claim) => claim.id)), [claims]);
-  const claimsById = useMemo(() => new Map(claims.map((claim) => [claim.id, claim])), [claims]);
   const mediaAssets = useMemo(() => assets.filter((asset) => asset.status !== 'rejected'
     && !asset.storyboard && (asset.kind === 'image' || asset.kind === 'chart' || asset.kind === 'svg' || asset.kind === 'video')), [assets]);
   const storyboardAssets = useMemo(() => assets.filter((asset) => Boolean(asset.storyboard)), [assets]);
@@ -83,7 +82,6 @@ export function PresentationWorkbench({
 
   if (resultsOnly) {
     const toSlide = (asset: PresentationAsset, kind: ResearchMediaSlide['kind'], fallbackLabel: string): ResearchMediaSlide => {
-      const linkedClaims = asset.sourceClaimIds.map((id) => claimsById.get(id)?.statement).filter((value): value is string => Boolean(value));
       const parentStoryboard = asset.sceneImage
         ? assets.find((candidate) => candidate.id === asset.sceneImage?.storyboardAssetId)?.storyboard
         : undefined;
@@ -95,7 +93,6 @@ export function PresentationWorkbench({
         label: recordedLabel || scene?.title?.trim() || scene?.narration?.trim() || fallbackLabel,
         url: presentationAssetContentUrl(researchObjectId, version.versionId, asset.id),
         description: `${t(`assetStatus.${asset.status}`)} · ${t('notEvidence')}`,
-        details: [t('generatedBy', { name: asset.generator }), ...linkedClaims.map((claim) => `“${claim}”`)],
       };
     };
     const imageSlides = mediaAssets.filter((asset) => asset.kind !== 'video' && asset.kind !== 'svg').sort((left, right) => {
@@ -109,8 +106,8 @@ export function PresentationWorkbench({
       <div className="min-w-0 text-os-ink" data-presentation-results="true">
         {loading ? <p className="m-0 pb-4 text-sm text-os-muted-paper" role="status">{t('loadingPreviews')}</p> : null}
         <div className="grid min-w-0 gap-8 md:grid-cols-[minmax(0,3fr)_minmax(220px,2fr)]">
-          <ResearchMediaDeck title={t('coreImageTitle')} slides={imageSlides} emptyTitle={t('imagePlaceholderTitle')} emptyBody={t('imagePlaceholderBody')} emptyKind="image" openImageLabel={t('viewFullSize')} previousLabel={t('previousSlide')} nextLabel={t('nextSlide')} positionLabel={(current, total) => t('slidePosition', { current, total })} detailsLabel={t('sourceDetails')} eager />
-          <ResearchMediaDeck title={t('researchVideoTitle')} slides={videoSlides} emptyTitle={t('videoPlaceholderTitle')} emptyBody={t('videoPlaceholderBody')} emptyKind="video" openImageLabel={t('viewFullSize')} previousLabel={t('previousSlide')} nextLabel={t('nextSlide')} positionLabel={(current, total) => t('slidePosition', { current, total })} detailsLabel={t('sourceDetails')} />
+          <ResearchMediaDeck title={t('coreImageTitle')} slides={imageSlides} emptyTitle={t('imagePlaceholderTitle')} emptyBody={t('imagePlaceholderBody')} emptyKind="image" openImageLabel={t('viewFullSize')} previousLabel={t('previousSlide')} nextLabel={t('nextSlide')} positionLabel={(current, total) => t('slidePosition', { current, total })} eager />
+          <ResearchMediaDeck title={t('researchVideoTitle')} slides={videoSlides} emptyTitle={t('videoPlaceholderTitle')} emptyBody={t('videoPlaceholderBody')} emptyKind="video" openImageLabel={t('viewFullSize')} previousLabel={t('previousSlide')} nextLabel={t('nextSlide')} positionLabel={(current, total) => t('slidePosition', { current, total })} />
         </div>
         {task && task.status !== 'succeeded' ? (
           <div className="mt-5 border-t border-os-rule-paper pt-5" data-presentation-task={task.status}>
@@ -146,7 +143,7 @@ export function PresentationWorkbench({
                 {canWrite && onAskHermes ? <button type="button" className="mt-4 inline-flex min-h-11 items-center rounded-control bg-accent-primary-strong px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-os-vermilion-ink" onClick={() => onAskHermes('image')}>{t('askHermes')}</button> : canWrite && researchObjectId ? <Link className="mt-4 inline-flex min-h-11 items-center rounded-control bg-accent-primary-strong px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-os-vermilion-ink" href={`/research-objects/${encodeURIComponent(researchObjectId)}/hermes`}>{t('askHermes')}</Link> : null}
               </div>
             ) : (
-              <PresentationResultGallery researchObjectId={researchObjectId} versionId={version.versionId} assets={mediaAssets} allAssets={assets} claimsById={claimsById} canWrite={canWrite} working={working} onTransition={onTransition} />
+              <PresentationResultGallery researchObjectId={researchObjectId} versionId={version.versionId} assets={mediaAssets} allAssets={assets} canWrite={canWrite} working={working} onTransition={onTransition} />
             )}
           </section>
             {task && task.status !== 'succeeded' ? (

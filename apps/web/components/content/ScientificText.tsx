@@ -123,22 +123,31 @@ export function hasExplicitMath(value: string) {
   return splitMath(value).some((part) => part.type === 'math' && renderExpression(part.value, part.display) !== null);
 }
 
+const removeSourceMarkers = (value: string) => value.replace(/\[S\d{1,4}\]/gu, '');
+
+/** Hide Hermes source-map IDs in research prose without changing TeX or saved sources. */
+export function withoutInternalSourceMarkers(value: string) {
+  return splitMath(value).map((part) => part.type === 'text' ? removeSourceMarkers(part.value) : part.source).join('');
+}
+
 export function ScientificText<T extends ElementType = 'div'>({
   as,
   className,
   children,
+  hideSourceMarkers = false,
   ...props
 }: {
   as?: T;
   className?: string;
   children: string;
+  hideSourceMarkers?: boolean;
 } & Omit<ComponentPropsWithoutRef<T>, 'as' | 'children' | 'className'>) {
   const Component = as ?? 'div';
   const parts = splitMath(children);
   return (
     <Component className={[styles.text, className].filter(Boolean).join(' ')} {...props}>
       {parts.map((part, index) => {
-        if (part.type === 'text') return part.value;
+        if (part.type === 'text') return hideSourceMarkers ? removeSourceMarkers(part.value) : part.value;
         const html = renderExpression(part.value, part.display);
         if (!html) return part.source;
         return <span className={part.display ? styles.displayMath : styles.inlineMath} dangerouslySetInnerHTML={{ __html: html }} key={index} />;

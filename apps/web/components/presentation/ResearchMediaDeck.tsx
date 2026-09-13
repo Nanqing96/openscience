@@ -10,7 +10,6 @@ export interface ResearchMediaSlide {
   label: string;
   url: string;
   description?: string;
-  details?: string[];
 }
 
 interface ResearchMediaDeckProps {
@@ -21,13 +20,12 @@ interface ResearchMediaDeckProps {
   previousLabel: string;
   nextLabel: string;
   positionLabel(current: number, total: number): string;
-  detailsLabel?: string;
   emptyKind: 'image' | 'video';
   openImageLabel: string;
   eager?: boolean;
 }
 
-export function ResearchMediaDeck({ title, slides, emptyTitle, emptyBody, previousLabel, nextLabel, positionLabel, detailsLabel, emptyKind, openImageLabel, eager = false }: ResearchMediaDeckProps) {
+export function ResearchMediaDeck({ title, slides, emptyTitle, emptyBody, previousLabel, nextLabel, positionLabel, emptyKind, openImageLabel, eager = false }: ResearchMediaDeckProps) {
   const [index, setIndex] = useState(0);
   const headingId = useId();
   const multiple = slides.length > 1;
@@ -65,7 +63,6 @@ export function ResearchMediaDeck({ title, slides, emptyTitle, emptyBody, previo
         <span aria-live="polite">{positionLabel(activeIndex + 1, slides.length)}</span>
         <button type="button" onClick={next} aria-label={nextLabel}>→</button>
       </div> : null}
-      {detailsLabel && active.details?.length ? <details className={styles.details}><summary>{detailsLabel}</summary>{active.details.map((detail, detailIndex) => <p key={`${detailIndex}-${detail}`}>{detail}</p>)}</details> : null}
     </div>}
   </section>;
 }

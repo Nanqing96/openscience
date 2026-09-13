@@ -260,7 +260,7 @@ export function PublicReadingSurface({ research, activeTab = 'overview', onTabCh
           </header>
 
           <section className={`pub-reading-summary ${styles.contribution}`} aria-labelledby="public-summary-heading">
-            <ScientificText as="p" id="public-summary-heading" data-reading-role="body">{version.core.insight || version.core.problem || t('none')}</ScientificText>
+            <ScientificText hideSourceMarkers as="p" id="public-summary-heading" data-reading-role="body">{version.core.insight || version.core.problem || t('none')}</ScientificText>
           </section>
 
           <PresentationAssetGallery assets={directPresentation} leading />
@@ -270,7 +270,7 @@ export function PublicReadingSurface({ research, activeTab = 'overview', onTabCh
             {PUBLIC_SDF_NODES.map(([key, label]) => {
               const value = version.core[key];
               return <section key={key} className={key === 'limitations' ? styles.limitation : undefined} data-sdf-node={key} data-sdf-state={value ? 'confirmed' : 'empty'}>
-                <h3>{t(label)}</h3><ScientificText as="p" data-reading-role="reading">{value || t('none')}</ScientificText>
+                <h3>{t(label)}</h3><ScientificText hideSourceMarkers as="p" data-reading-role="reading">{value || t('none')}</ScientificText>
               </section>;
             })}
           </section>
