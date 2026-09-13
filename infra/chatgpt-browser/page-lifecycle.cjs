@@ -97,7 +97,14 @@ async function beforeAttach(root, provider, currentId) {
         const reason = reclaimReason(jobDir, entry.name, provider, matching[0].url);
         if (!reason) continue;
         await localCdp('/json/close/' + record.target);
-        const remaining = JSON.parse(await localCdp('/json/list'));
+        // Chrome acknowledges close before the target disappears from its inventory.
+        const confirmationDeadline = Date.now() + 1500;
+        let remaining;
+        do {
+          remaining = JSON.parse(await localCdp('/json/list'));
+          if (!Array.isArray(remaining) || !remaining.some(target => target.id === record.target)) break;
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } while (Date.now() < confirmationDeadline);
         if (!Array.isArray(remaining) || remaining.some(target => target.id === record.target)) continue;
         const audit = path.join(jobDir, name.replace(/\.json$/, '.closed.json'));
         if (!fs.existsSync(audit)) once(audit, { ...record, reason, at: new Date().toISOString() });
