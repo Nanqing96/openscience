@@ -1,10 +1,8 @@
 # Hermes / Workbench CURRENT Handoff
-
 ## Goal and constraints
-- 用户要求复用现有及GitHub成熟能力，实际核对科学质量，不以部署或模型success结案。当前复用已审稿推进图解/发布预览，通用自动审校扩展暂缓，视频/批量暂停。
+- 用户要求复用成熟能力，实际核对科学质量；当前第二篇已形成私有v5/revision6，正完成已审图片审批和图文预览。通用自动审校扩展、视频/批量暂停。
 - 生产MiniMax-M3；自动生成、引导共编、人工校正分别标记，独立审核不冒称产品自动审核。
 - 本机仅编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/start与实际产品生成/阅读按授权执行。
-
 ## Version and workspace
 - 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；应用代码HEAD/origin80809452，后续仅文档提交以Git为准。部署用clean detached .worktrees/reading-ui-release-80809452，原dirty spec保留。
 - 当前应用release80809452117fdb9a71382c28de95c3c4ff84392e / rollback08ed3b35113a512fbd414524ab8958ec4f87deeb；tmp/reading-ui-clean-deploy-20260913.log exit0，必要服务器build/start完成，实际/__release同SHA。dirty交付树首发在传输前被拒，隔离clean树重发，无测试/CI。
@@ -76,4 +74,6 @@
 - 当前入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=f34d8ee2-5120-4ca1-a22b-a98f3473117a 。/jobs/hermes-quantization-sdf-{before,condense-request,condense-state,final-request,final-state,edited-request,edited-state,stage,reading,reading-complete}-20260913.json；reading-complete初始quoteCount0来自折叠稿卡，sourceReading实际展开23/23。本地tmp/quantization-sdf-*.sh、human-edits.json、edited-review.json及两张reading截图。
 - 用户截图修复已部署80809452：贡献/概览/版本正文复用ScientificText，去CoreEditor及版本页内部核查面板/链接/说明，保留后台数据/API/资料。独立High静态PASS；实读lead5式、正文/概览10式、0错误、六字段逐字等API、核查控件0，SDF/revision/visibility/frozen record与before相同。
 
-- 证据/jobs/reading-ui-{before,after,visual-state}-20260913.json及full-{desktop,mobile}截图；本地tmp/reading-ui-*.sh/log/png。Chrome125%使element clip截错，最终整页截图已实际看图；移动端正常关闭Hermes遮层后5式完整，桌面编辑入口已恢复。下一步仍先图文质量反馈，再新建正确图文快照；不得发布旧version2，未新生图/公开。
+- 阅读证据/jobs/reading-ui-{before,after,visual-state}-20260913.json及full-{desktop,mobile}截图；Chrome125%使element clip截错，最终viewport截图已看。下述新v5取代旧v2成为候选，旧资料保留。
+- 2026-09-13私有候选：先经现成commit创建staging v4/c8e625c4，仅移除新副本2条早期Claim/30Evidence，再commit生成v5/4266e4ed-9a89-45d8-8c0e-c6393bbc503d；RO revision6，冻结正文等审校SDF、1条完整71正文Claim18bbfa21-4099-49be-9f55-21e0fda960ef/40Evidence。旧v2/原Claim/原图完全保留，staging冻结记录亦保留整理前副本。
+- 现成admin_reviewed_import复用86ffe原字节652786B至v5图56e58572-705b-4182-b064-a9df30f1060f，hash4ee0df4c不变；原generator/version保留，importRun指回旧v2/86ffe，完整prompt/provider来源仍在旧资产。此为人工审阅复用，不是重生成或完整provenance复制。实批400 Saved scene image is invalid：generator前缀误判导入图为本版分镜图；scene-image.ts最小修复待部署，正常显式subtype仍严格校验；ResearchPublication同时去原始内部label。收据/jobs/quantization-version-{before,create,finalize,image-import,image-approval}-20260913.json，脚本本地tmp/quantization-version-*.sh。尚未发布；下一步修复部署后批图并实读完整预览。

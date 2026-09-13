@@ -12,7 +12,10 @@ export function parseSceneImageRequest(value: unknown): SceneImageRequest {
 }
 export function hasSceneImageProvenance(asset: { provenance: unknown; generator?: string }): boolean {
   const p = asset.provenance as Record<string, unknown> | null;
-  return p?.subtype === 'storyboard_scene_image' || asset.generator?.startsWith('OpenScience Hermes scene image / ') === true;
+  // Reviewed imports retain the original generator for attribution, but their
+  // source Claims belong to the import's version rather than a local storyboard.
+  return p?.subtype === 'storyboard_scene_image'
+    || (p?.source !== 'admin_reviewed_import' && asset.generator?.startsWith('OpenScience Hermes scene image / ') === true);
 }
 export function presentationSceneImageView(asset: { kind: string; provenance: unknown }): SceneImageRequest | undefined {
   try {
