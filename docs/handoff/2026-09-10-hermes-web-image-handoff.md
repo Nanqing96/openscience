@@ -2,7 +2,7 @@
 
 ## Goal and constraints
 - 用户要求复用现有及GitHub成熟能力，实际核对科学质量，不以部署或模型success结案。当前复用已审稿推进图解/发布预览，通用自动审校扩展暂缓，视频/批量暂停。
-- 生产使用MiniMax-M3；服务器自动稿、引导共编、人工校正须分别标记。私有92审校稿已通过独立原文复核，仍待用户采用/发布确认。
+- 生产MiniMax-M3；自动生成、引导共编、人工校正分别标记，独立审核不冒称产品自动审核。
 - 本机仅编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/start与实际产品生成/阅读按授权执行。
 
 ## Version and workspace
@@ -43,7 +43,7 @@
 - 历史Chrome资源不足根因未定；2026-09-12三锁/空闲确认后重启一次，登录保留。旧压缩override已清理，禁止按整页关键词判断活动或循环重启；历史诊断见server-capabilities，当前修复见下节。
 - 1e627修复私有92误显示最新63e，已实读1118字符/17引用；历史/jobs/hermes-restored-reading-20260913b.json。旧六字段实读不代表科学通过。
 ## Second paper and next action
-- 602c6c09六文件接通严格context.writingSource.ingestionTaskId，复用现有select；base优先，所选不可用不降级；无选择按artifact分组，多原文（含未完成）先提示。High安全/合同/并发复核通过；真实UI选择cee71443准确传递。多artifact提示分支尚无真实样本观察。
+- 602c6c09接通writingSource.ingestionTaskId：base优先，所选不可用不降级；无选择按artifact分组。真实cee71443选择已观察，多artifact分支尚无真实样本。
 - Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；ingestion cee71443-ae46-4ed1-b4e4-6c5b59e674ef / source agent960ffcc1-75f6-4418-b9a6-8bf413f4e18d / artifact4b94c626-1748-4c5a-934b-2bb94585bd9c。复用15页旧SourceMap，source导出Temp/xgs-quantization-writing-source-20260913.json；无新Parser/OCR。
 - eda892b4、c4f3ce06均模型前超180k失败。服务器只读量测：原source JSON353628字符，含confidence连续分组208568/1079组；08ed逐片保留confidence、仅共享kind/parser后143941/70组，2201 id/text、16部分range、53954全文及完整locator保留，180k不变。证据Temp/xgs-quantization-source-budget-confidence-20260913.json，勿重复预估或盲增limit。
 - 首稿e758f33f-1cd1-42f9-b4d1-bb548acf98fb（2374字符/14引用）NOT ACCEPTED：把source IDs按脚注重排、错误基底/亚1nm设定/功率与能流式/极化率算符说法。实际UI来源指导修订链 e758→918b9ca4-6fbc-4493-aae4-a83f8372c40e→b66fc123-cd68-4982-b527-24cdf7c97626→71ed6fae-21c3-49d2-bfff-e394bf307323，均精确base/source；最后仅补S2029/S2030和去裸ID说明，原38引用/其余科学内容不变。最终71独立High科学/引用PASS，无Codex正文替换；不是自动首稿质量通过。
