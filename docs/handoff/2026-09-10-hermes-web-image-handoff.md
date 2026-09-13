@@ -1,14 +1,14 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 用户最新要求隐藏正文[S数字]、移除图片制作长文。阅读层修复候选进行中；第二篇私有v5/revision6图文内容保留，待质量确认后发布。通用自动审校扩展、视频/批量暂停。
+- 用户最新要求隐藏正文[S数字]、移除图片制作长文，已部署并实读。第二篇私有v5/revision6图文内容保留，待质量确认后发布；通用自动审校扩展、视频/批量暂停。
 - 生产MiniMax-M3；自动生成、引导共编、人工校正分别标记，独立审核不冒称产品自动审核。
 - 本机仅编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/start与实际产品生成/阅读按授权执行。
 ## Version and workspace
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码HEAD/origin871ed702，后续文档HEAD以Git为准。部署clean detached .worktrees/reviewed-media-release-871ed702；原dirty spec保留。
-- 当前应用release871ed7025168fdeb68cca98398590d9d3a1e2c03 / rollback80809452117fdb9a71382c28de95c3c4ff84392e；tmp/reviewed-media-deploy-20260913.log exit0，必要服务器build/start完成，实际/__release同SHA；无测试/CI/迁移/新依赖，独立High两文件PASS。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码HEAD/originc0bc653d，后续文档HEAD以Git为准。部署clean detached .worktrees/reader-clean-release-c0bc653d；原dirty spec保留。
+- 当前应用releasec0bc653d745e0dd84b8598a1e23cd80472559386 / rollback871ed7025168fdeb68cca98398590d9d3a1e2c03；tmp/reader-clean-deploy-20260913.log exit0，必要服务器build/start及实际/__release同SHA，无测试/CI/迁移/依赖。独立High前端静态PASS。
 - 根目录旧dirty main不是生产基线；未合并main。unrelated dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
 - 网页生图base bundle d1630135 / rollback92cc416e；实际image/review runner为501da7a3、page-lifecycle为d369ccc2；image broker为b78fb94d派生bundle，均独立于应用release。video runner0df87c9b、浏览器镜像8aa21251不变；浏览器09-13 07:55:11Z自行重启一次，登录保留，旧target ID失效。
-- TTS a2158409、renderer ff6042f6、模型qwen3-tts-customvoice-0c0e305复用；无新服务/依赖；本轮仅实产第二篇图解，媒体版本不能混作应用release。
+- TTS a2158409、renderer ff6042f6、qwen3-tts-customvoice-0c0e305保留；视频暂停，本轮无媒体任务或新服务。
 
 ## Protected private and public content
 - 保护第一篇92cafb82-73bc-4937-bb9c-bf1228b23dd3：1118字/17引用、user_edited、High及UI/来源PASS。
@@ -70,4 +70,4 @@
 - 2026-09-13私有候选：先经现成commit创建staging v4/c8e625c4，仅移除新副本2条早期Claim/30Evidence，再commit生成v5/4266e4ed-9a89-45d8-8c0e-c6393bbc503d；RO revision6，冻结正文等审校SDF、1条完整71正文Claim18bbfa21-4099-49be-9f55-21e0fda960ef/40Evidence。旧v2/原Claim/原图完全保留，staging冻结记录亦保留整理前副本。
 - 现成admin_reviewed_import复用86ffe原字节652786B至v5图56e58572-705b-4182-b064-a9df30f1060f，hash4ee0df4c不变，现approved；原generator/version保留、importRun指回旧v2/86ffe，完整prompt/provider来源仍在旧资产。人工审阅复用，不是重生成或完整provenance复制。首次审批400因generator前缀误判导入图为本版分镜图，871ed702已修复；显式subtype仍严格校验，ResearchPublication去内部label。
 - v5实读：六项等已审SDF、10式/0错误、唯一图1280×720、默认新图/Hermes可输入；旧v2冻结record未变。Chrome125%仅以viewport截图取证，移动正常关闭Hermes并等待lazy图片加载。收据/jobs/quantization-version-*-20260913.json与本地tmp同名前缀；当前入口上方edit?hermesTask=f34，/publish为v5预览。未设置许可/发布审查/状态转移/公开。
-- 09-13最新截图修复候选：ScientificText显式hideSourceMarkers仅隐藏文本段[S\d{1,4}]，TeX和原文引文默认渲染不变；CoreEditor显示过滤值，focus/blur不写core，真实编辑沿用onChange。所有SDF阅读入口和公开metadata接入；嵌入/旧版/公开媒体去制作长文，后台来源/任务/图片不改。实际before /jobs/reader-clean-before-20260913.json（revision6/1Claim/40Evidence）。下一步部署并实读零内部编号/详情、数学源与数据不变，然后用户确认图文质量。
+- c0bc截图修复：ScientificText显式hideSourceMarkers仅隐藏文本段[S\d{1,4}]，TeX/原文引文默认不变；CoreEditor过滤显示，focus/blur不写core，真实编辑沿用onChange。SDF阅读及公开metadata接入；嵌入/旧版/公开媒体去制作详情。实读edit/overview/VersionRecord/publish编号0、10式/0错误；原数学源、object/record/assets在导航前后全等，v5仍private/revision6。独立图片页无详情且原图链接保留；桌面/368CSS窄屏viewport截图已看，原文PDF入口可访问，Hermes输入可用。证据/jobs/reader-clean-{before,after}-20260913.json、本地tmp/reader-clean-*.sh/log/png；公开页面代码已部署/静态复核，第二篇未公开，不冒称公开实读。下一步用户图文质量确认后发布v5。

@@ -1,12 +1,13 @@
 # 服务器能力与复用清单
-- 2026-09-13当前应用871ed702/rollback80809452：现成admin_reviewed_import复用第二篇图86ffe至私有v5，原字节/hash及原资产完整来源保留；generator前缀误判已修复，同图审批由400恢复200。真实预览/工作台正文、新图、公式已读；无新增服务/依赖/模型调用，无测试/CI/迁移，必要build/start完成。浏览器/provider/media runner不变；来源引用边界和下一步见CURRENT handoff。
+- 2026-09-13当前应用c0bc653d/rollback871ed702：阅读层隐藏Hermes内部来源编号并去媒体制作长文，原文/公式/后台数据保留。必要服务器build/start及独立High复核完成；实际四阅读入口编号0、10式正常，原数据/图片不变。第二篇仍private/v5/revision6；未公开，无测试/CI/迁移/模型调用，浏览器与媒体runner不变。证据和下一步见CURRENT handoff。
+- 2026-09-13历史应用871ed702/rollback80809452：现成admin_reviewed_import复用第二篇图86ffe至私有v5，原字节/hash及原资产完整来源保留；generator前缀误判已修复，同图审批由400恢复200。真实预览/工作台正文、新图、公式已读；无新增服务/依赖/模型调用，无测试/CI/迁移，必要build/start完成。浏览器/provider/media runner不变；来源引用边界和下一步见CURRENT handoff。
 - 2026-09-13阅读修复已部署80809452（rollback08ed3b35）：edit顶部贡献、overview与VersionRecord正文统一ScientificText，CoreEditor/版本页内部核查面板和链接移除；核查API/资料/保存内容保留。实读lead5式、正文/概览10式，0错误，六字段逐字等API、sourceLinks0、auditPanel=false；桌面与375物理像素窄屏截图已看，Chrome125%导致早期element clip裁切，采用完整viewport截图并正常关闭移动Hermes遮层后确认5式完整。RO仍private/draft/revision4，SDF及冻结record与before逐字一致。无测试/CI/模型重跑。
 - 2026-09-13六字段落地：71→服务器60d52/4c45两稿仍有科学/引用问题，停止重生成并明示人工校正；无模型save得到f34d8ee2（1523字符/23引用、user_edited），独立High PASS。经版本锁写入私有SDF revision4，六栏逐字等API、10式/0渲染错误、23引文一致；同工作台轮播3/3显示新图86ffe。原71/旧稿/媒体version2保留，尚未定稿/公开；用户审阅后须新建正确图文发布快照，不发布旧version2。
 - 2026-09-13图解质量推进：同一已审71正文/40引用/Claim848，方案aa05→2a1（未批）→606b99fc（已批）；真实新版图片86ffe202-928e-49fd-8877-7ec0787b69f6于09:05:56Z→09:07:13Z单次自动succeeded100%/draft，retry0、attempt1，无人工恢复或新部署。原图1672×941，产品1280×720完整可见且不横向溢出；独立看图PASS为用户审阅候选，无必要修正，未批准/公开。上轮生图稳定性修复在本次真实任务生效。
 - 2026-09-13生图稳定性：原5260任务单次提交已生成并回收，产品succeeded100%/draft，实读1280×720；b78修复原图下载及旧late marker跳过已完成结果，501部署自有target连接前回收/三锁安装，d369补Chrome异步关闭确认。image/review runner501、helperd369、brokerb78，base bundle d163；应用08ed/rollback df94不变。独立High PASS，无测试/预检/新依赖，具体图片质量/操作证据见CURRENT handoff。
 - 2026-09-13第二篇Quantization复用既有SourceMap；08ed共享kind/parser并逐片保留confidence，使来源JSON353628→143941字符、53954全文/2201片段不丢，180k预算/授权/locator保持。两次模型前budget失败已保留；e758f33f现可生成、来源准确，但科学/引用复核失败（连续脚注误绑等），e758→918→b66→71ed6fae三次来源指导修订后，3643字符/40引用经独立科学/引用PASS；实读正文/quotes等API、57/57 TeX源一致、Markdown27609字符完整，RO仍private/draft/version3。无新Parser/OCR/服务/依赖，不称自动科学质量解决。
 
-当前应用80809452117fdb9a71382c28de95c3c4ff84392e / rollback08ed3b35113a512fbd414524ab8958ec4f87deeb；reading-ui-clean-deploy-20260913.log exit0，必要服务器build/start完成，/__release实读同SHA。浏览器broker b78/runners501/helperd369不变；无测试/CI/本机运行。
+历史应用80809452117fdb9a71382c28de95c3c4ff84392e / rollback08ed3b35113a512fbd414524ab8958ec4f87deeb；reading-ui-clean-deploy-20260913.log exit0，必要服务器build/start完成，/__release实读同SHA。浏览器broker b78/runners501/helperd369不变；无测试/CI/本机运行。
 
 - 2026-09-13第一篇已验证结果：笔记63e→74→3f68d30b两次来源指导的服务器修订，1745字符/19引用，独立科学/引用PASS。实际截图定位Markdown吞掉TeX反斜杠，0685复用现有公式识别保护数学源后已部署；同一稿件26/26公式源逐字相等、6处间距正确，正文/引用等API，Markdown20620字符与部署前完全相同。无新模型供应商/依赖/OCR；代码与服务器日志见CURRENT handoff。通用机制已有，独立科学复核仍由本会话承担，602初次来源选择已实际传递；跨论文自动质量未通过。
 - 2026-09-13后续无新部署：现成writingDraft精确基稿来源修订4bed→797→867ce8b9已实际完成；867方法笔记1605字符/19引用，经独立High原文核对PASS、真实页面正文/引用逐字等API，点击导出Markdown13420字符完整。无人工正文替换/新依赖/OCR/新服务；这是来源引导局部修订成功，六字段自动凝练质量仍未解决，未采用/发布。证据/jobs/hermes-grounded-method-{revision,final}-*。
