@@ -1,4 +1,5 @@
 # 服务器能力与复用清单
+- 2026-09-13用户纠偏：停止通用审校扩展与重复核验，复用71已通过正文/40引用，经现有Claim/Evidence API接入媒体；方案aa05b703批准，服务器生图40d64c3b执行失败、无提交记录，未出图；下一步只处理制作阻塞，不盲重发。无代码部署/测试/OCR，后续实际结果与SDF衔接见CURRENT。
 - 2026-09-13第二篇Quantization复用既有SourceMap；08ed共享kind/parser并逐片保留confidence，使来源JSON353628→143941字符、53954全文/2201片段不丢，180k预算/授权/locator保持。两次模型前budget失败已保留；e758f33f现可生成、来源准确，但科学/引用复核失败（连续脚注误绑等），e758→918→b66→71ed6fae三次来源指导修订后，3643字符/40引用经独立科学/引用PASS；实读正文/quotes等API、57/57 TeX源一致、Markdown27609字符完整，RO仍private/draft/version3。无新Parser/OCR/服务/依赖，不称自动科学质量解决。
 
 当前应用08ed3b35113a512fbd414524ab8958ec4f87deeb / rollback df94fae0e25b109791f41d71691611bb88d78ebd；必要服务器build/start exit0，实际页面/__release200同SHA。网页生图provider d1630135 / rollback92cc416e；无测试/CI/本机运行。

@@ -1,6 +1,6 @@
 # OpenScience (XGS) 项目文件索引
 
-> **CURRENT 2026-09-13:** application 08ed3b35 / rollback df94fae0；必要服务器build/start exit0，真实页面/__release200同SHA。video runner0df87c9b；browser provider d1630135 / rollback92cc416e。branch codex/onchip-video-release，docs-only HEAD不是release，未合并main。
+> **CURRENT 2026-09-13:** 用户最新优先图解制作与发布预览，停止重复审校/测试；71正文/40引用已接入制作，方案aa05b703批准，生图40d64c3b执行失败，优先处理此阻塞； application 08ed3b35 / rollback df94fae0；必要服务器build/start exit0，真实页面/__release200同SHA。video runner0df87c9b；browser provider d1630135 / rollback92cc416e。branch codex/onchip-video-release，docs-only HEAD不是release，未合并main。
 > 最新质量推进：867方法笔记与3f68d30b结果/边界笔记均经服务器来源绑定修订及独立High科学/引用PASS，后者1745字符/19引用、实际Markdown20620字符完整。0685已修复Markdown改变TeX间距，实读26/26公式源逐字相等、6处间距保留，正文/引用/导出不变。通用来源机制已固化，具体指导与独立科学复核仍由本会话承担；六字段全自动仍失败，跨论文质量尚未确认，未采用/发布。
 > 唯一入口：docs/handoff/2026-09-10-hermes-web-image-handoff.md。当前自动agent d5c6f699真实字段审校仍失败；4bedbb4b具体方法回读核心科学PASS，但多问与局部共编仍丢条件。a8修复笔记漏路由/科学共编推理配置，10799ba3实产仍经High原文复核拒绝；停止重试，保留人工审校流程。
 > 私有92cafb82人工原文审校稿1118字符/17引用：1e627修复指定任务被较新失败63e正文覆盖，实际打开/只读编辑/回阅读/展开来源/截图均成功，正文和全部引用逐字等保存API与此前复核稿，user_edited保留；原40e23948、公开v10与已批图保留，尚未采用新稿/发布，视频/批量暂停。

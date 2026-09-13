@@ -31,8 +31,8 @@
 
 ## Focused source reading and bounded editing
 - 复用既有workspace.guide科学写作：服务端自动授权解析SourceMap→完整原文packet→M3写作→原文引用绑定，未安装PaperQA/新服务；借鉴其具体问题→来源证据→回答的工作方式。
-- 首次043f6030-892e-4340-a097-d93bcf98d38a只返回导航：“写一篇不超过700字的中文方法核对笔记”未命中writingIntent的相邻词正则，不能算写作成功。
-- 明确“科研笔记”后4bedbb4b-96a3-486b-ab1f-3b920d11816e成功，题《方法原文核对：散射光子数到频谱的运算链》，source d5c6，1246字符/15引用。独立High确认核心科学链PASS。
+- 写作意图早期导航误判已由a8修复；历史失败与来源指导链详见Git c742f7a2，当前保护867/3f68/71结论。
+- 4bed→797→867为第一篇方法核对的来源指导修订链；最终867核心科学/引用PASS，未采用SDF。
 - 回读正确区分n(z)→n(t,θ)→I(t,θ)→角积分I(t)，以及强度+继承驱动场相位→E_y(t,θ)→角积分E_y(t)→Fourier E(ν)。末尾修正语仍漏远场/正峰同步前提；超过700字目标，不能声称全文要求全部通过。
 - 五问合并的63e2acc5-8ed4-45d6-9005-f41ae1911dce再次失败：正碰与π/2自相矛盾，声称单电子未披露N_SP但其S16原文明给2.5e-8/1.7e16 W/m²，30dB仍未保留up to；“无法直接复现/未公开原始数值”等超出S103支持。原文绑定不等于科学正确，不能采用。
 - 8ff290f5-9b14-4e39-9478-90dda22dc309复用editorDraft只改method，1653字符原文目标来自4bed引用；M3已改Fourier对象但遗漏I(t)支路与明确同步，不满足完整修订。保留为共编建议，不写入SDF。
@@ -67,6 +67,7 @@
 - 首稿e758f33f-1cd1-42f9-b4d1-bb548acf98fb（2374字符/14引用）NOT ACCEPTED：把source IDs按脚注重排、错误基底/亚1nm设定/功率与能流式/极化率算符说法。实际UI来源指导修订链 e758→918b9ca4-6fbc-4493-aae4-a83f8372c40e→b66fc123-cd68-4982-b527-24cdf7c97626→71ed6fae-21c3-49d2-bfff-e394bf307323，均精确base/source；最后仅补S2029/S2030和去裸ID说明，原38引用/其余科学内容不变。最终71独立High科学/引用PASS，无Codex正文替换；不是自动首稿质量通过。
 - 最终71《深度亚波长小孔限制光学近场的量子化：Bethe偶极到Weyl角谱》：3643字符/40引用；真实UI正文/quotes逐字等API，57/57 TeX源一致/0排版错误；截图实读可用，Markdown27609字符完整。证据Temp/xgs-quantization-writing-citation-{task,result,reading,math,tail,export,download}-20260913.*及服务器/jobs/hermes-quantization-writing-citation-*。RO实读仍private/draft/version3；sourceStatus仍grounded_with_unresolved_review，外部High结论未冒充产品自动审校状态。
 - 最终私有入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=71ed6fae-21c3-49d2-bfff-e394bf307323 。第一篇92/40e/867/3f68及v10/已批图保留；采用/公开仍待用户质量确认，视频/批量暂停。
-- 下一步优先把真实暴露的“来源key被脚注重排、quote不支持断言”接入既有写作/审校能力；目前结构校验只能确认ID/quote/locator真实，独立科学核对与具体修订指导仍由本会话承担。第二篇证明通用来源与修订流程可用，不能称跨论文自动科学质量稳定；不回到无来源editorDraft或整稿自省循环。
+- 2026-09-13用户纠偏：停止把通用引用语义核验/自动审校扩展当交付前置，复用71已通过科学/公式/实读证据，直接推进图解制作、审核与发布预览；Markdown导出是TeX源，平台57式已实渲染，不能承诺所有外部阅读器。实际制作：复用71全文和40条已核对引用，创建制作Claim848479cc-680b-4768-9eaa-5d0b143a4d43；Evidence经API创建/确认，边缘空白裁剪同步调整range，原71不改。旧SDF仍只有错误problem，不能据新图直接发布。
+- 新图解：version58a45cb5-758f-4d6f-9e94-533b460e8b06；首方案ca7a812f多余公式/曲线未接受；一次有界修订aa05b703-0497-4f3d-b9d1-48aa1d46a2cc已批准。服务器生图40d64c3b-9156-4d7b-8021-078e503edcfd已失败image generation failed（03:51:09Z）；/jobs/同ID仅request.json，无submitted/conversation/result；不盲重发，下一步只修制作执行器阻塞。证据/jobs/hermes-quantization-postreview-*，同名Temp脚本；CSRF_INVALID后按现有API正常取token续同ID，无重复生成。
 - 长综述ROaa450f1e旧任务因163815字符超过120k理解上限模型前失败，24页完整SourceMap已定位：derived/source-maps/1bdef65fc775a9b89e71ca81fb71988c9cbaa07f71209ea3ecc581406a4222c0.json（4,661,218 bytes）。ref未挂失败任务、无普通retry；后续复用既有解析收敛续跑路线，未实现新恢复能力，勿重解析或只增limit。
 - 继续前读此handoff、需求基线相关章节、server-capabilities；GitHub方法及真实调用对照见Hermes台账。当前版本看Git/服务器，不恢复旧MVP next action。

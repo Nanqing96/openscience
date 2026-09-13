@@ -1,4 +1,5 @@
 # CURRENT Progress Window
+- CURRENT 2026-09-13用户纠偏：复用第二篇71已完成科学/公式证据，停止重复审校和测试，优先图解制作与发布预览；通用语义核验扩展暂缓。应用08ed/rollback df94不变。 71正文和40引用已接入制作Claim848479cc；方案aa05b703经一次修订后批准，服务器生图40d64c3b执行失败、无提交记录，未出图；下一步只处理制作阻塞，不盲重发。旧SDF仍待内容衔接，不直接发布。
 - 2026-09-13第二篇：602已接通现有source select到严格writingSource合同/Worker；真实Quantization选择cee71443准确传递。两次请求模型前超预算，08ed仅压缩重复kind/parser、逐片保留confidence/id/text/range与完整locator，真实来源JSON353628→143941字符，全文53954字符/2201片段完整。必要服务器build/start完成，无测试/预检/CI。
 - 新自动稿e758f33f：2374字符/14引用，source960ffcc1正确，实际UI正文/引用等API、0排版错误；独立High判NOT ACCEPTED：S3–S14全部误用为连续脚注、错误基底/亚1nm设定/功率与能流公式/极化率算符说法。经真实UI来源指导修订e758→918→b66→71ed6fae，最终3643字符/40引用、独立High科学/引用PASS；最后仅补正入射来源和去裸ID说明，未人工替换正文。真实UI正文/quotes等API、57/57 TeX源一致/0错误、截图可读、Markdown27609字符完整；RO仍private/draft/version3。自动首稿仍不可靠，不能把外部High当产品自动审校。
 
