@@ -1,4 +1,5 @@
 # CURRENT Progress Window
+- 2026-09-13 07:01Z排查代理：实际Chrome参数指定7891，network none，仅经Unix桥/Squid/upstream7890出网；原失败窗口与当前日志均TCP_TUNNEL/200、FIRSTUP_PARENT。同路径ChatGPT只读HEAD，TLS验证通过、HTTP200/1007ms。执行器无代理环境变量，连接本容器9233无需出网；未改配置/重发。Temp xgs-quantization-proxy-{config,route,history}-20260913.sh与/jobs/hermes-quantization-proxy-{config,connect}-20260913.json。
 - 2026-09-13 04:27Z生图故障定向诊断：ChatGPT已登录（账户菜单/可用空输入框，无登录提示/挑战），raw页面读取正常；执行器Playwright连接8013ms超时。无重新提交/重启/重登；原始日志泛化，不能完全还原历史失败点。下一步修连接层；证据/jobs/hermes-quantization-image-{login,attach}-diagnosis-20260913.json。
 - CURRENT 2026-09-13用户纠偏：复用第二篇71已完成科学/公式证据，停止重复审校和测试，优先图解制作与发布预览；通用语义核验扩展暂缓。应用08ed/rollback df94不变。 71正文和40引用已接入制作Claim848479cc；方案aa05b703经一次修订后批准，服务器生图40d64c3b执行失败、无提交记录，未出图；下一步只处理制作阻塞，不盲重发。旧SDF仍待内容衔接，不直接发布。
 - 2026-09-13第二篇：602已接通现有source select到严格writingSource合同/Worker；真实Quantization选择cee71443准确传递。两次请求模型前超预算，08ed仅压缩重复kind/parser、逐片保留confidence/id/text/range与完整locator，真实来源JSON353628→143941字符，全文53954字符/2201片段完整。必要服务器build/start完成，无测试/预检/CI。
