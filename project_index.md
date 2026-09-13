@@ -1,10 +1,10 @@
 # OpenScience (XGS) 项目文件索引
 
-> **CURRENT 2026-09-13:** 用户最新优先图解制作与发布预览，停止重复审校/测试；71正文/40引用已接入制作，方案aa05b703批准，生图40d64c3b执行失败，优先处理此阻塞； application 08ed3b35 / rollback df94fae0；必要服务器build/start exit0，真实页面/__release200同SHA。video runner0df87c9b；browser provider d1630135 / rollback92cc416e。branch codex/onchip-video-release，docs-only HEAD不是release，未合并main。
+> **CURRENT 2026-09-13:** 第二篇71/40引用→Claim848479cc→批准方案aa05b703→真实图5260d693已succeeded100%/draft并在产品可见；图片表达待完善，未批准/公开。生图固化：broker b78fb94d、image/review runner501da7a3、page-lifecycle d369ccc2；branch codex/onchip-video-release，代码HEAD d369ccc2126656fc9de1a4011602d8b154140fb0，后续docs-only不是release。application08ed3b35 / rollbackdf94fae0；base provider d163、video0df不变。未合并main，见唯一CURRENT handoff。
 > 最新质量推进：867方法笔记与3f68d30b结果/边界笔记均经服务器来源绑定修订及独立High科学/引用PASS，后者1745字符/19引用、实际Markdown20620字符完整。0685已修复Markdown改变TeX间距，实读26/26公式源逐字相等、6处间距保留，正文/引用/导出不变。通用来源机制已固化，具体指导与独立科学复核仍由本会话承担；六字段全自动仍失败，跨论文质量尚未确认，未采用/发布。
 > 唯一入口：docs/handoff/2026-09-10-hermes-web-image-handoff.md。当前自动agent d5c6f699真实字段审校仍失败；4bedbb4b具体方法回读核心科学PASS，但多问与局部共编仍丢条件。a8修复笔记漏路由/科学共编推理配置，10799ba3实产仍经High原文复核拒绝；停止重试，保留人工审校流程。
 > 私有92cafb82人工原文审校稿1118字符/17引用：1e627修复指定任务被较新失败63e正文覆盖，实际打开/只读编辑/回阅读/展开来源/截图均成功，正文和全部引用逐字等保存API与此前复核稿，user_edited保留；原40e23948、公开v10与已批图保留，尚未采用新稿/发布，视频/批量暂停。
-> 旧浏览器生成标记来自整页历史文本误判；实际Stop/composer/dirty均0、三锁/空队列/持久化条件下仅重启一次成功。current-ingestion六字段/35引用与API一致、revision11。Playwright握手仍超时，复用既有raw target-CDP完成92回读；Mojo底层原因及长期稳定性仍未知。
+> 浏览器镜像8aa21251、登录/代理有效；07:55:11Z自行重启后旧target ID失效。新执行器在连接前依据instance/target私有记录回收自己完成/未提交失败的旧页；5260实际完成页已回收。未知旧页保留，不循环重启；既有失败/恢复账本不抹除。
 > 复用来源方法与实际调用见hermes-capability-registry“来源与选择”；无第三方安装、测试/预检/CI/本机运行，必要服务器build/start按授权继续。
 
 ## 当前产品交付
@@ -598,11 +598,11 @@
 
 - `infra/scripts/browser-tunnel.ps1`：Windows隐藏SSH隧道断线重连；固定localhost6081，复用ssh-run.sh，2026-09-09本机页面恢复HTTP200。
 
-- `infra/chatgpt-browser/runner.cjs`：服务器私有网页任务执行/续取/精确canonical恢复/Save下载；2026-09-10真实产品任务端到端成功，提交后不重发；Chat接口可用性见AGENTS。
+- `infra/chatgpt-browser/runner.cjs` / `review-runner.cjs` / `page-lifecycle.cjs`：DEPLOYED runners501da7a3/helperd369ccc2；精确任务输入/原图回收/只下载恢复/连接前自有target清理，共享生命周期模块随install.sh安装。实际5260回收与边界见CURRENT handoff。
 
 | `apps/web/components/research/ArtifactViewer.tsx` / `scripts/archive-legacy-showcase.mjs` | 附件预览与可恢复旧演示归档；关联完整旅程计划 | 2026-09-09已部署c2d11326，34条归档；真实流程状态见CURRENT handoff |
 
-| infra/chatgpt-browser/broker.mjs | 服务器网页生图队列broker；Gateway、权限、提交恢复与草稿回传 | DEPLOYED `0c635525`；真实task/asset `eb48809b…` succeeded/draft，精确会话恢复且不重发 |
+| infra/chatgpt-browser/broker.mjs | 服务器网页生图队列、Gateway与原结果回收 | DEPLOYED b78fb94d派生bundle；已有job result可越过旧late marker进入既有normalize，marker不覆写；实际5260已回收 |
 
 | `.agents/skills/apple-design/` / `.agents/skills/emil-design-eng/` / `.agents/skills/design-artifact/` / `.agents/skills/html-prototype/` | 用户授权的项目设计Skills，固定上游提交/原始引用/MIT许可证；由frontend-design按需应用 | 2026-09-11安装；来源见各SOURCE.md，最新实现/部署见CURRENT handoff |
 | `apps/web/components/presentation/ResearchMediaDeck.tsx` / `apps/web/components/presentation/ResearchMediaDeck.module.css` | 工作台/公开页共用单图与多图HTML幻灯片、图片视频占位和真实图注 | 已部署；公开只用发布版本已审资产，多图真实样本尚未完成，见CURRENT handoff |

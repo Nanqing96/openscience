@@ -1,7 +1,7 @@
 # CURRENT Progress Window
-- 2026-09-13 07:01Z排查代理：实际Chrome参数指定7891，network none，仅经Unix桥/Squid/upstream7890出网；原失败窗口与当前日志均TCP_TUNNEL/200、FIRSTUP_PARENT。同路径ChatGPT只读HEAD，TLS验证通过、HTTP200/1007ms。执行器无代理环境变量，连接本容器9233无需出网；未改配置/重发。Temp xgs-quantization-proxy-{config,route,history}-20260913.sh与/jobs/hermes-quantization-proxy-{config,connect}-20260913.json。
-- 2026-09-13 04:27Z生图故障定向诊断：ChatGPT已登录（账户菜单/可用空输入框，无登录提示/挑战），raw页面读取正常；执行器Playwright连接8013ms超时。无重新提交/重启/重登；原始日志泛化，不能完全还原历史失败点。下一步修连接层；证据/jobs/hermes-quantization-image-{login,attach}-diagnosis-20260913.json。
-- CURRENT 2026-09-13用户纠偏：复用第二篇71已完成科学/公式证据，停止重复审校和测试，优先图解制作与发布预览；通用语义核验扩展暂缓。应用08ed/rollback df94不变。 71正文和40引用已接入制作Claim848479cc；方案aa05b703经一次修订后批准，服务器生图40d64c3b执行失败、无提交记录，未出图；下一步只处理制作阻塞，不盲重发。旧SDF仍待内容衔接，不直接发布。
+- 2026-09-13生图稳定性：原5260任务单次提交已生成并回收，产品succeeded100%/draft，实读1280×720；b78修复原图下载及旧late marker跳过已完成结果，501部署自有target连接前回收/三锁安装，d369补Chrome异步关闭确认。image/review runner501、helperd369、brokerb78，base bundle d163；应用08ed/rollback df94不变。独立High PASS，无测试/预检/新依赖，具体图片质量/操作证据见CURRENT handoff。
+- 原5260于08:10Z只提交一次，08:29:23Z通过既有completed-result恢复接收入库，无新规划/生成。原PNG987834B/1672×941，规范化1280×720，精确version58a媒体页实读可见。图片仍draft：文字/基本条件正确，角谱两框空白、源标签对应和跨栏关系弱；不冒充图像质量批准。
+- 用户最新要求已发现故障优先固化：新UI输入光标/picture_v2、同源原图下载、late结果回收、连接前自有target清理、安装三锁均已实现。5260实际完成页已按新模块回收；d369异步确认修正已部署但未新建页复演。未知归属旧页不自动清理，任意Chrome底层卡死仍可能安全失败。
 - 2026-09-13第二篇：602已接通现有source select到严格writingSource合同/Worker；真实Quantization选择cee71443准确传递。两次请求模型前超预算，08ed仅压缩重复kind/parser、逐片保留confidence/id/text/range与完整locator，真实来源JSON353628→143941字符，全文53954字符/2201片段完整。必要服务器build/start完成，无测试/预检/CI。
 - 新自动稿e758f33f：2374字符/14引用，source960ffcc1正确，实际UI正文/引用等API、0排版错误；独立High判NOT ACCEPTED：S3–S14全部误用为连续脚注、错误基底/亚1nm设定/功率与能流公式/极化率算符说法。经真实UI来源指导修订e758→918→b66→71ed6fae，最终3643字符/40引用、独立High科学/引用PASS；最后仅补正入射来源和去裸ID说明，未人工替换正文。真实UI正文/quotes等API、57/57 TeX源一致/0错误、截图可读、Markdown27609字符完整；RO仍private/draft/version3。自动首稿仍不可靠，不能把外部High当产品自动审校。
 
