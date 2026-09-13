@@ -25,8 +25,8 @@
 - ingestion840e24f9-cf9b-471f-a38c-7331705b1003，当前agent d5c6f699-c055-4bb8-a737-8f30932bf585。1bf reviewOnly显式审校当前4b46，SourceMap/旧bridge复用，保留scientific-summary v6与review critical-thinking v2 lineage。
 - 1bf复用既有scientificReviewPrompt/Guard执行真实逐字段审校；不再以重新成稿+issues[]冒充review。保留原事务授权/CAS、引用边界、原schema retry；High静态复核通过。
 - 实产d5c6仍失败：接受已知错误method/limitations，反而以缺其它算例为由把正确代表结果扩成三案，混淆Gaussian比较、遗漏产额条件，repro正文夹P编号。needsMoreEvidence为空不等于科学正确。
-- 历史4b46/v6的单电子19as/1.9PHz代表结果正确，但method直接变换I(t)、repro把Fig3互证混向单电子、limitations泛化；479证据导航已实现但未解决质量。
-- d5c6结果API只记录final usage14239in/13867out，尚未据完整Worker日志确认调用次数，不得报单call。4b46此前实际两次final，首个JSON拒绝后原一次重试。
+- 历史4b46/v6仍有I→E变换、互证对象和泛化错误，未采用；不因证据导航可用放行。
+- d5c6仅有final usage，调用次数未明；4b46曾两次final，不报单call。
 - 证据：xgs-claim-review-result-20260913.json；服务器/jobs/hermes-claim-review-{refresh,result,ui}-20260913.json。不得再次盲跑整稿review或summary prompt补丁。
 
 ## Focused source reading and bounded editing
@@ -38,10 +38,10 @@
 ## 已复用的科学写作能力与边界
 - 服务端handleScientificWriting→resolveScientificWritingSource从基稿绑定sourceTaskId，核对同用户/RO/workspace/artifact/hash/旧quote，复用完整SourceMap并重映射引用；scientific-writing v3与research-note-formatting已有，未装新依赖/供应商。
 - 普通editorDraft缺全文绑定和来源回写，不再用无来源反复自省；ingestion scope字段是ingestionTaskId，不能放agentTaskId。来源绑定能力通用，但具体指导/独立科学复核仍由本会话承担，不能称Hermes内部自动审校闭环。
-- 第一篇867/3f68最终科学和引用PASS、实际正文/导出一致；0685显示层修复后3f68的26式原文一致、6处TeX间距正确。详见上节、Git c742f7a2与/jobs/hermes-grounded-{method,case}-*，不要重跑已通过流程。
+- 已通过稿件不重跑；第一篇科学/排版证据见上节与Git c742f7a2。
 ## Browser recovery
-- Chrome曾报ERR_INSUFFICIENT_RESOURCES；Mojo压缩解码data-pipe 14/324创建失败，根因未定。空编码override已清理。依据Stop/停止控件确认14页空闲、三锁/空队列及profile/jobs持久化后，仅在2026-09-12T18:55:50Z重启一次，登录保留；不复用旧整页关键词generatingPages判定，不再循环重启。历史诊断见server-capabilities及/jobs/hermes-browser-*-20260913b.json。
-- current-ingestion六字段/35来源实读等API、revision11，但科学质量失败；1e627已修复私有92被最新63e覆盖，92正文1118字符/17引用等保存API。历史证据/jobs/hermes-restored-reading-20260913b.json；不重开已验证流程，当前浏览器见下节。
+- 历史Chrome资源不足根因未定；2026-09-12三锁/空闲确认后重启一次，登录保留。旧压缩override已清理，禁止按整页关键词判断活动或循环重启；历史诊断见server-capabilities，当前修复见下节。
+- 1e627修复私有92误显示最新63e，已实读1118字符/17引用；历史/jobs/hermes-restored-reading-20260913b.json。旧六字段实读不代表科学通过。
 ## Second paper and next action
 - 602c6c09六文件接通严格context.writingSource.ingestionTaskId，复用现有select；base优先，所选不可用不降级；无选择按artifact分组，多原文（含未完成）先提示。High安全/合同/并发复核通过；真实UI选择cee71443准确传递。多artifact提示分支尚无真实样本观察。
 - Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；ingestion cee71443-ae46-4ed1-b4e4-6c5b59e674ef / source agent960ffcc1-75f6-4418-b9a6-8bf413f4e18d / artifact4b94c626-1748-4c5a-934b-2bb94585bd9c。复用15页旧SourceMap，source导出Temp/xgs-quantization-writing-source-20260913.json；无新Parser/OCR。
@@ -58,13 +58,20 @@
 - 输入修复ac113：正常键盘选全/清空/输入→Control+End→激活picture_v2工具，严格正文及模式检查保留。64b/91b中间尝试保留；40d64/1049/9c2均提交前失败，不重放。9c2错误PROMPT_CHANGED。
 - 真实任务5260d693-4140-4875-9340-44d7d4fa9e26于08:10Z只提交一次，会话已生成图；旧Save弹窗不出现导致image_result TimeoutError。b78fb94d仅允许从原会话唯一主图DOM的实际同源/estuary/content取PNG，禁止redirect、限30MiB、沿既有隔离解码/规范化。download支持原deadline+1h内仅取已有结果，不改请求或提交/恢复账本；broker允许已保存结果越过旧late marker回收，且不覆盖marker。
 - 08:29:23Z同task/asset已succeeded100%、draft；原图987834B/1672×941，经既有normalize得到1280×720；既有API retryCount1/executionAttempt2仅resumeFromCompletedResult，无新prompt规划/生图。原uncertain/错误/late记录保留；图片40d/1049/9c2无新发送。证据/jobs/hermes-quantization-image-{after-selection-fix,product-recovery,product-result,gallery-reading}-20260913.json及5260任务目录。
-- 实际图集入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/presentation?version=58a45cb5-758f-4d6f-9e94-533b460e8b06&task=5260d693-4140-4875-9340-44d7d4fa9e26 。已读实际DOM图像完整加载1280×720；图集标题仍显示内部presentation_not_evidence标签，后续产品打磨时修正；使用此精确version的独立媒体页，edit嵌入面固定取自己的版本，不用旧stage链接代替。当前产品页URL见gallery-reading记录，旧product-restored的URL已过时。
-- 旧5260保留draft：角谱空框、源对应和跨栏关系弱；已由下节真实新版86ffe改善，旧图不批准/不删除。下一步衔接已审稿与SDF，采用/公开仍待用户确认。
+- 旧5260已实读1280×720，但不作质量候选；精确新版媒体入口见下。独立媒体页图集仍显示内部label；编辑页嵌入媒体默认优先旧已批准图，可用轮播切换，未修改该顺序。
+- 旧5260保留draft；空框与连接弱已由新版86ffe改善，旧图不批准/不删除。六字段工作稿最新状态见末节。
 - 501da7a3已08:47Z部署：image/science共用page-lifecycle，创建时记录browser instance+target+job；连接前仅回收同provider其他已完成或明确未提交失败/过期的自有页，未提交准备稿未过期、已提交无结果、未知旧页均保留。close有界，旧window.name清理策略已移除；安装依赖先行并持image→science→shared三锁。独立High PASS。
-- 已按实际window.name/空composer核对并记录5260旧operator页归属，通用模块成功关闭，后续/json/list证实target不存在。首次立即确认遇到Chrome异步关闭，d369ccc2已08:52Z部署短时确认轮询（不重复close）；首次未写closed审计的事实保留在/jobs/hermes-completed-image-page-cleanup-20260913.json。没有新建模型任务/测试页复演；不能称任意未知Chrome卡死均可自愈。
-- 部署文件与回滚：/opt/openscience-chatgpt-browser/patches/<完整commit>/{before,deployment.json}；b78派生bundle复制既有d163依赖，原bundle不改，恢复before中的service与runner后daemon-reload即可回退；501回退两个runner，d369回退helper。timers恢复active，未动应用08ed/浏览器镜像/账号/代理。稳定脚本在交付树tmp/{image-download-fix-deploy,page-lifecycle-deploy,page-close-confirm-deploy}.sh；Temp曾丢脚本，不再作为唯一恢复入口。无测试/预检/CI/本机运行。
+- 通用模块已按window.name/空composer与完成结果关闭5260自有旧页，后续target消失。首次异步关闭未写closed审计，d369部署短时确认且不重复close；事实保留/jobs/hermes-completed-image-page-cleanup-20260913.json。未新建测试页复演，不称未知Chrome卡死可自愈。
+- 回滚证据/opt/openscience-chatgpt-browser/patches/<commit>/{before,deployment.json}；b78派生bundle复用d163依赖、原bundle不改；before保留service/runner，501回退两个runner、d369回退helper。timers已恢复active。稳定脚本在交付树tmp/{image-download-fix-deploy,page-lifecycle-deploy,page-close-confirm-deploy}.sh，Temp不再作唯一恢复入口；无测试/CI。
 
 ## 2026-09-13 新版图解（用户审阅候选）
 - 2026-09-13图解质量推进：同一已审71正文/40引用/Claim848，方案aa05→2a1（未批）→606b99fc（已批）；真实新版图片86ffe202-928e-49fd-8877-7ec0787b69f6于09:05:56Z→09:07:13Z单次自动succeeded100%/draft，retry0、attempt1，无人工恢复或新部署。原图1672×941，产品1280×720完整可见且不横向溢出；独立看图PASS为用户审阅候选，无必要修正，未批准/公开。上轮生图稳定性修复在本次真实任务生效。
 - 实图已补传播波纹与沿远离屏面方向的倏逝衰减，共用源框连接孔中心，基底/耦合/相干态/角谱链连通。保留a≪λ₀、k⊥与k₀分界和概念示意免责声明；无新数值结果。2a1多余“投影/无量纲”标签已通过606来源绑定修订移除，无Codex手工作图。独立审阅候选PASS不是产品自动科学审校或发布批准。
-- 最新入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/presentation?version=58a45cb5-758f-4d6f-9e94-533b460e8b06&task=86ffe202-928e-49fd-8877-7ec0787b69f6 。服务器/jobs/hermes-quantization-{plan-expression-final-state,expression-image-request,expression-image-state,expression-gallery-reading}-20260913.json；本地交付树tmp/quantization-86ffe-original.png及tmp/quantization-expression-*.sh。当前product页URL读取expression-gallery-reading，不再使用旧5260 URL寻找tab。图集内部label与旧SDF问题未改；无测试/预检/CI/新代码部署。
+- 新图独立入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/presentation?version=58a45cb5-758f-4d6f-9e94-533b460e8b06&task=86ffe202-928e-49fd-8877-7ec0787b69f6 。/jobs/hermes-quantization-{plan-expression-final-state,expression-image-request,expression-image-state,expression-gallery-reading}-20260913.json；本地tmp/quantization-86ffe-original.png。页面会去掉task参数，不以旧receipt URL假定当前tab；最新实际URL见末节。
+
+## 2026-09-13 六字段接入（当前审阅入口）
+- 复用71来源由服务器生成60d52e03（2283字符；α漏负号/碎词引用，未采用）→4c45b381（仍有符号丢失/未落实删除，未采用）。停止重生成，13项明确人工校正后经现成无模型save保存f34d8ee2-5120-4ca1-a22b-a98f3473117a：1523字符/23引用，kind=note、sourceStatus=user_edited、base71/source960不变；独立High科学/来源PASS。不是自动科学审核能力通过。
+- PUT /api/sdf经既有版本锁将六项原样拆分写入私有工作草稿；RO revision3→4、private/draft，六字段字符111/251/364/325/210/175。71原稿和两次未采用稿均保留；已提交媒体version2/58a45与Claim848/40Evidence未改，图片86ffe仍draft，未正式定稿/公开。
+- 真实页面六字段逐字等API、10/10 TeX源保留且0渲染错误、23条引文逐字等API；同一编辑页轮播第3/3张显示86ffe1280×720。默认仍优先旧已批准图eb48809b，未改默认顺序。截图已实际看图，平台渲染不等于外部Markdown阅读器保证。
+- 当前入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=f34d8ee2-5120-4ca1-a22b-a98f3473117a 。/jobs/hermes-quantization-sdf-{before,condense-request,condense-state,final-request,final-state,edited-request,edited-state,stage,reading,reading-complete}-20260913.json；reading-complete初始quoteCount0来自折叠稿卡，sourceReading实际展开23/23。本地tmp/quantization-sdf-*.sh、human-edits.json、edited-review.json及两张reading截图。
+- 下一步：用户确认此版图文质量后，将工作稿与已审图正确绑定到新的待发布快照，再按既有发布流程推进；不能发布仍含旧SDF的version2。当前应用08ed/rollbackdf94及浏览器执行器版本不变，本轮无代码部署/测试/预检/CI。

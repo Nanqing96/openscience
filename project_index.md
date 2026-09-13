@@ -1,6 +1,6 @@
 # OpenScience (XGS) 项目文件索引
 
-> **CURRENT 2026-09-13:** 第二篇已审71/40引用→Claim848→新方案606b99fc→图片86ffe202单次77秒自动生成/回收/入库succeeded100%/draft，独立看图PASS为用户审阅候选，产品1280×720完整可见且无横向溢出；未批准/公开，下一步衔接正文与SDF。上轮broker b78/runners501/helperd369无需改动即完成本次实产。branch codex/onchip-video-release；本轮仅文档/真实产品状态变化，application08ed3b35 / rollbackdf94fae0不变；唯一CURRENT handoff见下。
+> **CURRENT 2026-09-13:** 第二篇六字段f34d8ee2已审私有稿（1523字符/23引用，user_edited）已写入SDF revision4；真实六栏/10式/23引文一致，新图86ffe可在同页轮播3/3查看。服务器首稿与修订仍有错误，人工校正已明示，不称通用自动审核通过。原71及version2媒体保留；用户确认后须新图文快照再发布，不能发旧version2。branch codex/onchip-video-release；本轮仅实际产品状态/文档变化，application08ed3b35 / rollbackdf94fae0不变；唯一CURRENT handoff见下。
 > 最新质量推进：867方法笔记与3f68d30b结果/边界笔记均经服务器来源绑定修订及独立High科学/引用PASS，后者1745字符/19引用、实际Markdown20620字符完整。0685已修复Markdown改变TeX间距，实读26/26公式源逐字相等、6处间距保留，正文/引用/导出不变。通用来源机制已固化，具体指导与独立科学复核仍由本会话承担；六字段全自动仍失败，跨论文质量尚未确认，未采用/发布。
 > 唯一入口：docs/handoff/2026-09-10-hermes-web-image-handoff.md。当前自动agent d5c6f699真实字段审校仍失败；4bedbb4b具体方法回读核心科学PASS，但多问与局部共编仍丢条件。a8修复笔记漏路由/科学共编推理配置，10799ba3实产仍经High原文复核拒绝；停止重试，保留人工审校流程。
 > 私有92cafb82人工原文审校稿1118字符/17引用：1e627修复指定任务被较新失败63e正文覆盖，实际打开/只读编辑/回阅读/展开来源/截图均成功，正文和全部引用逐字等保存API与此前复核稿，user_edited保留；原40e23948、公开v10与已批图保留，尚未采用新稿/发布，视频/批量暂停。
