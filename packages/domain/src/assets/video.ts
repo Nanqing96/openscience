@@ -85,7 +85,7 @@ export async function requireVideoGenerationParents(prisma: VideoParentDb, paylo
   const storyboardIdentity = storyboard && JSON.stringify({
     contentHash: storyboard.contentHash, provenance: storyboard.provenance, ids: claimIds,
   });
-  if (!storyboard || storyboard.researchObjectId !== payload.researchObjectId
+  if (!storyboard || storyboard.deletedAt || storyboard.researchObjectId !== payload.researchObjectId
     || storyboard.versionId !== payload.versionId || storyboard.status !== 'approved'
     || !storyboardView || storyboardView.locale !== 'zh'
     || storyboardView.document.scenes.length !== settings.sceneImageAssetIds.length
@@ -112,7 +112,7 @@ export async function requireVideoGenerationParents(prisma: VideoParentDb, paylo
     const ids = asset?.sourceClaims.map((source) => source.claimId).sort() ?? [];
     const scene = asset && presentationSceneImageView(asset);
     const provenance = asset?.provenance as Record<string, unknown> | null;
-    if (!asset || asset.kind !== 'image' || asset.status !== 'approved'
+    if (!asset || asset.deletedAt || asset.kind !== 'image' || asset.status !== 'approved'
       || asset.researchObjectId !== payload.researchObjectId || asset.versionId !== payload.versionId
       || !scene || scene.storyboardAssetId !== storyboard.id || scene.sceneIndex !== sceneIndex
       || provenance?.parentIdentity !== storyboardIdentity || !isDeepStrictEqual(ids, claimIds)) {

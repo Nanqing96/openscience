@@ -16,6 +16,7 @@ export interface ContinueResearchProps {
 
 export function ContinueResearch({ research, tasks = [] }: ContinueResearchProps) {
   const t = useTranslations('dashboard');
+  const trashT = useTranslations('trash');
 
   if (!research) {
     return (
@@ -59,7 +60,7 @@ export function ContinueResearch({ research, tasks = [] }: ContinueResearchProps
       </h2>
       <div data-reading-role="caption" className="mt-4 flex flex-wrap gap-x-5 gap-y-1 font-data text-os-muted-paper">
         <span className="sr-only">{research.publicId}</span>
-        <span>{t('continue.draftRevision', { version: research.versionNo })}</span>
+        <span>{trashT('privateDraft')}</span>
         {research.pendingCount > 0 ? (
           <span className="text-os-vermilion-ink">
             {t('continue.needsAttention', { count: research.pendingCount })}

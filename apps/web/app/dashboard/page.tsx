@@ -1,6 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ResearchContentManager } from '@/components/research/ResearchContentManager';
 import { useLocale, useTranslations } from 'next-intl';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
@@ -24,6 +26,7 @@ import styles from './dashboard.module.css';
 
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
+  const trashT = useTranslations('trash');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const [user, setUser] = useState<CurrentUser | null>(null);
@@ -221,6 +224,8 @@ export default function DashboardPage() {
       mainClassName={styles.main}
       headerActions={(
         <div className={styles.utilities}>
+          <ResearchContentManager />
+          <Link href="/trash" className="inline-flex min-h-11 items-center text-sm text-os-vermilion-ink underline">{trashT('title')}</Link>
           <AccountLink user={user} />
           <LocaleSwitcher locale={locale} />
         </div>
@@ -260,7 +265,7 @@ export default function DashboardPage() {
           />
         </div>
         <div className={styles.library}>
-          <ResearchList researchObjects={researchObjects} />
+          <ResearchList researchObjects={researchObjects} onChanged={() => window.location.reload()} />
         </div>
       </div>
       <HermesAssistantDrawer

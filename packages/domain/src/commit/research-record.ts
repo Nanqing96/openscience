@@ -3,6 +3,7 @@ import { CommitError } from './errors';
 import { recordValue } from './research-record-snapshot';
 import { resolveEvidenceSource } from '../research-intelligence/claim-evidence-service';
 import { getBlobStorageKey } from '@openscience/storage';
+import { publicVersionNumber, readPublicationMetadata } from '../publish/publication-metadata';
 
 export class ResearchRecordSourceError extends Error {
   readonly code = 'SOURCE_UNAVAILABLE';
@@ -16,18 +17,18 @@ export async function getResearchRecord(deps: ArtifactDeps, input: { researchObj
   const member = input.userId ? await deps.prisma.membership.findUnique({ where: { workspaceId_userId: { workspaceId: ro.workspaceId, userId: input.userId } } }) : null;
   const grant = !member && input.userId && ro.visibility === 'invite_only'
     ? await deps.prisma.visibilityGrant.findUnique({ where: { researchObjectId_granteeId: { researchObjectId: ro.id, granteeId: input.userId } } }) : null;
-  const authorized = Boolean(member || grant);
+  const authorized = !ro.deletedAt && Boolean(member || grant);
   let versionId = input.versionId;
   if (versionId === 'latest') {
     const versions = await deps.prisma.version.findMany({ where: { researchObjectId: ro.id }, orderBy: { versionNo: 'desc' } });
     const published = ro.visibility === 'public' ? await deps.prisma.publication.findMany({ where: { version: { researchObjectId: ro.id } } }) : [];
-    versionId = versions.filter(v => ro.visibility === 'public' ? v.status === 'published' && published.some(p => p.versionId === v.id) : authorized)
-      .sort((a,b) => b.versionNo-a.versionNo)[0]?.id ?? '';
+    versionId = versions.filter(v => ro.visibility === 'public' ? ['published', 'revised'].includes(v.status) && published.some(p => p.versionId === v.id) : authorized)
+      .sort((a,b) => ro.visibility === 'public' ? (publicVersionNumber(b) ?? 0)-(publicVersionNumber(a) ?? 0) : b.versionNo-a.versionNo)[0]?.id ?? '';
   }
   if (!versionId) throw notFound();
   const version = await deps.prisma.version.findUnique({ where: { id: versionId }, include: { manifest: { include: { entries: true } } } });
   if (!version || version.researchObjectId !== ro.id) throw notFound();
-  const publication = ro.visibility === 'public' && version.status === 'published'
+  const publication = ro.visibility === 'public' && ['published', 'revised'].includes(version.status)
     ? await deps.prisma.publication.findFirst({ where: { versionId: version.id } }) : null;
   if (!authorized && !publication) throw notFound();
   const frozen = recordValue(version.researchRecord);
@@ -42,7 +43,18 @@ export async function getResearchRecord(deps: ArtifactDeps, input: { researchObj
     collections: { complete: true, pagination: 'none', order: 'claims/evidence:id; manifest:logicalPath; authors:sortOrder; licenses:type,identifier' },
     links: { self: base, export: `${base}/export`, schema: '/api/research-record/schema', openapi: '/api/research-record/openapi' },
   };
-  return { record: dto, sources: recordValue(frozen.sources), publicAccess: Boolean(publication), versionId: version.id };
+  const metadata = readPublicationMetadata(version.researchRecord);
+  const record = publication ? {
+    ...recordValue(dto), versionNo: publicVersionNumber(version), publicationNo: publicVersionNumber(version),
+    citation: { ...recordValue(recordValue(dto).citation), title: metadata.title, ...metadata.citation },
+    identity: { ...recordValue(recordValue(dto).identity),
+      platformAuthors: metadata.authors.map(a => ({ name: a.displayName, affiliation: a.affiliation, isCorresponding: a.isCorresponding })),
+      contributions: metadata.contributions,
+      licenses: Object.entries(metadata.licenses).map(([type, identifier]) => ({ type, identifier })),
+    },
+    metadataCapture: { source: metadata.captureSource, capturedAt: metadata.capturedAt, fieldSources: metadata.fieldSources ?? null },
+  } : dto;
+  return { record, sources: recordValue(frozen.sources), publicAccess: Boolean(publication), versionId: version.id };
 }
 
 export async function getResearchRecordSource(deps: ArtifactDeps, input: { researchObjectId: string; versionId: string; evidenceId: string; userId?: string }) {

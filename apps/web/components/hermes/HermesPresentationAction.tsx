@@ -6,6 +6,7 @@ import { ApiClientError, generatePresentationSceneImage, generatePresentationSto
 import { hasCurrentPresentationSources, newestEligibleStoryboard, presentationSources, selectEligiblePresentationClaims, selectPresentationVersion, SubmissionIntent, type PresentationAction } from '@/lib/hermes/presentation-action';
 import { getHermesDraftStorage, loadHermesPresentationDraft, saveHermesPresentationDraft, type HermesDraftScope } from '@/lib/hermes/draft-state';
 import type { HermesConversationAction } from '@/lib/hermes/conversation-action';
+import { useVersionLabels } from '@/components/research/useVersionLabels';
 
 interface Props { researchObjectId: string; requestedVersionId?: string; intent: { action: PresentationAction; instruction: string; sceneIndex?: number; style?: StoryboardRequest['style'] }; userId?: string; onBack(): void; onSubmitted(url: string): void; submissionRecords?: Map<string, SubmissionIntent>; onBusyChange?(locked: boolean): void; onConfirmationChange?(action: HermesConversationAction | null): void }
 const control = 'min-h-11 w-full rounded border border-os-rule-paper bg-os-paper px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-os-vermilion-ink';
@@ -13,6 +14,7 @@ const control = 'min-h-11 w-full rounded border border-os-rule-paper bg-os-paper
 export function HermesPresentationAction({ researchObjectId: ro, requestedVersionId, intent, userId, onBack, onSubmitted, submissionRecords, onBusyChange, onConfirmationChange }: Props) {
   const t = useTranslations('hermesPresentation'); const locale = useLocale();
   const tc = useTranslations('hermesConversation');
+  const versionLabels = useVersionLabels();
   const [data, setData] = useState<{ title: string; versions: VersionSummary[]; workspace?: WorkspaceApi }>();
   const [versionId, setVersionId] = useState(''); const [action, setAction] = useState<PresentationAction>(intent.action);
   const [instruction, setInstruction] = useState(intent.instruction); const [style, setStyle] = useState<StoryboardRequest['style']>('technical');
@@ -126,7 +128,7 @@ export function HermesPresentationAction({ researchObjectId: ro, requestedVersio
     </details>
   </div>;
   return <section className="min-w-0 rounded-xl bg-os-paper p-4 text-os-ink" data-hermes-presentation-action="true">
-    <p className="m-0 text-sm font-semibold">{data?.title ?? t('loading')}</p><p className="mt-1 text-xs text-os-muted-paper">{version ? t('versionLabel', { number: version.versionNo, status: version.status }) : t('chooseVersion')}</p>
+    <p className="m-0 text-sm font-semibold">{data?.title ?? t('loading')}</p><p className="mt-1 text-xs text-os-muted-paper">{version ? versionLabels.label(version) : t('chooseVersion')}</p>
     <p className="hermes-production-summary">{t(action === 'video.create' ? 'video' : 'image')} · {t(style)}</p>
     {effectiveAction === 'scene.image' && parent?.storyboard && <p className="mt-2 text-sm leading-6">{t('scene')}: {scene + 1}. {parent.storyboard.document.scenes[scene]?.title}</p>}
     <form className="mt-5 space-y-4" onSubmit={submit}><fieldset className="m-0 min-w-0 space-y-4 border-0 p-0" disabled={locked}>

@@ -17,10 +17,14 @@ import {
   claimAgentTask, markTaskProgress, prepareAgentTaskForCrashRecovery, reconcileHermesResearchRuns, recoverUndispatchedAgentTasks,
   AGENT_TASK_QUEUE, HERMES_AUTHORITY_REARM_MARKER, persistDocumentSourceMapReference,
   parseDocumentSourceMapReference, loadDocumentSourceMapReference, type AgentDeps,
+  purgeExpiredTrash,
+  lockTrashReferences,
 } from '@openscience/domain';
 import { createStorageAdapter, getBlob, storageConfigFromEnv, type StorageAdapter } from '@openscience/storage';
 import {
   createSearchPrismaClient,
+  deleteSearchContent,
+  setSearchContentVisibility,
   EmbeddingClient,
   SearchStorage,
   type DenseModelIdentity,
@@ -28,7 +32,10 @@ import {
 import type { OcrAuthorizationContext } from '@openscience/ai-gateway';
 import type { DocumentSourceMap, ExtractionResult as ParserExtractionResult } from '@openscience/domain';
 import { createHash } from 'node:crypto';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { createPrivateJobCopyCleanup } from './trash-job-copies';
 import type { Readable } from 'node:stream';
+
 import { extractHandler, SCIENCE_REVIEW_CONTRACT_VERSION, sourceMapToManuscriptText } from './extractor';
 import { MAX_PARSER_INPUT, type IngestionAdapters } from './ingestion-parser';
 import { reviewAnalyzeHandler } from './reviewer';
@@ -52,6 +59,45 @@ import { createScanSciAdapter } from './retrieval/scansci';
 import { createSourceRetrieveHandler } from './retrieval/handler';
 import { collectExpiredTemporaryDocuments } from './retrieval/garbage-collector';
 import { createPresentationGenerationHandler } from './presentation/handler';
+
+const spoolTaskExecution = new AsyncLocalStorage<{ taskId: string; executionAttempt: number }>();
+type SpoolSubmission = NonNullable<ConstructorParameters<typeof CodexSpoolImageProvider>[0]['withSubmission']>;
+
+/** Fence only local producer writes; provider waiting and model execution never hold this transaction. */
+function createSpoolSubmission(prisma: AgentDeps['prisma'], kind: 'sdf.extract' | 'presentation.generate'): SpoolSubmission {
+  return async (owner, publish) => {
+    const execution = spoolTaskExecution.getStore();
+    if (!execution || execution.taskId !== owner.taskId
+      || (owner.executionAttempt !== undefined && owner.executionAttempt !== execution.executionAttempt)) {
+      throw new Error('[blocked] spool submission lacks its claimed worker execution');
+    }
+    return prisma.$transaction(async tx => {
+      await lockTrashReferences(tx);
+      const task = await tx.agentTask.findUnique({ where: { id: owner.taskId }, include: { session: { include: { researchObject: true } } } });
+      if (!task || task.kind !== kind || task.status !== 'running' || task.executionAttempt !== execution.executionAttempt
+        || task.deletedAt || task.session.deletedAt || task.session.status !== 'active' || !task.session.researchObject || task.session.researchObject.deletedAt) {
+        throw new Error('[blocked] spool owner was deleted or superseded');
+      }
+      if (kind === 'presentation.generate' && await tx.trashEntry.findFirst({ where: { kind: 'asset', resourceId: owner.taskId, state: { in: ['trashed','purge_pending','purged'] } }, select: { id: true } })) {
+        throw new Error('[blocked] generated asset was deleted');
+      }
+      const payload = task.payload as Record<string, unknown>;
+      if (owner.artifactId !== undefined) {
+        const artifact = await tx.artifact.findUnique({ where: { id: owner.artifactId }, select: { deletedAt: true, bytesPurgedAt: true, workspaceId: true } });
+        if (!artifact || artifact.deletedAt || artifact.bytesPurgedAt || payload.artifactId !== owner.artifactId
+          || artifact.workspaceId !== task.session.researchObject?.workspaceId) throw new Error('[blocked] review source was deleted or changed');
+      }
+      const scene = payload.sceneImage as Record<string, unknown> | undefined;
+      const video = payload.video as Record<string, unknown> | undefined;
+      const parents = [scene?.storyboardAssetId, video?.storyboardAssetId,
+        ...(Array.isArray(video?.sceneImageAssetIds) ? video.sceneImageAssetIds : [])].filter((id): id is string => typeof id === 'string');
+      if (parents.length && await tx.presentationAsset.count({ where: { id: { in: parents }, deletedAt: null, researchObjectId: task.session.researchObjectId ?? undefined } }) !== new Set(parents).size) {
+        throw new Error('[blocked] media source was deleted');
+      }
+      return publish();
+    }, { timeout: 30_000 });
+  };
+}
 
 const BGE_M3_REVISION = '5617a9f61b028005a4858fdac845db406aefb181';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -490,7 +536,14 @@ export function createHandlers(
     'workspace.guide': async (deps, task) => workspaceGuideHandler(gateway, deps, task),
     ...(options.searchIndexer === undefined ? {} : {
       'search.index': async (_deps: WorkerDeps, task) =>
-        options.searchIndexer!.index(await authorizeSearchIndexJob(_deps, task)),
+        options.searchIndexer!.index(await authorizeSearchIndexJob(_deps, task), operation => _deps.prisma.$transaction(async tx => {
+          await lockTrashReferences(tx);
+          const live = await tx.agentTask.findUnique({ where: { id: task.id }, include: { session: { include: { researchObject: true } } } });
+          if (!live || live.deletedAt || live.session.deletedAt || live.session.researchObject?.deletedAt || live.status !== 'running' || live.executionAttempt !== task.executionAttempt) throw new Error('[blocked] search source was deleted');
+          const sourceArtifactId = (live.payload as Record<string, unknown>).artifactId;
+          if (typeof sourceArtifactId !== 'string' || !await tx.artifact.findFirst({ where: { id: sourceArtifactId, deletedAt: null } })) throw new Error('[blocked] search artifact was deleted');
+          return operation();
+        }, { timeout: 30_000 })),
     }),
     ...(options.sourceRetrieveHandler === undefined ? {} : {
       'source.retrieve': options.sourceRetrieveHandler,
@@ -581,16 +634,17 @@ export async function createPollOnce(
       if (!task) return true;
       claimed = await claimAgentTask(deps, taskId);
       if (!claimed) return true;
+      const executionClaim = claimed;
       const handler = handlers[task.kind];
       if (!handler) throw new Error('unsupported agent task kind');
-      const result = await handler(deps, {
+      const result = await spoolTaskExecution.run({ taskId: task.id, executionAttempt: executionClaim.executionAttempt }, () => handler(deps, {
         id: task.id,
         payload: (task.payload ?? {}) as Record<string, unknown>,
         interestContext: task.interestContext,
-        executionAttempt: claimed.executionAttempt,
-        retryCount: claimed.retryCount,
-        ...(claimed.result?.hermesRecovery === HERMES_AUTHORITY_REARM_MARKER ? { recoveryContract: HERMES_AUTHORITY_REARM_MARKER } : {}),
-      });
+        executionAttempt: executionClaim.executionAttempt,
+        retryCount: executionClaim.retryCount,
+        ...(executionClaim.result?.hermesRecovery === HERMES_AUTHORITY_REARM_MARKER ? { recoveryContract: HERMES_AUTHORITY_REARM_MARKER } : {}),
+      }));
       handlerCompleted = true;
       await markTaskProgress(deps, {
         taskId,
@@ -662,6 +716,7 @@ async function main(): Promise<void> {
   const prisma = createPrismaClient();
   const redis = createRedisClient();
   const storage = createStorageAdapter(storageConfigFromEnv());
+  const trashSearchClient = process.env.SEARCH_DATABASE_URL ? createSearchPrismaClient({ env: process.env }) : undefined;
   const deps: WorkerDeps = {
     prisma, redis, storage,
     audit: createPrismaAuditSink(prisma),
@@ -670,11 +725,15 @@ async function main(): Promise<void> {
   };
   // Gateway（§24 占位：AI_ENABLED=false 时懒加载；生产 env 注入密钥，§17）
   const externalProcessingPolicy = buildIngestionExternalProcessingPolicy(prisma);
+  const imageSubmission = createSpoolSubmission(prisma, 'presentation.generate');
+  const reviewSubmission = createSpoolSubmission(prisma, 'sdf.extract');
   const gateway = buildGateway(
     process.env,
     globalThis.fetch,
     createPrismaAuditSink(prisma),
     externalProcessingPolicy,
+    undefined,
+    { image: imageSubmission, review: reviewSubmission },
   );
   const parserJobAdapter = createParserStageJobClient(parserJobDir, expectedSidecarParserMetadata, 16 * 60_000);
   const rasterJobAdapter = createParserRasterJobClient(parserJobDir, expectedSidecarParserMetadata);
@@ -692,6 +751,7 @@ async function main(): Promise<void> {
         videoSpool: new HostVideoSpool({
           inboxDir: process.env.HOST_VIDEO_INBOX_DIR.trim(),
           resultsDir: process.env.HOST_VIDEO_RESULTS_DIR.trim(),
+          withSubmission: imageSubmission,
         }),
       } : {}),
   });
@@ -709,6 +769,13 @@ async function main(): Promise<void> {
     void collectExpiredTemporaryDocuments({ prisma, storage }, { workerId: `agent-worker-${process.pid}` })
       .then((result) => {
         if (result.claimed || result.failed) console.log('temporary document cleanup', result);
+      })
+      .then(async () => {
+        const result = await purgeExpiredTrash({ ...deps, storage, deletePrivateJobCopies: createPrivateJobCopyCleanup(prisma, process.env), ...(trashSearchClient ? {
+          deleteSearchContent: scope => deleteSearchContent(trashSearchClient, scope),
+          setSearchContentVisibility: (scope, _visible, tx) => setSearchContentVisibility(trashSearchClient, tx, scope),
+        } : {}) });
+        if (result.purged || result.failed) console.log('private trash cleanup', result);
       })
       .catch((error) => console.error('temporary document cleanup error', error))
       .finally(() => { cleanupRunning = false; });
@@ -735,6 +802,7 @@ export function buildGateway(
   audit?: ConstructorParameters<typeof AiGateway>[0]['audit'],
   externalProcessingPolicy: ExternalProcessingPolicy = async () => false,
   runtimeCapabilityPolicy: ProviderCapabilityPolicy = new MutableProviderKillSwitch(),
+  spoolSubmissions?: { image: SpoolSubmission; review: SpoolSubmission },
 ): AiGateway {
   const primaryModel = env.MINIMAX_MODEL ?? 'MiniMax-M3';
   const fallbackModels = (env.AI_FALLBACK_MODELS ?? '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -762,10 +830,10 @@ export function buildGateway(
   const disabledImageProviders = new Set((env.AI_DISABLED_PROVIDERS ?? '').split(',').map(value => value.trim()).filter(Boolean));
   const imageProviders = env.HERMES_SCENE_IMAGE_PROVIDER === 'chatgpt-web'
     ? (env.AI_ENABLED === 'true' && env.CHATGPT_WEB_IMAGE_ENABLED === 'true' && env.CHATGPT_WEB_IMAGE_INBOX_DIR?.trim() && env.CHATGPT_WEB_IMAGE_RESULTS_DIR?.trim() && !disabledImageProviders.has('chatgpt-web')
-      ? [new ChatGptWebSpoolImageProvider({ inboxDir: env.CHATGPT_WEB_IMAGE_INBOX_DIR.trim(), resultsDir: env.CHATGPT_WEB_IMAGE_RESULTS_DIR.trim() })] : [])
+      ? [new ChatGptWebSpoolImageProvider({ inboxDir: env.CHATGPT_WEB_IMAGE_INBOX_DIR.trim(), resultsDir: env.CHATGPT_WEB_IMAGE_RESULTS_DIR.trim(), withSubmission: spoolSubmissions?.image })] : [])
     : env.HERMES_SCENE_IMAGE_PROVIDER === 'codex'
       ? (env.AI_ENABLED === 'true' && env.CODEX_IMAGE_INBOX_DIR?.trim() && env.CODEX_IMAGE_RESULTS_DIR?.trim() && !disabledImageProviders.has('codex-image')
-        ? [new CodexSpoolImageProvider({ inboxDir: env.CODEX_IMAGE_INBOX_DIR.trim(), resultsDir: env.CODEX_IMAGE_RESULTS_DIR.trim() })] : [])
+        ? [new CodexSpoolImageProvider({ inboxDir: env.CODEX_IMAGE_INBOX_DIR.trim(), resultsDir: env.CODEX_IMAGE_RESULTS_DIR.trim(), withSubmission: spoolSubmissions?.image })] : [])
       : (env.HERMES_SCENE_IMAGE_PROVIDER === undefined || env.HERMES_SCENE_IMAGE_PROVIDER === 'minimax') && env.AI_ENABLED === 'true' && env.MINIMAX_IMAGE_ENABLED === 'true' && imageApiKey
         ? [new MiniMaxImageProvider('minimax-image', { baseUrl: imageOrigin(env), apiKey: imageApiKey, model: 'image-01' }, fetcher)] : [];
   const visionPrimaryKey = env.MINIMAX_API_KEY?.trim();
@@ -785,6 +853,7 @@ export function buildGateway(
     ? new ChatGptWebScienceReviewProvider({
         inboxDir: env.CHATGPT_WEB_REVIEW_INBOX_DIR.trim(),
         resultsDir: env.CHATGPT_WEB_REVIEW_RESULTS_DIR.trim(),
+        withSubmission: spoolSubmissions?.review,
       })
     : undefined;
   const staticallyDisabled = new Set((env.AI_DISABLED_PROVIDERS ?? '').split(',').map((value) => value.trim()).filter(Boolean));

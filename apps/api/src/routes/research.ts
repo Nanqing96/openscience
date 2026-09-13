@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { AuthDeps } from '@openscience/auth';
 import type { StorageAdapter } from '@openscience/storage';
-import { getPublicEvidenceSource, PublicEvidenceSourceError } from '@openscience/domain';
+import { getPublicEvidenceSource, PublicEvidenceSourceError, readPublicationMetadata, publicVersionNumber, publicHistoryMedia } from '@openscience/domain';
 
 /** /research 公开路由依赖：AuthDeps（仅用 prisma）。 */
 export type ResearchRouteDeps = AuthDeps & { storage?: StorageAdapter };
@@ -12,10 +12,6 @@ const roParams = z.object({ publicId: z.string() });
 const versionParams = z.object({ publicId: z.string(), versionNo: z.coerce.number().int().positive() });
 const evidenceSourceParams = versionParams.extend({ evidenceId: z.string().uuid() });
 const presentationAssetParams = versionParams.extend({ assetId: z.string().uuid() });
-function internalPresentationPlan(asset: { generator: string; provenance: unknown }): boolean {
-  const provenance = asset.provenance && typeof asset.provenance === 'object' && !Array.isArray(asset.provenance) ? asset.provenance as Record<string, unknown> : null;
-  return provenance?.subtype === 'sourced_storyboard' || asset.generator === 'OpenScience Hermes storyboard planner';
-}
 const publicLocatorSchema = z.object({
   blockId: z.string().min(1).optional(),
   page: z.number().int().positive().optional(),
@@ -35,6 +31,48 @@ const publicLocatorSchema = z.object({
 function publicLocator(value: unknown): Record<string, unknown> {
   const parsed = publicLocatorSchema.safeParse(value);
   return parsed.success ? parsed.data : {};
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function recordList(value: unknown): Array<Record<string, unknown>> {
+  return Array.isArray(value) ? value.map(record) : [];
+}
+
+/** Public science comes only from the issued record; source coordinates/provenance stay private. */
+function frozenPublicGraph(researchRecord: unknown) {
+  const frozen = record(researchRecord);
+  const dto = record(frozen.dto);
+  const sources = record(frozen.sources);
+  const manifest = recordList(dto.manifest);
+  const strings = (value: unknown) => Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+  const claims = recordList(dto.claims).flatMap(claim => typeof claim.id === 'string' && typeof claim.kind === 'string' && typeof claim.statement === 'string' ? [{
+    id: claim.id, parentClaimId: typeof claim.parentClaimId === 'string' ? claim.parentClaimId : null,
+    kind: claim.kind, statement: claim.statement, conditions: strings(claim.conditions), limitations: strings(claim.limitations),
+    assessment: typeof claim.assessment === 'string' ? claim.assessment : 'missing',
+  }] : []);
+  const evidence = recordList(dto.evidence).flatMap(item => {
+    if (typeof item.id !== 'string' || typeof item.claimId !== 'string' || typeof item.kind !== 'string'
+      || typeof item.title !== 'string' || typeof item.relation !== 'string' || typeof item.contentHash !== 'string') return [];
+    const source = record(sources[item.id]);
+    const artifact = record(item.artifact ?? source.artifact);
+    const entry = manifest.find(candidate => candidate.artifactId === item.artifactId && candidate.blobSha256 === item.contentHash);
+    return [{
+      id: item.id, claimId: item.claimId, kind: item.kind, title: item.title,
+      exactQuote: typeof source.exactQuote === 'string' ? source.exactQuote : typeof item.exactQuote === 'string' ? item.exactQuote : null,
+      relation: item.relation, locator: publicLocator(item.locator),
+      extractionConfidence: typeof item.extractionConfidence === 'number' ? item.extractionConfidence : null,
+      verified: item.extractionStatus === 'succeeded' && item.verified === true,
+      artifact: {
+        logicalPath: typeof artifact.logicalPath === 'string' ? artifact.logicalPath : typeof entry?.logicalPath === 'string' ? entry.logicalPath : '',
+        mediaType: typeof artifact.mediaType === 'string' ? artifact.mediaType : typeof artifact.mimeType === 'string' ? artifact.mimeType : 'application/octet-stream',
+        contentHash: item.contentHash,
+      },
+    }];
+  });
+  return { claims, evidence };
 }
 
 function orderPublicClaims<T extends { id: string; parentClaimId: string | null; kind: string }>(claims: T[]): T[] {
@@ -79,10 +117,9 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     const latestVersion = await deps.prisma.version.findFirst({
       where: {
         researchObjectId: ro.id,
-        status: 'published',
         publications: { some: {} },
       },
-      orderBy: { versionNo: 'desc' },
+      orderBy: { publicationNo: 'desc' },
     });
     if (!latestVersion) {
       return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '未找到' } });
@@ -90,9 +127,9 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     return reply.send({
       research: {
         publicId,
-        title: ro.title,
-        url: `/research/${publicId}/v/${latestVersion.versionNo}`,
-        latestVersion: latestVersion.versionNo,
+        title: readPublicationMetadata(latestVersion.researchRecord).title,
+        url: `/research/${publicId}/v/${publicVersionNumber(latestVersion)}`,
+        latestVersion: publicVersionNumber(latestVersion),
       },
     });
   });
@@ -106,8 +143,7 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     const version = await deps.prisma.version.findFirst({
       where: {
         researchObjectId: ro.id,
-        versionNo,
-        status: 'published',
+        publicationNo: versionNo,
         publications: { some: {} },
       },
       include: {
@@ -120,80 +156,40 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
       return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '版本未找到' } });
     }
     const publication = version.publications[0] ?? null;
-    // P1D-9：§4.3 必显数据聚合
-    const [authors, contributions, licenses, claims, evidence, presentationAssets, history] = await Promise.all([
-      deps.prisma.author.findMany({
-        where: { researchObjectId: ro.id },
-        orderBy: { sortOrder: 'asc' },
-        include: { user: { select: { displayName: true, status: true } } },
-      }),
-      deps.prisma.contribution.findMany({
-        where: { researchObjectId: ro.id },
-        orderBy: { createdAt: 'asc' },
-        include: { user: { select: { displayName: true } } },
-      }),
-      deps.prisma.licenseAssignment.findMany({ where: { researchObjectId: ro.id, versionId: null } }),
-      deps.prisma.claimNode.findMany({
-        where: { researchObjectId: ro.id, versionId: version.id },
-        select: {
-          id: true, parentClaimId: true, kind: true, statement: true,
-          assessment: true, conditions: true, limitations: true,
-        },
-        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-        take: 500,
-      }),
-      deps.prisma.evidenceRecord.findMany({
-        where: { researchObjectId: ro.id, versionId: version.id },
-        select: {
-          id: true, claimId: true, kind: true, title: true, exactQuote: true,
-          relation: true, locator: true, contentHash: true, extractionConfidence: true,
-          extractionStatus: true, verifiedByUserId: true,
-          artifact: { select: { logicalPath: true, mimeType: true } },
-        },
-        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-        take: 200,
-      }),
-      deps.prisma.presentationAsset.findMany({
-        where: { researchObjectId: ro.id, versionId: version.id, status: 'approved' },
-        select: {
-          id: true, kind: true, contentHash: true, label: true,
-          generator: true, generatorVersion: true,
-          provenance: true,
-          sourceClaims: { select: { claimId: true }, orderBy: { claimId: 'asc' } },
-        },
-        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-        take: 50,
-      }),
-      deps.prisma.version.findMany({
+    const metadata = readPublicationMetadata(version.researchRecord);
+    const contentAvailable = version.status === 'published' || version.status === 'revised';
+    const { claims, evidence } = frozenPublicGraph(version.researchRecord);
+    const history = await deps.prisma.version.findMany({
         where: {
           researchObjectId: ro.id,
-          status: 'published',
           publications: { some: {} },
         },
         select: {
-          versionNo: true,
+          publicationNo: true,
+          publicVersionId: true,
+          status: true,
+          researchRecord: true,
           publications: {
             select: { publicVersionId: true, publishedAt: true, contentSha256: true },
             orderBy: { publishedAt: 'desc' },
             take: 1,
           },
         },
-        orderBy: { versionNo: 'desc' },
+        orderBy: { publicationNo: 'desc' },
         take: 100,
-      }),
-    ]);
-    const core = (version.manifest?.coreJson ?? {}) as Record<string, string>;
-    const citation = `${authors.map((a) => a.user.displayName).join(', ')}. ${ro.title}. ${publicId}-v${versionNo}. ${ro.createdAt.getUTCFullYear()}.`;
+      });
+    const core = (contentAvailable ? version.manifest?.coreJson ?? {} : {}) as Record<string, string>;
 
     return reply.send({
       research: {
         publicId,
         recordUrl: `/api/research-objects/${ro.id}/versions/${version.id}/record`,
-        title: ro.title,
+        title: metadata.title ?? 'Research object (title not recorded)',
         url: `/research/${publicId}/v/${versionNo}`,
         visibility: ro.visibility,
         version: {
           versionNo,
+          publicationNo: versionNo,
           publicVersionId: publication?.publicVersionId ?? version.publicVersionId ?? `${publicId}-v${versionNo}`,
           status: version.status,
           publishedAt: publication?.publishedAt ?? null,
@@ -201,15 +197,16 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
           legalDisclaimer: publication?.legalDisclaimer ?? null,
           core,
         },
-        authors: authors.map((a) => ({ displayName: a.user.displayName, identityStatus: a.user.status, isCorresponding: a.isCorresponding, affiliation: a.affiliation, sortOrder: a.sortOrder })),
-        contributions: contributions.map((c) => ({ displayName: c.user.displayName, creditRole: c.creditRole })),
-        licenses: Object.fromEntries(licenses.map((l) => [l.licenseType, l.licenseId])),
+        authors: metadata.authors,
+        contributions: metadata.contributions,
+        licenses: metadata.licenses,
+        metadataCapture: { source: metadata.captureSource, capturedAt: metadata.capturedAt, fieldSources: metadata.fieldSources ?? null },
         aiReview: version.aiReview
           ? { status: version.aiReview.status, hardBlocks: version.aiReview.hardBlocks, warnings: version.aiReview.warnings }
           : null,
-        citation,
-        artifactPaths: (version.manifest?.entries ?? []).map((e) => ({ logicalPath: e.logicalPath, blobSha256: e.blobSha256 })),
-        claims: orderPublicClaims(claims).map((claim) => ({
+        citation: metadata.citation.text ?? '',
+        artifactPaths: (contentAvailable ? version.manifest?.entries ?? [] : []).map((e) => ({ logicalPath: e.logicalPath, blobSha256: e.blobSha256 })),
+        claims: orderPublicClaims(contentAvailable ? claims : []).map((claim) => ({
           id: claim.id,
           parentClaimId: claim.parentClaimId,
           kind: claim.kind,
@@ -218,39 +215,27 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
           limitations: claim.limitations,
           assessment: claim.assessment,
         })),
-        evidence: evidence.map((item) => ({
-          id: item.id,
-          claimId: item.claimId,
-          kind: item.kind,
-          title: item.title,
-          exactQuote: item.exactQuote,
-          relation: item.relation,
-          locator: publicLocator(item.locator),
-          extractionConfidence: item.extractionConfidence,
-          verified: item.extractionStatus === 'succeeded' && item.verifiedByUserId !== null,
-          artifact: {
-            logicalPath: item.artifact.logicalPath,
-            mediaType: item.artifact.mimeType ?? 'application/octet-stream',
-            contentHash: item.contentHash,
-          },
-        })),
-        presentationAssets: presentationAssets.filter((asset) => !internalPresentationPlan(asset)).map((asset) => ({
+        evidence: contentAvailable ? evidence : [],
+        presentationAssets: (contentAvailable ? publicHistoryMedia(version.researchRecord) : []).map((asset) => ({
           id: asset.id,
           kind: asset.kind,
           label: asset.label,
           contentHash: asset.contentHash,
           generator: { name: asset.generator, version: asset.generatorVersion },
-          sourceClaimIds: asset.sourceClaims.map((source) => source.claimId),
+          sourceClaimIds: asset.sourceClaimIds,
           url: `/api/research/${publicId}/v/${versionNo}/presentation-assets/${asset.id}`,
         })),
         history: history.flatMap((item) => {
           const published = item.publications[0];
           return published ? [{
-            versionNo: item.versionNo,
+            versionNo: publicVersionNumber(item),
+            publicationNo: publicVersionNumber(item),
+            status: item.status,
+            title: readPublicationMetadata(item.researchRecord).title,
             publicVersionId: published.publicVersionId,
             publishedAt: published.publishedAt,
             contentSha256: published.contentSha256,
-            url: `/research/${publicId}/v/${item.versionNo}`,
+            url: `/research/${publicId}/v/${publicVersionNumber(item)}`,
           }] : [];
         }),
       },
@@ -270,15 +255,13 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     if (!ro || ro.visibility !== 'public') throw new PublicEvidenceSourceError('NOT_FOUND', 'published asset not found');
     const version = await deps.prisma.version.findFirst({
       where: {
-        researchObjectId: ro.id, versionNo, status: 'published', publications: { some: {} },
+        researchObjectId: ro.id, publicationNo: versionNo, status: { in: ['published', 'revised'] }, publications: { some: {} },
       },
-      select: { id: true },
+      select: { id: true, researchRecord: true },
     });
     if (!version) throw new PublicEvidenceSourceError('NOT_FOUND', 'published asset not found');
-    const asset = await deps.prisma.presentationAsset.findFirst({ where: {
-      id: assetId, researchObjectId: ro.id, versionId: version.id, status: 'approved',
-    } });
-    if (!asset || internalPresentationPlan(asset)) throw new PublicEvidenceSourceError('NOT_FOUND', 'published asset not found');
+    const asset = publicHistoryMedia(version.researchRecord).find(item => item.id === assetId && item.researchObjectId === ro.id && item.versionId === version.id);
+    if (!asset) throw new PublicEvidenceSourceError('NOT_FOUND', 'published asset not found');
 
     return sendPresentationAssetContent(deps.storage, asset, reply, 'public', req.headers);
   });

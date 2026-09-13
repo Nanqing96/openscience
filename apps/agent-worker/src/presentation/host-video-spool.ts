@@ -18,6 +18,7 @@ export interface HostVideoSpoolConfig {
   pollIntervalMs?: number;
   now?: () => number;
   sleep?: (milliseconds: number) => Promise<void>;
+  withSubmission?: <T>(owner: { taskId: string; executionAttempt?: number; artifactId?: string }, publish: () => Promise<T>) => Promise<T>;
 }
 
 export interface HostVideoInput {
@@ -160,22 +161,26 @@ export class HostVideoSpool {
     };
     const stage = join(this.config.inboxDir, `.${id}.${randomUUID()}.tmp`);
     const target = join(this.config.inboxDir, id);
-    await mkdir(stage, { mode: 0o700 });
-    try {
-      await exclusiveWrite(join(stage, 'storyboard.json'), storyboardBytes);
-      for (let index = 0; index < input.sceneImages.length; index += 1) {
-        await exclusiveWrite(join(stage, `scene-${index}.png`), input.sceneImages[index]!);
-      }
-      // The manifest is written last; directory rename publishes the complete request.
-      await exclusiveWrite(join(stage, 'request.json'), Buffer.from(JSON.stringify(request)));
-      try { await rename(stage, target); } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== 'EEXIST' && (error as NodeJS.ErrnoException).code !== 'ENOTEMPTY') throw error;
-        const existing = JSON.parse((await boundedRead(join(target, 'request.json'), MAX_JSON)).toString()) as Record<string, unknown>;
-        if (existing.inputHash !== inputHash || existing.taskId !== input.taskId
-          || existing.executionAttempt !== input.executionAttempt
-          || typeof existing.deadlineAt !== 'number' || existing.deadlineAt <= this.now()) fail('UNCERTAIN');
-      }
-    } finally { await rm(stage, { recursive: true, force: true }).catch(() => undefined); }
+    const submit = async () => {
+      await mkdir(stage, { mode: 0o700 });
+      try {
+        await exclusiveWrite(join(stage, 'storyboard.json'), storyboardBytes);
+        for (let index = 0; index < input.sceneImages.length; index += 1) {
+          await exclusiveWrite(join(stage, `scene-${index}.png`), input.sceneImages[index]!);
+        }
+        // The manifest is written last; directory rename publishes the complete request.
+        await exclusiveWrite(join(stage, 'request.json'), Buffer.from(JSON.stringify(request)));
+        try { await rename(stage, target); } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== 'EEXIST' && (error as NodeJS.ErrnoException).code !== 'ENOTEMPTY') throw error;
+          const existing = JSON.parse((await boundedRead(join(target, 'request.json'), MAX_JSON)).toString()) as Record<string, unknown>;
+          if (existing.inputHash !== inputHash || existing.taskId !== input.taskId
+            || existing.executionAttempt !== input.executionAttempt
+            || typeof existing.deadlineAt !== 'number' || existing.deadlineAt <= this.now()) fail('UNCERTAIN');
+        }
+      } finally { await rm(stage, { recursive: true, force: true }).catch(() => undefined); }
+    };
+    if (this.config.withSubmission) await this.config.withSubmission({ taskId: input.taskId, executionAttempt: input.executionAttempt }, submit);
+    else await submit();
     const resultDir = join(this.config.resultsDir, id);
     while (this.now() < request.deadlineAt) {
       try {

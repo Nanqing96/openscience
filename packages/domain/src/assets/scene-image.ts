@@ -15,7 +15,7 @@ export function hasSceneImageProvenance(asset: { provenance: unknown; generator?
   // Reviewed imports retain the original generator for attribution, but their
   // source Claims belong to the import's version rather than a local storyboard.
   return p?.subtype === 'storyboard_scene_image'
-    || (p?.source !== 'admin_reviewed_import' && asset.generator?.startsWith('OpenScience Hermes scene image / ') === true);
+    || (!['admin_reviewed_import', 'version_history_copy'].includes(String(p?.source)) && asset.generator?.startsWith('OpenScience Hermes scene image / ') === true);
 }
 export function presentationSceneImageView(asset: { kind: string; provenance: unknown }): SceneImageRequest | undefined {
   try {
@@ -32,7 +32,7 @@ export async function requireSceneImageParent(prisma: Pick<Prisma.TransactionCli
   const asset = await prisma.presentationAsset.findUnique({ where: { id: settings.storyboardAssetId }, include: { sourceClaims: { select: { claimId: true } } } });
   const ids = asset?.sourceClaims.map(link => link.claimId).sort() ?? [];
   const view = asset && presentationStoryboardView(asset, ids);
-  if (!asset || asset.researchObjectId !== payload.researchObjectId || asset.versionId !== payload.versionId || asset.status !== 'approved'
+  if (!asset || asset.deletedAt || asset.researchObjectId !== payload.researchObjectId || asset.versionId !== payload.versionId || asset.status !== 'approved'
     || !view || !view.document.scenes[settings.sceneIndex] || JSON.stringify(ids) !== JSON.stringify(payload.sourceClaimIds)) throw new PresentationAssetError('VALIDATION_ERROR', 'Scene image requires an approved storyboard with the exact version and Claims');
   const provenance = asset.provenance as Record<string, unknown>;
   return { view, contentHash: asset.contentHash,

@@ -379,12 +379,12 @@ export async function workspaceGuideHandler(
     deps.prisma.ingestionTask.findMany({
       where: {
         id: { in: requestedTaskIds },
-        batch: { userId, researchObject: { workspace: { members: { some: { userId } } } } },
+        artifact: { deletedAt: null }, OR: [{ agentTaskId: null }, { agentTask: { deletedAt: null } }], batch: { userId, researchObject: { deletedAt: null, workspace: { members: { some: { userId } } } } },
       },
       include: { batch: true },
     }),
     deps.prisma.researchObject.findMany({
-      where: { id: { in: requestedResearchIds }, workspace: { members: { some: { userId } } } },
+      where: { id: { in: requestedResearchIds }, deletedAt: null, workspace: { members: { some: { userId } } } },
       select: { id: true, title: true, status: true, sdfDocument: { select: { coreJson: true } } },
     }),
   ]);

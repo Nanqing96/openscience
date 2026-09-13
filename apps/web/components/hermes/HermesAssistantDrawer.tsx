@@ -99,6 +99,9 @@ export interface HermesAssistantDrawerProps {
   /** Wait until the editor has loaded the draft base before applying a restored result. */
   taskRestoreReady?: boolean;
   docked?: boolean;
+  /** Source choice, recoverable analysis and explicit adoption stay in this conversation. */
+  sourceReview?: React.ReactNode;
+  onSourceCommand?(command: string): Promise<boolean>;
 }
 
 function resultFromTask(task: AgentTaskView): WorkspaceGuideResult | null {
@@ -203,7 +206,7 @@ export function HermesAssistantDrawer(props: HermesAssistantDrawerProps) {
 }
 
 function HermesAssistantDrawerContent({
-  open, onOpenChange, locale, suggestion, dashboardContext, onTaskStateChange, route = 'dashboard', routeResearchObjectId, target = null, onDraftEdit, onUndoDraftEdit, initialGoal, initialTaskId, initialTaskAutoApply = false, onInitialTaskConsumed, taskRestoreReady = true, docked = false, onPrepareVersion,
+  open, onOpenChange, locale, suggestion, dashboardContext, onTaskStateChange, route = 'dashboard', routeResearchObjectId, target = null, onDraftEdit, onUndoDraftEdit, initialGoal, initialTaskId, initialTaskAutoApply = false, onInitialTaskConsumed, taskRestoreReady = true, docked = false, onPrepareVersion, sourceReview, onSourceCommand,
 }: HermesAssistantDrawerProps) {
   const t = useTranslations('dashboard.hermes');
   const [wide, setWide] = useState(false);
@@ -243,6 +246,9 @@ function HermesAssistantDrawerContent({
   const resolvedGuideVersion = resolvedGuide.owner === currentOwner ? resolvedGuide.versionId : '';
   const ownerRef = useRef(currentOwner); ownerRef.current = currentOwner;
   const sessionId = useRef<string | null>(null);
+  const deletedSessions = useRef(new Set<string>());
+  const deletedTasks = useRef(new Set<string>());
+  const suppressAutoRestore = useRef(false);
   const sessionKey = useRef<string | null>(null);
   const taskKey = useRef<string | null>(null);
   const pendingPayload = useRef<WorkspaceGuidePayload | null>(null);
@@ -337,7 +343,32 @@ function HermesAssistantDrawerContent({
     setPresentationIntent(null); setPresentationSuggestion(undefined); setLiteratureIntent(null); setTask(null); setGoal(''); setError(''); setSubmitting(false); setRestoredTask(false); setGuideStored(false); setWritingDraft(null); setWritingDirty(false);
     setPublicationVersion(''); setMediaReviewVersion(''); setLocalMessage(''); setPublicUrl(''); setPreparing(false); offeredAction.current = null; offeredDraft.current = undefined; assertPrepared.current = null;
     sessionId.current = null; sessionKey.current = null; taskKey.current = null; pendingPayload.current = null; submittingRef.current = false; dismissedInitialTask.current = ''; goalTouched.current = false; writingSaveGoal.current = ''; latestWritingTask.current = null; displayOnlyWritingTasks.current.clear(); setActionBusy(false);
+    deletedSessions.current.clear(); deletedTasks.current.clear(); suppressAutoRestore.current = false;
   }, [currentOwner]);
+  useEffect(() => {
+    const remove = (event: Event) => {
+      const detail = (event as CustomEvent<{ researchObjectId?: string; kind?: string; resourceId?: string }>).detail;
+      if (!detail || detail.researchObjectId !== routeResearchObjectId || !detail.resourceId || !['session', 'task'].includes(detail.kind ?? '')) return;
+      const id = detail.resourceId;
+      if (detail.kind === 'session') deletedSessions.current.add(id); else deletedTasks.current.add(id);
+      const removesCurrent = detail.kind === 'session' ? sessionId.current === id || task?.sessionId === id : task?.id === id;
+      if (detail.kind === 'task') {
+        setTurns((current) => current.filter((turn) => turn.id !== id));
+        if (writingDraft?.taskId === id) { setWritingDraft(null); setWritingDirty(false); latestWritingTask.current = null; }
+      }
+      if (!removesCurrent) return;
+      suppressAutoRestore.current = true;
+      setTask(null); setRestoredTask(true); setError(''); setSentGoal('');
+      if (detail.kind === 'session') { setTurns([]); sessionId.current = null; sessionKey.current = null; taskKey.current = null; }
+      // A removed conversation retains its adopted writing output. Only deleting that task clears it.
+      setPresentationIntent(null); setPresentationSuggestion(undefined); setPublicationVersion(''); setMediaReviewVersion('');
+      offeredAction.current = null; offeredDraft.current = undefined; assertPrepared.current = null;
+      pendingPayload.current = null; submittingRef.current = false; setSubmitting(false); setActionBusy(false); setPreparing(false);
+      setLocalMessage(tc('contentRemoved'));
+    };
+    window.addEventListener('research-content-removed', remove);
+    return () => window.removeEventListener('research-content-removed', remove);
+  }, [routeResearchObjectId, task?.id, task?.sessionId, writingDraft?.taskId, tc]);
   useEffect(() => {
     setPresentationIntent(null); setPresentationSuggestion(undefined); setPublicationVersion(''); setMediaReviewVersion('');
     offeredAction.current = null; assertPrepared.current = null;
@@ -419,7 +450,7 @@ function HermesAssistantDrawerContent({
   }, [onTaskStateChange, task]);
 
   useEffect(() => {
-    if (!open || task || !taskRestoreReady) return;
+    if (!open || task || !taskRestoreReady || suppressAutoRestore.current) return;
     let cancelled = false;
     let attempts = 0;
     let retryTimer: number | undefined;
@@ -430,7 +461,8 @@ function HermesAssistantDrawerContent({
           tasks: [exactTask, ...tasks.filter((candidate) => candidate.id !== exactTask.id)],
         }))
         : listAgentTasks();
-      void loadTasks.then(({ tasks }) => {
+      void loadTasks.then(({ tasks: candidates }) => {
+          const tasks = candidates.filter((candidate) => !deletedTasks.current.has(candidate.id) && (!candidate.sessionId || !deletedSessions.current.has(candidate.sessionId)));
           if (cancelled || submittingRef.current || sessionId.current || dismissedInitialTask.current === initialTaskId) return;
           const writingTasks = tasks.filter((candidate) => (route === 'research-object-edit'
             ? candidate.researchObjectId === routeResearchObjectId
@@ -479,6 +511,12 @@ function HermesAssistantDrawerContent({
     if (!normalized || busy || actionBusy || submittingRef.current) return;
     if (pendingPayload.current && normalized !== pendingPayload.current.goal) { setError(tc('retrySame')); return; }
     const command = normalized.replace(/[。！!\.]+$/u, '').trim();
+    if (onSourceCommand && (!offeredAction.current || offeredAction.current.canDismiss)) {
+      submittingRef.current = true; setActionBusy(true); setError('');
+      try { if (await onSourceCommand(command)) { setGoal(''); return; } }
+      catch (cause) { setError(cause instanceof Error ? cause.message : tc('actionNotReady')); return; }
+      finally { submittingRef.current = false; setActionBusy(false); }
+    }
     const action = offeredAction.current;
     if (action?.resumeEditing && /^(?:继续编辑|退回编辑|撤回审核|resume editing|return to draft)$/iu.test(command)) {
       if (!actionScopeIsCurrent()) { setError(tc('draftChanged')); return; }
@@ -625,6 +663,7 @@ function HermesAssistantDrawerContent({
         <div className="hermes-conversation-transcript" ref={transcript} role="log" aria-label={tc('conversation')} aria-live="polite" aria-relevant="additions text"
           onScroll={(event) => { const pane = event.currentTarget; followTranscript.current = pane.scrollHeight - pane.scrollTop - pane.clientHeight < 64; }}>
           <p className="hermes-message hermes-message-assistant">{dashboardContext.editorDraft ? tc('welcomeEditor') : t(suggestion.bodyKey)}</p>
+          {sourceReview}
           {turns.map((turn) => <React.Fragment key={turn.id}>
             {turn.user && <p className="hermes-message hermes-message-user">{turn.user}</p>}
             <ScientificText className="hermes-message hermes-message-assistant">{turn.summary}</ScientificText>

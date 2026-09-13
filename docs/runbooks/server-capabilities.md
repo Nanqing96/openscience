@@ -1,4 +1,5 @@
 # 服务器能力与复用清单
+- 2026-09-13生命周期候选（未部署）：新增宿主受限清理队列 `/opt/openscience-private-cleanup/{inbox,results,state}`，复用现有Node/systemd和供应商执行锁，按授权UUID清除私有任务副本。Worker只可写入队列、只读结果；Parser继续原隔离/权限。公开依赖保留，独立搜索库按核心存续状态过滤与重试同步；无新模型生成。具体安装/回滚见部署runbook，当前应用仍c0bc653d。
 - 2026-09-13当前应用c0bc653d/rollback871ed702：阅读层隐藏Hermes内部来源编号并去媒体制作长文，原文/公式/后台数据保留。必要服务器build/start及独立High复核完成；实际四阅读入口编号0、10式正常，原数据/图片不变。第二篇仍private/v5/revision6；未公开，无测试/CI/迁移/模型调用，浏览器与媒体runner不变。证据和下一步见CURRENT handoff。
 - 2026-09-13历史应用871ed702/rollback80809452：现成admin_reviewed_import复用第二篇图86ffe至私有v5，原字节/hash及原资产完整来源保留；generator前缀误判已修复，同图审批由400恢复200。真实预览/工作台正文、新图、公式已读；无新增服务/依赖/模型调用，无测试/CI/迁移，必要build/start完成。浏览器/provider/media runner不变；来源引用边界和下一步见CURRENT handoff。
 - 2026-09-13阅读修复已部署80809452（rollback08ed3b35）：edit顶部贡献、overview与VersionRecord正文统一ScientificText，CoreEditor/版本页内部核查面板和链接移除；核查API/资料/保存内容保留。实读lead5式、正文/概览10式，0错误，六字段逐字等API、sourceLinks0、auditPanel=false；桌面与375物理像素窄屏截图已看，Chrome125%导致早期element clip裁切，采用完整viewport截图并正常关闭移动Hermes遮层后确认5式完整。RO仍private/draft/revision4，SDF及冻结record与before逐字一致。无测试/CI/模型重跑。

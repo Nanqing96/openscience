@@ -7,6 +7,7 @@ import * as React from 'react';
 import { useMemo, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
+import { TrashActionButton } from '@/components/research/TrashActionButton';
 
 export interface DashboardResearch {
   id: string;
@@ -19,10 +20,12 @@ export interface DashboardResearch {
 
 export interface ResearchListProps {
   researchObjects: DashboardResearch[];
+  onChanged?(): void;
 }
 
-export function ResearchList({ researchObjects }: ResearchListProps) {
+export function ResearchList({ researchObjects, onChanged }: ResearchListProps) {
   const t = useTranslations('dashboard');
+  const trashT = useTranslations('trash');
   const [query, setQuery] = useState('');
   const visible = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
@@ -62,23 +65,24 @@ export function ResearchList({ researchObjects }: ResearchListProps) {
       ) : (
         <ul className="mt-5 list-none divide-y divide-os-rule-paper border-y border-os-rule-paper p-0" aria-label={t('research.title')}>
           {visible.map((research) => (
-            <li key={research.id}>
+            <li key={research.id} className="flex items-center gap-3">
               <Link
                 href={`/research-objects/${encodeURIComponent(research.id)}/edit`}
-                className="group grid min-h-14 gap-2 px-1 py-4 outline-none sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center focus-visible:ring-2 focus-visible:ring-os-vermilion-ink"
+                className="group grid min-h-14 min-w-0 flex-1 gap-2 px-1 py-4 outline-none sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center focus-visible:ring-2 focus-visible:ring-os-vermilion-ink"
               >
                 <span className="min-w-0">
                   <span className="block truncate font-medium text-os-ink group-hover:text-os-vermilion-ink">
                     {research.title}
                   </span>
                   <span data-reading-role="caption" className="mt-1 block font-data text-os-muted-paper">
-                    {t('research.draftRevision', { version: research.versionNo })}
+                    {trashT('privateDraft')}
                   </span>
                 </span>
                 <span data-reading-role="caption" className="font-data text-os-muted-paper">
                   {t(`research.status.${research.status}`)}
                 </span>
               </Link>
+              <TrashActionButton kind="research_object" resourceId={research.id} title={research.title} published={!research.publicId.startsWith('DRAFT-')} onDone={onChanged} />
             </li>
           ))}
         </ul>

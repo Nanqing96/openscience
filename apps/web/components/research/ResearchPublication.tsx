@@ -9,6 +9,7 @@ import { apiRequest, getLicenses, getPublicationReview, getResearchObject, listV
 import { SDF_FIELDS } from '@/lib/suggestions';
 import type { HermesConversationAction } from '@/lib/hermes/conversation-action';
 import { ScientificText } from '@/components/content/ScientificText';
+import { useVersionLabels } from './useVersionLabels';
 
 const defaults: LicenseSet = { text: 'CC-BY-4.0', code: 'MIT', data: 'CC0-1.0' };
 const control = 'min-h-11 rounded-panel border border-os-rule-paper bg-white px-3 text-sm text-os-ink disabled:opacity-50';
@@ -17,6 +18,8 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
   const t = useTranslations('productSurfaces');
   const tc = useTranslations('hermesConversation');
   const tw = useTranslations('workbench');
+  const th = useTranslations('editHistory');
+  const versionLabels = useVersionLabels();
   const mediaLabel = (asset: PresentationAsset) => asset.kind === 'video' ? tw('researchVideo') : tw('coreImage');
   const [object, setObject] = useState<ResearchObjectSummary | null>(null);
   const [versions, setVersions] = useState<VersionSummary[]>([]);
@@ -65,7 +68,7 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
   }, [researchObjectId, selectedId, scope, tw]);
 
   async function publish() {
-    if (!selected || !ready || working) return;
+    if (!selected || !ready || working || selected.publicationNo != null) return;
     const target = selected;
     const current = () => activeScope.current === scope;
     setWorking(true); setError('');
@@ -102,9 +105,12 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
       }
       const publication = await publishVersion(target.versionId);
       if (!current()) return;
-      setPublicUrl(`/research/${encodeURIComponent(publication.published.publicId)}/v/${target.versionNo}`);
-      onPublished?.(`/research/${encodeURIComponent(publication.published.publicId)}/v/${target.versionNo}`);
-      setVersions((items) => items.map((item) => item.versionId === target.versionId ? { ...item, status: 'published' } : item)); setConfirmOpen(false);
+      const publicationNo = publication.published.publicationNo ?? Number(publication.published.publicVersionId.match(/-v([1-9]\d*)$/u)?.[1]);
+      if (!Number.isSafeInteger(publicationNo) || publicationNo < 1) throw new Error(tw('versionMismatch'));
+      const url = `/research/${encodeURIComponent(publication.published.publicId)}/v/${publicationNo}`;
+      setPublicUrl(url); onPublished?.(url);
+      setVersions((items) => items.map((item) => item.versionId === target.versionId ? { ...item, status: 'published', publicationNo, publishedAt: publication.published.publishedAt } : item)); setConfirmOpen(false);
+      window.dispatchEvent(new CustomEvent('research-publication-updated', { detail: { researchObjectId } }));
     } catch (cause) {
       if (!current()) return;
       setError(cause instanceof Error ? cause.message : String(cause)); setConfirmOpen(false);
@@ -115,7 +121,7 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
   }
   const latestPublish = useRef(publish); latestPublish.current = publish;
   async function resumeEditing() {
-    if (!selected || !ready || working) return;
+    if (!selected || !ready || working || selected.publicationNo != null) return;
     const target = selected;
     const current = () => activeScope.current === scope;
     setWorking(true); setError('');
@@ -133,43 +139,47 @@ export function ResearchPublication({ researchObjectId, selectedVersionId, embed
   const latestResume = useRef(resumeEditing); latestResume.current = resumeEditing;
   useEffect(() => {
     if (!conversation || !onConfirmationChange) return;
-    onConfirmationChange({ kind: 'publication', ready: ready && !working && selected?.status !== 'published', canDismiss: !working, confirm: () => latestPublish.current(),
+    onConfirmationChange({ kind: 'publication', ready: ready && !working && Boolean(selected) && selected?.publicationNo == null, canDismiss: !working, confirm: () => latestPublish.current(),
       ...(['under_review', 'approved'].includes(selected?.status ?? '') ? { resumeEditing: () => latestResume.current() } : {}),
     });
     return () => onConfirmationChange(null);
-  }, [conversation, onConfirmationChange, ready, working, scope, selected?.status]);
+  }, [conversation, onConfirmationChange, ready, working, scope, selected?.status, selected?.publicationNo]);
   if (conversation) return <section className="hermes-message hermes-message-assistant" data-conversation-publication="true">
     {error && <p role="alert" className="text-sm text-state-danger">{error}</p>}
     {!ready && !error && <p role="status">{t('state.loadingBody')}</p>}
     {ready && <>
-      <p>{tc('publicationScope', { title: object?.title ?? '', version: selected?.versionNo ?? 0, count: assets.filter((asset) => ['image', 'chart', 'video'].includes(asset.kind)).length })}</p>
+      <p>{selected?.publicationNo != null ? th('alreadyPublic') : tc('publicationScope', { title: object?.title ?? '', count: assets.filter((asset) => ['image', 'chart', 'video'].includes(asset.kind)).length })}</p>
+      {selected?.publicationNo == null && <p className="mt-2 text-sm">{th('publicationNumberOnPublish')}</p>}
       <p className="mt-2 text-sm">{t('publish.permanenceBody')}</p>
       <p className="mt-2 text-sm">{tc('publicationLicense', { text: licenses.text, code: licenses.code, data: licenses.data })}</p>
       {materialNames.length > 0 && <details className="mt-3 text-sm"><summary>{tc('publicationMaterials', { count: materialNames.length })}</summary><ul className="mt-2 list-inside list-disc">{materialNames.map((name) => <li className="break-all" key={name}>{name}</li>)}</ul></details>}
       {review?.hardBlocks.map((block, index) => <p className="mt-2 text-sm text-state-danger" key={index}>{block.reason}</p>)}
       {['under_review', 'approved'].includes(selected?.status ?? '') && <p className="mt-2 text-sm">{tc('resumePublicationEditing')}</p>}
-      <p className="mt-3 text-sm" role="status">{working ? t('publish.checking') : selected?.status === 'published' ? t('publish.published') : tc('confirmPublicationInChat')}</p>
+      <p className="mt-3 text-sm" role="status">{working ? t('publish.checking') : selected?.publicationNo != null ? t('publish.published') : tc('confirmPublicationInChat')}</p>
+      {selected?.publicationNo != null && object?.publicId && <Link className="hermes-conversation-link" href={publicUrl || `/research/${encodeURIComponent(object.publicId)}/v/${selected.publicationNo}`}>{tw('openPublic')}</Link>}
     </>}
   </section>;
   const content = <div className="mx-auto max-w-4xl text-os-ink" data-workbench-publication="true">
     <header className="mb-6"><h1 className="text-2xl font-semibold">{tw('publishPreview')}</h1><p className="mt-2 text-sm leading-6 text-os-muted-paper">{tw('publishPreviewBody')}</p></header>
-    {!embedded && <label className="mb-5 flex items-center gap-3 text-sm">{t('publish.version')}<select className={control} disabled={working} value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>{versions.map((item) => <option key={item.versionId} value={item.versionId}>v{item.versionNo} · {item.status}</option>)}</select></label>}
+    {!embedded && <label className="mb-5 flex items-center gap-3 text-sm">{t('publish.version')}<select className={`${control} min-w-0 max-w-full`} disabled={working} value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>{versions.map((item) => <option key={item.versionId} value={item.versionId}>{versionLabels.label(item)}</option>)}</select></label>}
     {error && <p role="alert" className="my-4 border-l-2 border-state-danger pl-4 text-sm">{error}</p>}
     {!selectedId && <p>{t('publish.emptyBody')}</p>}
     {selectedId && !ready && !error && <p role="status">{t('state.loadingBody')}</p>}
-    {ready && core && <>
+    {ready && selected?.publicationNo != null && <section className="my-6"><p className="text-sm leading-6">{th('alreadyPublic')}</p>{publicUrl || object?.publicId ? <Link className="mt-3 inline-flex min-h-11 items-center text-os-vermilion-ink underline" href={publicUrl || `/research/${encodeURIComponent(object!.publicId!)}/v/${selected.publicationNo}`}>{tw('openPublic')}</Link> : null}</section>}
+    {ready && core && selected?.publicationNo == null && <>
       <article className="rounded-panel bg-white px-5 py-8 shadow-sm sm:px-8" data-publication-preview="true">
-        <p className="text-xs text-os-muted-paper">{tw('previewLabel')} · v{selected?.versionNo}</p>
+        <p className="text-xs text-os-muted-paper">{tw('previewLabel')} · {selected ? versionLabels.label(selected) : th('privateDraft')}</p>
+        {selected?.publicationNo == null && <p className="mt-2 text-xs text-os-muted-paper">{th('publicationNumberOnPublish')}</p>}
         <h2 className="mt-3 font-editorial text-3xl leading-tight">{object?.title}</h2>
         <ScientificText hideSourceMarkers as="p" className="mt-5 border-l-2 border-os-vermilion-ink pl-4 text-lg leading-8">{core.insight}</ScientificText>
         <div className="research-publication-media">{assets.filter((asset) => ['image', 'chart', 'video'].includes(asset.kind)).map((asset) => <figure className="my-7" key={asset.id}>{asset.kind === 'video' ? <video className="h-auto w-full" controls preload="metadata" aria-label={mediaLabel(asset)} src={presentationAssetContentUrl(researchObjectId, selectedId, asset.id)} /> : <img className="h-auto w-full object-contain" src={presentationAssetContentUrl(researchObjectId, selectedId, asset.id)} alt={mediaLabel(asset)} />}<figcaption className="mt-2 text-sm text-os-muted-paper">{mediaLabel(asset)}</figcaption></figure>)}</div>
         {SDF_FIELDS.filter((field) => field !== 'insight').map((field) => <section className="mt-7" key={field}><h3 className="research-section-title">{t(`fields.${field}`)}</h3><ScientificText hideSourceMarkers as="p" className="mt-2 leading-8">{core[field]}</ScientificText></section>)}
       </article>
-      <details className="mt-6 rounded-panel bg-os-paper-strong p-4"><summary className="cursor-pointer text-sm font-semibold">{t('publish.licenses')}</summary><p className="mt-3 text-sm leading-6">{tw('rightsNotice')}</p><fieldset className="mt-4 grid gap-4 sm:grid-cols-3" disabled={working || selected?.status === 'published'}>{(['text', 'code', 'data'] as const).map((type) => <label className="grid gap-2 text-sm" key={type}>{t(`publish.license.${type}`)}<select className={control} value={licenses[type]} onChange={(event) => { setLicenses((current) => ({ ...current, [type]: event.target.value })); setReview(null); }}>{(type === 'text' ? ['CC-BY-4.0', 'CC-BY-NC-4.0', 'ALL-RIGHTS-RESERVED'] : type === 'code' ? ['MIT', 'Apache-2.0', 'GPL-3.0', 'PROPRIETARY'] : ['CC0-1.0', 'CC-BY-4.0', 'NO-DOWNLOAD']).map((license) => <option key={license}>{license}</option>)}</select></label>)}</fieldset></details>
+      <details className="mt-6 rounded-panel bg-os-paper-strong p-4"><summary className="cursor-pointer text-sm font-semibold">{t('publish.licenses')}</summary><p className="mt-3 text-sm leading-6">{tw('rightsNotice')}</p><fieldset className="mt-4 grid gap-4 sm:grid-cols-3" disabled={working || selected?.publicationNo != null}>{(['text', 'code', 'data'] as const).map((type) => <label className="grid gap-2 text-sm" key={type}>{t(`publish.license.${type}`)}<select className={control} value={licenses[type]} onChange={(event) => { setLicenses((current) => ({ ...current, [type]: event.target.value })); setReview(null); }}>{(type === 'text' ? ['CC-BY-4.0', 'CC-BY-NC-4.0', 'ALL-RIGHTS-RESERVED'] : type === 'code' ? ['MIT', 'Apache-2.0', 'GPL-3.0', 'PROPRIETARY'] : ['CC0-1.0', 'CC-BY-4.0', 'NO-DOWNLOAD']).map((license) => <option key={license}>{license}</option>)}</select></label>)}</fieldset></details>
       <div className="mt-6" aria-live="polite">{review && <p className="text-sm">{t(`publish.reviewStatus.${review.status}`)}</p>}{review?.hardBlocks.map((block, index) => <p className="mt-3 text-sm text-state-danger" key={`${block.code}:${index}`}>{block.reason}</p>)}{review?.status === 'blocked' && <Link className="mt-3 inline-flex min-h-11 items-center text-sm text-os-vermilion-ink underline" href={`/research-objects/${encodeURIComponent(researchObjectId)}/edit?stage=content`}>{tw('resolveBeforePublish')}</Link>}</div>
       <p className="mt-6 text-xs leading-5 text-os-muted-paper">{t('publish.permanenceBody')}</p>
       <div className="sticky bottom-0 z-10 mt-3 flex items-center justify-end gap-3 border-t border-os-rule-paper bg-os-paper-strong px-3 py-3">
-        {selected?.status === 'published' ? <span>{publicUrl || object?.publicId ? <Link className="inline-flex min-h-11 items-center text-os-vermilion-ink underline" href={publicUrl || `/research/${encodeURIComponent(object!.publicId!)}/v/${selected.versionNo}`}>{tw('openPublic')}</Link> : t('publish.published')}</span> : <button className="min-h-11 w-full rounded-panel bg-os-vermilion-ink px-5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto" disabled={working || !ready} onClick={() => setConfirmOpen(true)}>{working ? t('publish.checking') : t('publish.action')}</button>}
+        <button className="min-h-11 w-full rounded-panel bg-os-vermilion-ink px-5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto" disabled={working || !ready} onClick={() => setConfirmOpen(true)}>{working ? t('publish.checking') : t('publish.action')}</button>
       </div>
     </>}
     <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}><DialogContent className="max-w-xl rounded-panel bg-os-paper-strong p-6 text-os-ink"><DialogTitle className="text-2xl font-semibold">{t('publish.confirmTitle')}</DialogTitle><DialogDescription className="mt-4 text-base leading-7">{t('publish.confirmBody')}</DialogDescription><p className="mt-3 text-sm leading-6">{tw('rightsNotice')}</p><div className="mt-6 flex justify-end gap-3"><DialogClose className={control}>{t('publish.cancel')}</DialogClose><button disabled={working} className="min-h-11 rounded-panel bg-os-vermilion-ink px-4 text-sm font-semibold text-white disabled:opacity-50" onClick={() => void publish()}>{t('publish.confirm')}</button></div></DialogContent></Dialog>

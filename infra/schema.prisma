@@ -484,6 +484,8 @@ enum SdfNodeType {
 }
 
 model ResearchObject {
+  deletedAt      DateTime?    @map("deleted_at")
+  trashEntryId   String?      @map("trash_entry_id") @db.Uuid
   id             String       @id @default(uuid()) @db.Uuid
   workspaceId    String       @map("workspace_id") @db.Uuid
   title          String
@@ -724,6 +726,9 @@ model Blob {
 }
 
 model Artifact {
+  bytesPurgedAt  DateTime?    @map("bytes_purged_at")
+  deletedAt      DateTime?    @map("deleted_at")
+  trashEntryId   String?      @map("trash_entry_id") @db.Uuid
   id             String   @id @default(uuid()) @db.Uuid
   logicalPath    String   @map("logical_path") // 用户视角路径（非唯一，P1B-4 Version Manifest 再去重）
   mimeType       String?  @map("mime_type") // MIME 检测结果（失败 = null，允许上传）
@@ -821,7 +826,8 @@ model Version {
   id               String        @id @default(uuid()) @db.Uuid
   researchObjectId String        @map("research_object_id") @db.Uuid
   commitId         String        @map("commit_id") @db.Uuid
-  versionNo        Int           @map("version_no") // RO 内递增版本号（外部可读，§2.2 原则 5）
+  versionNo        Int           @map("version_no") // Internal commit/revision order; never a public ordinal.
+  publicationNo    Int?          @map("publication_no") // Assigned only by successful publication; legacy issued numbers are retained.
   publicVersionId  String?       @unique @map("public_version_id") // OSR-YYYY-NNNNNN-vN（§6.1），发布时分配
   status           VersionStatus @default(draft) // P1B-7 发布状态机
   // P1D-8：父版本（v2→v1，§2.2-3 增量版本链）
@@ -845,6 +851,7 @@ model Version {
   hermesResearchRuns  HermesResearchRun[]
 
   @@unique([researchObjectId, versionNo])
+  @@unique([researchObjectId, publicationNo])
   @@unique([id, researchObjectId], map: "versions_id_research_object_id_key")
   @@index([researchObjectId])
   @@map("versions")
@@ -1209,6 +1216,8 @@ model ExternalProviderState {
 // --- P1D-2：Hermes 会话与异步任务（§15 AgentSession/AgentTask/ToolApproval + §9.3 长任务异步）---
 
 model AgentSession {
+  deletedAt      DateTime?    @map("deleted_at")
+  trashEntryId   String?      @map("trash_entry_id") @db.Uuid
   id               String   @id @default(uuid()) @db.Uuid
   userId           String   @map("user_id") @db.Uuid
   researchObjectId String?  @map("research_object_id") @db.Uuid
@@ -1229,6 +1238,8 @@ model AgentSession {
 }
 
 model AgentTask {
+  deletedAt      DateTime?    @map("deleted_at")
+  trashEntryId   String?      @map("trash_entry_id") @db.Uuid
   id               String          @id @default(uuid()) @db.Uuid
   sessionId        String          @map("session_id") @db.Uuid
   kind             String
@@ -1587,6 +1598,8 @@ model EvidenceRecord {
 }
 
 model PresentationAsset {
+  deletedAt      DateTime?    @map("deleted_at")
+  trashEntryId   String?      @map("trash_entry_id") @db.Uuid
   id               String                  @id @default(uuid()) @db.Uuid
   researchObjectId String                  @map("research_object_id") @db.Uuid
   versionId        String                  @map("version_id") @db.Uuid
@@ -1625,4 +1638,40 @@ model PresentationAssetClaim {
   @@id([presentationAssetId, claimId])
   @@index([claimId])
   @@map("presentation_asset_claims")
+}
+
+// Resource identifiers deliberately have no cascading FK: completed purge keeps only operation facts.
+model TrashEntry {
+  id               String   @id @default(uuid()) @db.Uuid
+  kind             String
+  resourceId       String   @map("resource_id") @db.Uuid
+  ownerId          String   @map("owner_id") @db.Uuid
+  workspaceId      String?  @map("workspace_id") @db.Uuid
+  researchObjectId String?  @map("research_object_id") @db.Uuid
+  parentId         String?  @map("parent_id") @db.Uuid
+  label            String
+  state            String   @default("trashed")
+  retainedReason   String?  @map("retained_reason")
+  deletedAt        DateTime @default(now()) @map("deleted_at")
+  purgeAfter       DateTime @map("purge_after")
+  purgedAt         DateTime? @map("purged_at")
+  lastError        String?  @map("last_error")
+  purgeScope       Json?    @map("purge_scope")
+  @@index([ownerId, state, deletedAt])
+  @@index([state, purgeAfter])
+  @@index([kind, resourceId, state])
+  @@index([parentId])
+  @@map("trash_entries")
+}
+
+// Durable storage cleanup outbox; the tombstone rejects references to already removed bytes.
+model TrashObjectCleanup {
+  objectKey    String    @id @map("object_key")
+  trashEntryId String    @map("trash_entry_id") @db.Uuid
+  state        String    @default("pending")
+  attempts     Int       @default(0)
+  lastError    String?   @map("last_error")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  @@index([trashEntryId, state])
+  @@map("trash_object_cleanup")
 }

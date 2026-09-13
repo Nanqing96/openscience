@@ -1,7 +1,7 @@
 import type { AuditContext } from '@openscience/observability';
 import { requireMembership } from '../workspace/helpers';
 import { recordAudit } from '../workspace/audit';
-import { canAccessRo } from '../visibility/access';
+import { canAccessPrivateRo } from '../visibility/access';
 import type { ArtifactDeps } from '../artifact/artifacts';
 import { getEffectiveLicenses } from '../license/licenses';
 import { getAuthorChangeInfo } from '../authorship/authors';
@@ -116,14 +116,14 @@ export async function createReview(
   };
 }
 
-/** Review 列表（§4.2 可见性继承）：读 canAccessRo（经 PR→RO）。 */
+/** Review 列表（§4.2 可见性继承）：读 canAccessPrivateRo（经 PR→RO）。 */
 export async function listReviews(
   deps: ArtifactDeps,
   input: { prId: string; userId?: string },
 ): Promise<ReviewView[]> {
   const pr = await deps.prisma.pullRequest.findUnique({ where: { id: input.prId } });
   if (!pr) throw new ReviewError('RESEARCH_OBJECT_NOT_FOUND', 'Pull Request 不存在');
-  const access = await canAccessRo(deps, { researchObjectId: pr.researchObjectId, userId: input.userId });
+  const access = await canAccessPrivateRo(deps, { researchObjectId: pr.researchObjectId, userId: input.userId });
   if (access === 'denied') throw new ReviewError('RESEARCH_OBJECT_NOT_FOUND', 'Pull Request 不存在');
 
   const rows = await deps.prisma.review.findMany({

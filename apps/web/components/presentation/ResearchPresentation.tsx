@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { HermesDockAnchor } from '@/components/hermes/HermesDockAnchor';
 import { HermesAssistantDrawer } from '@/components/hermes/HermesAssistantDrawer';
 import { useLocale, useTranslations } from 'next-intl';
+import { useVersionLabels } from '@/components/research/useVersionLabels';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { PresentationWorkbench, type PresentationTaskState } from '@/components/presentation/PresentationWorkbench';
@@ -93,6 +94,7 @@ function standaloneUrl(roId: string, versionId: string, taskId?: string): string
 
 export function ResearchPresentation({ params, embedded = false, selectedVersionId, onAskHermes }: { params: { id: string }; embedded?: boolean; selectedVersionId?: string; onAskHermes?: (kind: 'image' | 'video') => void }) {
   const t = useTranslations('presentation');
+  const versionLabels = useVersionLabels();
   const locale = useLocale() as 'zh' | 'en';
   const companion = useTranslations('productSurfaces.overview');
   const [hermesOpen, setHermesOpen] = useState(false);
@@ -382,7 +384,7 @@ export function ResearchPresentation({ params, embedded = false, selectedVersion
             {t('selectAvailableVersion')}
             <select className="min-h-11 min-w-0 flex-1 rounded-control border border-os-rule-paper bg-transparent px-3" defaultValue="" onChange={(event) => { if (event.target.value) router.push(scopedUrl(params.id, event.target.value)); }}>
               <option value="" disabled>{t('chooseVersion')}</option>
-              {versions.map((item) => <option key={item.versionId} value={item.versionId}>{t('versionOption', { number: item.versionNo, status: t(`versionStatus.${item.status}`) })}</option>)}
+              {versions.map((item) => <option key={item.versionId} value={item.versionId}>{versionLabels.label(item)}</option>)}
             </select>
           </label>
         </div>
@@ -396,7 +398,7 @@ export function ResearchPresentation({ params, embedded = false, selectedVersion
                 value={version.versionId}
                 onChange={(event) => router.push(scopedUrl(params.id, event.target.value))}
               >
-                {versions.map((item) => <option key={item.versionId} value={item.versionId}>{t('versionOption', { number: item.versionNo, status: t(`versionStatus.${item.status}`) })}</option>)}
+                {versions.map((item) => <option key={item.versionId} value={item.versionId}>{versionLabels.label(item)}</option>)}
               </select>
             </label>
             <Link className="inline-flex min-h-11 items-center text-sm font-semibold text-os-vermilion-ink underline" href={`/research-objects/${encodeURIComponent(params.id)}/edit`}>{t('openEditor')}</Link>

@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { SDF_NODE_TYPES } from '../research-object/types';
+import type { PublicationMetadata } from '../publish/publication-metadata';
 
 export function recordValue(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
@@ -13,25 +14,35 @@ export async function freezeResearchRecord(tx: Prisma.TransactionClient, input: 
   return writeResearchRecord(tx, input, false);
 }
 
+/** Called only by a successful, current-tip mutation in its existing transaction. */
+export async function refreshWorkingResearchRecord(tx: Prisma.TransactionClient, input: {
+  researchObjectId: string; versionId: string;
+}) {
+  return writeResearchRecord(tx, input, false, true);
+}
+
 /** Final public snapshot, called only inside the publication transaction. */
 export async function finalizePublicationResearchRecord(tx: Prisma.TransactionClient, input: {
   researchObjectId: string; versionId: string;
+  publicId: string; publicVersionId: string; publicationNo: number; publishedAt: Date;
 }) {
-  return writeResearchRecord(tx, input, true);
+  return writeResearchRecord(tx, input, input);
 }
 
 async function writeResearchRecord(tx: Prisma.TransactionClient, input: {
   researchObjectId: string; versionId: string;
-}, publication: boolean) {
+}, publication: false | { publicId: string; publicVersionId: string; publicationNo: number; publishedAt: Date }, refresh = false) {
   const version = await tx.version.findUnique({ where: { id: input.versionId }, include: { researchObject: true, manifest: { include: { entries: true } } } });
   if (!version || version.researchObjectId !== input.researchObjectId
-    || (publication ? version.status !== 'approved' : version.researchRecord != null)) throw new Error('Research record cannot be frozen');
+    || (publication ? version.status !== 'approved' : refresh ? version.status !== 'draft' || version.publicVersionId !== null : version.researchRecord != null)) throw new Error('Research record cannot be frozen');
   const where = { researchObjectId: version.researchObjectId, versionId: version.id };
-  const [claims, evidence, authors, licenses] = await Promise.all([
+  const [claims, evidence, authors, licenses, contributions, media] = await Promise.all([
     tx.claimNode.findMany({ where, orderBy: { id: 'asc' } }),
     tx.evidenceRecord.findMany({ where, orderBy: { id: 'asc' } }),
     tx.author.findMany({ where: { researchObjectId: version.researchObjectId }, include: { user: true }, orderBy: { sortOrder: 'asc' } }),
     tx.licenseAssignment.findMany({ where: { researchObjectId: version.researchObjectId } }),
+    tx.contribution.findMany({ where: { researchObjectId: version.researchObjectId }, include: { user: { select: { displayName: true } } }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
+    tx.presentationAsset.findMany({ where: { ...where, deletedAt: null }, include: { sourceClaims: { select: { claimId: true } } }, orderBy: { id: 'asc' } }),
   ]);
   const licenseTypes = ['text', 'code', 'data'];
   const versionLicenses = licenses.filter(l => l.versionId === version.id);
@@ -43,13 +54,14 @@ async function writeResearchRecord(tx: Prisma.TransactionClient, input: {
   const core = recordValue(version.manifest?.coreJson);
   const sdf = core;
   const base = `/api/research-objects/${version.researchObjectId}/versions/${version.id}/record`;
-  const sources: Record<string, unknown> = {};
+  const sources: Record<string, unknown> = { claims: Object.fromEntries(claims.map(c => [c.id, { provenance: c.provenance }])) };
   const frozenEvidence = evidence.sort((a,b) => compare(a.id,b.id)).map(e => {
     const locator = recordValue(e.locator);
     const provenance = recordValue(e.provenance);
     const rights = recordValue(provenance.rights);
     const available = entries.get(e.artifactId)?.blobSha256 === e.contentHash;
     sources[e.id] = { artifactId: e.artifactId, locator: e.locator, exactQuote: e.exactQuote, sourceMapRef: provenance.sourceMapRef ?? null,
+      provenance: e.provenance, verifiedByUserId: e.verifiedByUserId,
       publicReuse: e.kind !== 'external_source' || (rights.decision === 'reuse' && rights.authority === 'trusted_provider' && typeof rights.verifiedBy === 'string' && rights.verifiedBy.length > 0) };
     return { id: e.id, claimId: e.claimId, artifactId: e.artifactId, kind: e.kind, title: e.title, relation: e.relation, contentHash: e.contentHash,
       extractionConfidence: e.extractionConfidence ?? null, extractionStatus: e.extractionStatus, verified: Boolean(e.verifiedByUserId),
@@ -74,5 +86,29 @@ async function writeResearchRecord(tx: Prisma.TransactionClient, input: {
     collections: { complete: true, pagination: 'none', order: 'claims/evidence:id; manifest:logicalPath; authors:sortOrder; licenses:type,identifier' },
     links: { self: base, export: `${base}/export`, schema: '/api/research-record/schema', openapi: '/api/research-record/openapi' },
   };
-  await tx.version.update({ where: { id: version.id }, data: { researchRecord: JSON.parse(JSON.stringify({ dto, sources })) as Prisma.InputJsonValue } });
+  const publicationMetadata: PublicationMetadata | undefined = publication ? {
+    schemaVersion: 1,
+    captureSource: 'publication',
+    capturedAt: publication.publishedAt.toISOString(),
+    title: version.researchObject.title,
+    authors: authors.map(a => ({ displayName: a.user.displayName, identityStatus: a.user.status, isCorresponding: a.isCorresponding, affiliation: a.affiliation, sortOrder: a.sortOrder })),
+    contributions: contributions.map(c => ({ displayName: c.user.displayName, creditRole: c.creditRole })),
+    licenses: Object.fromEntries(effectiveLicenses.map(l => [l.licenseType, l.licenseId])),
+    citation: {
+      publicId: publication.publicId, publicVersionId: publication.publicVersionId, publicationNo: publication.publicationNo,
+      year: version.researchObject.createdAt.getUTCFullYear(), publishedAt: publication.publishedAt.toISOString(),
+      text: `${authors.map(a => a.user.displayName).join(', ')}. ${version.researchObject.title}. ${publication.publicVersionId}. ${version.researchObject.createdAt.getUTCFullYear()}.`,
+    },
+  } : undefined;
+  const capturedAt = new Date().toISOString();
+  const historyMedia = { captureSource: 'working_draft', capturedAt, items: media.map(asset => ({
+    id: asset.id, researchObjectId: asset.researchObjectId, versionId: asset.versionId, kind: asset.kind,
+    objectKey: asset.objectKey, contentHash: asset.contentHash, generator: asset.generator, generatorVersion: asset.generatorVersion,
+    promptHash: asset.promptHash, status: asset.status, label: asset.label, provenance: asset.provenance,
+    sourceClaimIds: asset.sourceClaims.map(link => link.claimId).sort(),
+  })) };
+  await tx.version.update({ where: { id: version.id }, data: { researchRecord: JSON.parse(JSON.stringify({ dto, sources, historyMedia,
+    historyCapture: { state: publication ? 'sealed' : 'working', graphSource: 'working_draft', capturedAt },
+    ...(publicationMetadata ? { publicationMetadata } : {}) })) as Prisma.InputJsonValue } });
+  return publicationMetadata;
 }

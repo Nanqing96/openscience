@@ -1,6 +1,7 @@
 import type { AuditContext, AuditEvent } from '@openscience/observability';
 import { requireMembership } from '../workspace/helpers';
-import { canAccessRo } from '../visibility/access';
+import { canAccessPrivateRo } from '../visibility/access';
+import { readPublicationMetadata } from '../publish/publication-metadata';
 import type { WorkspaceDeps } from '../workspace/types';
 import { LicenseError } from './errors';
 import { assertValidLicenseId, LICENSE_TYPES, type LicenseType } from './catalog';
@@ -100,7 +101,19 @@ export async function getEffectiveLicenses(
   deps: WorkspaceDeps,
   input: { researchObjectId: string; userId?: string; versionId?: string },
 ): Promise<{ licenses: Licenses | null; source: 'version' | 'ro' | 'none' }> {
-  const access = await canAccessRo(deps, { researchObjectId: input.researchObjectId, userId: input.userId });
+  if (input.versionId) {
+    const published = await deps.prisma.version.findFirst({ where: {
+      id: input.versionId, researchObjectId: input.researchObjectId,
+      publications: { some: {} }, status: { in: ['published', 'revised'] }, researchObject: { visibility: 'public' },
+    } });
+    if (published) {
+      const captured = readPublicationMetadata(published.researchRecord).licenses;
+      const licenses = captured.text && captured.code && captured.data
+        ? { text: captured.text, code: captured.code, data: captured.data } : null;
+      return { licenses, source: licenses ? 'version' : 'none' };
+    }
+  }
+  const access = await canAccessPrivateRo(deps, { researchObjectId: input.researchObjectId, userId: input.userId });
   if (access === 'denied') throw new LicenseError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
 
   if (input.versionId) {

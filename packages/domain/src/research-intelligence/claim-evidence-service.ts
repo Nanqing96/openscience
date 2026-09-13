@@ -21,6 +21,10 @@ import {
 } from './source-map-ref';
 import { ClaimEvidenceError } from './claim-evidence-errors';
 import { MAX_CANONICAL_EVIDENCE_CHARS, MAX_CANONICAL_EVIDENCE_SEGMENTS } from '../ingestion/canonical-evidence-contract';
+import type { Prisma } from '@prisma/client';
+import { lockLiveResearchObject, lockTrashReferences } from '../trash/trash';
+import { isWorkingDraftVersion } from '../commit/version-history';
+import { refreshWorkingResearchRecord } from '../commit/research-record-snapshot';
 
 const WRITE_ROLES = new Set(['owner', 'maintainer', 'author', 'contributor']);
 // A published Version row is immutable forever. The legacy `published -> revised`
@@ -34,12 +38,19 @@ function transactionDeps(deps: ArtifactDeps, prisma: unknown): ArtifactDeps {
 
 async function serializableWrite<T>(
   deps: ArtifactDeps,
+  scope: { researchObjectId: string; versionId: string },
   operation: (transaction: ArtifactDeps) => Promise<T>,
 ): Promise<T> {
   for (let attempt = 0; ; attempt += 1) {
     try {
       return await deps.prisma.$transaction(
-        async (prisma) => operation(transactionDeps(deps, prisma)),
+        async (prisma) => {
+          await lockTrashReferences(prisma);
+          await lockLiveResearchObject(prisma, scope.researchObjectId);
+          const result = await operation(transactionDeps(deps, prisma));
+          await refreshWorkingResearchRecord(prisma, scope);
+          return result;
+        },
         { isolationLevel: 'Serializable' },
       );
     } catch (error) {
@@ -228,6 +239,11 @@ async function versionContext(
   input: { userId: string; researchObjectId: string; versionId: string },
   write: boolean,
 ): Promise<VersionContext> {
+  if (write) {
+    await lockTrashReferences(deps.prisma);
+    await lockLiveResearchObject(deps.prisma as unknown as Prisma.TransactionClient, input.researchObjectId);
+    if (!await isWorkingDraftVersion(deps.prisma, input.versionId)) throw new ClaimEvidenceError('VERSION_IMMUTABLE', '历史稿不可修改，请保存或恢复为当前草稿');
+  }
   const version = await deps.prisma.version.findUnique({
     where: { id: input.versionId },
     include: { researchObject: true, manifest: { include: { entries: true } } },
@@ -817,7 +833,7 @@ async function deleteEvidenceInTransaction(
 
 export async function createClaim(deps: ArtifactDeps, input: ClaimInput, ctx: AuditContext = {}) {
   try {
-    return await serializableWrite(deps, (transaction) => createClaimInTransaction(transaction, input, ctx));
+    return await serializableWrite(deps, input, (transaction) => createClaimInTransaction(transaction, input, ctx));
   } catch (error) {
     if ((error as { code?: unknown })?.code !== 'P2002') throw error;
     const existing = await deps.prisma.claimNode.findUnique({ where: { id: input.id } });
@@ -1026,15 +1042,15 @@ export async function createClaimEvidenceBatch(
   };
   if (existingTransaction) return materialize(existingTransaction);
   try {
-    return await serializableWrite(deps, materialize);
+    return await serializableWrite(deps, input, materialize);
   } catch (error) {
     if ((error as { code?: unknown })?.code !== 'P2002') throw error;
-    return serializableWrite(deps, materialize);
+    return serializableWrite(deps, input, materialize);
   }
 }
 
 export async function updateClaim(deps: ArtifactDeps, input: UpdateClaimInput, ctx: AuditContext = {}) {
-  return serializableWrite(deps, (transaction) => updateClaimInTransaction(transaction, input, ctx));
+  return serializableWrite(deps, input, (transaction) => updateClaimInTransaction(transaction, input, ctx));
 }
 
 export async function deleteClaim(
@@ -1042,7 +1058,7 @@ export async function deleteClaim(
   input: { userId: string; researchObjectId: string; versionId: string; claimId: string; expectedUpdatedAt: Date },
   ctx: AuditContext = {},
 ): Promise<void> {
-  return serializableWrite(deps, (transaction) => deleteClaimInTransaction(transaction, input, ctx));
+  return serializableWrite(deps, input, (transaction) => deleteClaimInTransaction(transaction, input, ctx));
 }
 
 export async function createEvidence(deps: ArtifactDeps, input: EvidenceInput, ctx: AuditContext = {}) {
@@ -1065,7 +1081,7 @@ export async function createEvidence(deps: ArtifactDeps, input: EvidenceInput, c
   }
   const resolved = await resolveEvidenceSource(deps, { ...input, locator, exactQuote });
   try {
-    const created = await serializableWrite(deps, (transaction) => createEvidenceInTransaction(transaction, input, resolved, ctx));
+    const created = await serializableWrite(deps, input, (transaction) => createEvidenceInTransaction(transaction, input, resolved, ctx));
     return publicEvidenceRow(created);
   } catch (error) {
     if ((error as { code?: unknown })?.code !== 'P2002') throw error;
@@ -1096,7 +1112,7 @@ export async function updateEvidence(deps: ArtifactDeps, input: UpdateEvidenceIn
     researchObjectId: input.researchObjectId, versionId: input.versionId, artifactId, locator, exactQuote,
     sourceMapRef: artifactId === existing.artifactId ? existingProvenance.sourceMapRef : undefined,
   });
-  const updated = await serializableWrite(deps, (transaction) => updateEvidenceInTransaction(transaction, input, resolved, ctx));
+  const updated = await serializableWrite(deps, input, (transaction) => updateEvidenceInTransaction(transaction, input, resolved, ctx));
   return publicEvidenceRow(updated);
 }
 
@@ -1119,7 +1135,7 @@ export async function verifyEvidence(
     exactQuote: evidence.exactQuote ?? undefined,
     sourceMapRef: recordValue(evidence.provenance).sourceMapRef,
   });
-  const verified = await serializableWrite(deps, (transaction) => verifyEvidenceInTransaction(transaction, input, resolved, ctx));
+  const verified = await serializableWrite(deps, input, (transaction) => verifyEvidenceInTransaction(transaction, input, resolved, ctx));
   return publicEvidenceRow(verified);
 }
 
@@ -1128,7 +1144,7 @@ export async function deleteEvidence(
   input: { userId: string; researchObjectId: string; versionId: string; evidenceId: string; expectedUpdatedAt: Date },
   ctx: AuditContext = {},
 ): Promise<void> {
-  return serializableWrite(deps, (transaction) => deleteEvidenceInTransaction(transaction, input, ctx));
+  return serializableWrite(deps, input, (transaction) => deleteEvidenceInTransaction(transaction, input, ctx));
 }
 
 export async function listClaims(deps: ArtifactDeps, input: { userId: string; researchObjectId: string; versionId: string }) {

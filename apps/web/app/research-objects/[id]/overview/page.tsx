@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { ResearchSurfaceShell, ResearchSurfaceStateShell } from '@/components/research/ResearchSurfaceShell';
 import { ScientificText } from '@/components/content/ScientificText';
+import { useVersionLabels } from '@/components/research/useVersionLabels';
 import { ApiClientError, getResearchIngestion, getResearchObject, listVersions, listPresentationAssets, presentationAssetContentUrl, type PresentationAsset, type ResearchIngestion, type ResearchObjectSummary, type SdfCore, type VersionSummary, type WorkspaceGuidePayload } from '@/lib/api';
 import styles from './overview.module.css';
 
@@ -28,6 +29,7 @@ function OverviewAsset({ asset, objectId }: { asset: PresentationAsset; objectId
 
 export default function ResearchOverviewPage({ params }: { params: { id: string } }) {
   const t = useTranslations('productSurfaces');
+  const versionLabels = useVersionLabels();
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [error, setError] = useState<{ id: string; cause: Error } | null>(null);
   const [ingestion, setIngestion] = useState<{ id: string; status: 'loading' | 'ready' | 'failed'; value: ResearchIngestion | null }>({ id: params.id, status: 'loading', value: null });
@@ -71,7 +73,7 @@ export default function ResearchOverviewPage({ params }: { params: { id: string 
     ? `${root}/hermes?task=${encodeURIComponent(ingestionTasks[0].id)}`
     : `${root}/hermes`;
   const media = <section className={styles.media} aria-label={t('overview.media')}>
-          <h2>{t('overview.media')}</h2>{mediaVersion ? <p>{t('overview.mediaVersion', { number: mediaVersion.versionNo })}</p> : null}<p className={styles.caption}>{t('overview.notEvidence')}</p>
+          <h2>{t('overview.media')}</h2>{mediaVersion ? <p>{t('overview.mediaVersionLabel', { label: versionLabels.label(mediaVersion) })}</p> : null}<p className={styles.caption}>{t('overview.notEvidence')}</p>
           {assets.map(asset => <OverviewAsset key={`${asset.versionId}:${asset.id}`} asset={asset} objectId={object.id} />)}
           {assets.length === 0 && !mediaFailed && !mediaLoading ? <p>{t('overview.noMedia')}</p> : null}
           {mediaLoading ? <p role="status">{t('state.loadingBody')}</p> : null}

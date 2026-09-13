@@ -5,7 +5,10 @@ import { randomUUID } from 'node:crypto';
 import { validateImageRequest, validateImageBytes, type CompletedImageProviderResult, type ImageProvider, type ImageRecoveryState, type ImageRequest, type ImageProviderResult } from './image';
 import { sha256Text } from './ocr';
 import { CODEX_IMAGE_ID_PATTERN, CODEX_IMAGE_MAX_DEADLINE_MS, CODEX_IMAGE_MAX_JSON_BYTES, CODEX_IMAGE_MAX_PNG_BYTES, CODEX_IMAGE_READY_MAX_AGE_MS, validateCodexImageRequest, validateCodexImageResult, type ImageSpoolProvider } from './codex-image-protocol';
-export interface CodexSpoolImageConfig { inboxDir: string; resultsDir: string; timeoutMs?: number; pollIntervalMs?: number; now?: () => number; sleep?: (ms: number) => Promise<void> }
+export interface CodexSpoolImageConfig {
+  inboxDir: string; resultsDir: string; timeoutMs?: number; pollIntervalMs?: number; now?: () => number; sleep?: (ms: number) => Promise<void>;
+  withSubmission?: <T>(owner: { taskId: string; executionAttempt?: number; artifactId?: string }, publish: () => Promise<T>) => Promise<T>;
+}
 const fail = (): never => { throw new Error('INVALID_OUTPUT'); };
 async function directory(path: string): Promise<void> {
   if (!isAbsolute(path)) fail();
@@ -132,20 +135,24 @@ abstract class SpoolImageProvider implements ImageProvider {
     }
     const createdAt = this.now();
     let request = validateCodexImageRequest({ schemaVersion: 1, ...(this.spoolProvider === 'chatgpt-web' ? { provider: this.spoolProvider } : {}), id, prompt, promptHash: expectedPromptHash, createdAt, deadlineAt: createdAt + this.timeout }, undefined, this.spoolProvider);
-    // This immutable reservation remains after the runner claims the active request.
-    const reservation = join(this.config.inboxDir, id + '.submitted.json');
-    if (!await publish(reservation, JSON.stringify(request))) {
-      request = validateCodexImageRequest(JSON.parse((await boundedRead(reservation, CODEX_IMAGE_MAX_JSON_BYTES)).toString('utf8')), undefined, this.spoolProvider);
-      if (request.id !== id || request.promptHash !== sha256Text(prompt)) fail();
-    }
-    validateCodexImageRequest(request, this.now(), this.spoolProvider);
-    // Repair a crash between reservation and publication. The runner's private
-    // durable execution ledger makes a repeated delivery safe after a claim.
-    const inbox = join(this.config.inboxDir, id + '.json');
-    if (!await publish(inbox, JSON.stringify(request))) {
-      const existing = validateCodexImageRequest(JSON.parse((await boundedRead(inbox, CODEX_IMAGE_MAX_JSON_BYTES)).toString('utf8')), undefined, this.spoolProvider);
-      if (existing.id !== id || existing.promptHash !== request.promptHash) fail();
-    }
+    const submit = async () => {
+      // This immutable reservation remains after the runner claims the active request.
+      const reservation = join(this.config.inboxDir, id + '.submitted.json');
+      if (!await publish(reservation, JSON.stringify(request))) {
+        request = validateCodexImageRequest(JSON.parse((await boundedRead(reservation, CODEX_IMAGE_MAX_JSON_BYTES)).toString('utf8')), undefined, this.spoolProvider);
+        if (request.id !== id || request.promptHash !== sha256Text(prompt)) fail();
+      }
+      validateCodexImageRequest(request, this.now(), this.spoolProvider);
+      // Repair a crash between reservation and publication. The runner's private
+      // durable execution ledger makes a repeated delivery safe after a claim.
+      const inbox = join(this.config.inboxDir, id + '.json');
+      if (!await publish(inbox, JSON.stringify(request))) {
+        const existing = validateCodexImageRequest(JSON.parse((await boundedRead(inbox, CODEX_IMAGE_MAX_JSON_BYTES)).toString('utf8')), undefined, this.spoolProvider);
+        if (existing.id !== id || existing.promptHash !== request.promptHash) fail();
+      }
+    };
+    if (this.config.withSubmission) await this.config.withSubmission({ taskId: id }, submit);
+    else await submit();
     while (this.now() < request.deadlineAt) {
       let bytes: Buffer | undefined;
       try { await directory(output); bytes = await boundedRead(join(output, 'result.json'), CODEX_IMAGE_MAX_JSON_BYTES); } catch (error) { if (!missing(error)) throw error; }

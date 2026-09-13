@@ -1,6 +1,8 @@
 import type { SdfNodeType } from '@prisma/client';
 import { SDF_CORE_FIELDS } from '@openscience/sdf-schema';
 import type { WorkspaceDeps } from '../workspace/types';
+import { publicVersionNumber, readPublicationMetadata } from '../publish/publication-metadata';
+import { publicHistoryMedia } from '../commit/version-history';
 
 export const EXPLORE_ARTIFACT_TYPES = ['document', 'image', 'data', 'code', 'video', 'other'] as const;
 export type ExploreArtifactType = (typeof EXPLORE_ARTIFACT_TYPES)[number];
@@ -54,17 +56,11 @@ export async function listPublicResearchIndex(
     },
     include: {
       versions: {
-        where: { status: 'published', publications: { some: {} } }, orderBy: { versionNo: 'desc' }, take: 1,
+        where: { status: 'published', publications: { some: {} } }, orderBy: { publicationNo: 'desc' }, take: 1,
         include: {
           manifest: { include: { entries: true } }, publications: true,
-          presentationAssets: {
-            where: { status: 'approved', kind: { in: ['image', 'chart'] } },
-            select: { id: true, label: true },
-            orderBy: [{ createdAt: 'asc' }, { id: 'asc' }], take: 1,
-          },
         },
       },
-      authors: { orderBy: { sortOrder: 'asc' }, include: { user: { select: { displayName: true } } } },
     },
     orderBy: { publicId: 'desc' },
     take: 100,
@@ -79,7 +75,7 @@ export async function listPublicResearchIndex(
     for (const row of page) {
       const manifest = row.versions[0].manifest;
       const core = (manifest?.coreJson ?? {}) as Record<string, unknown>;
-      if (query && ![row.title, ...SDF_CORE_FIELDS.map(field => core[field])].some(value => typeof value === 'string' && value.toLocaleLowerCase().includes(query))) continue;
+      if (query && ![readPublicationMetadata(row.versions[0].researchRecord).title, ...SDF_CORE_FIELDS.map(field => core[field])].some(value => typeof value === 'string' && value.toLocaleLowerCase().includes(query))) continue;
       if (input.field && (typeof core[input.field] !== 'string' || !(core[input.field] as string).trim())) continue;
       if (input.artifactType && !manifest?.entries.some(entry => classifyExploreArtifact(entry.logicalPath) === input.artifactType)) continue;
       rows.push(row);
@@ -93,23 +89,26 @@ export async function listPublicResearchIndex(
   const visible = rows.slice(0, input.limit);
   const items = visible.map((row): ResearchIndexItem => {
     const version = row.versions[0];
+    const metadata = readPublicationMetadata(version.researchRecord);
+    const publicationNo = publicVersionNumber(version)!;
+    const thumbnail = publicHistoryMedia(version.researchRecord).find(asset => ['image', 'chart'].includes(asset.kind));
     const core = (version.manifest?.coreJson ?? {}) as Record<string, unknown>;
     const fields = SDF_CORE_FIELDS.filter((field) => typeof core[field] === 'string' && (core[field] as string).trim());
     const artifactTypes = [...new Set((version?.manifest?.entries ?? []).map((entry) => classifyExploreArtifact(entry.logicalPath)))];
     return {
       publicId: row.publicId!,
-      title: row.title,
-      url: `/research/${row.publicId}/v/${version.versionNo}`,
-      latestVersion: version.versionNo,
+      title: metadata.title ?? 'Research object (title not recorded)',
+      url: `/research/${row.publicId}/v/${publicationNo}`,
+      latestVersion: publicationNo,
       publishedAt: version.publications[0]?.publishedAt.toISOString() ?? null,
-      updatedAt: row.updatedAt.toISOString(),
+      updatedAt: version.publications[0]?.publishedAt.toISOString() ?? version.createdAt.toISOString(),
       insight: typeof core.insight === 'string' && core.insight.trim() ? core.insight : null,
       fields: [...fields],
       artifactTypes,
-      authors: row.authors.map((author) => author.user.displayName),
-      thumbnail: version.presentationAssets[0] ? {
-        url: `/api/research/${row.publicId}/v/${version.versionNo}/presentation-assets/${version.presentationAssets[0].id}`,
-        label: version.presentationAssets[0].label,
+      authors: metadata.authors.map(author => author.displayName),
+      thumbnail: thumbnail ? {
+        url: `/api/research/${row.publicId}/v/${publicationNo}/presentation-assets/${thumbnail.id}`,
+        label: thumbnail.label,
       } : null,
     };
   });

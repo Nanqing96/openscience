@@ -241,6 +241,15 @@ export function PublicReadingSurface({ research, activeTab = 'overview', onTabCh
     }
   };
 
+  if (!['published', 'revised'].includes(version.status)) return (
+    <article className={`pub-reading-surface research-product ${styles.surface}`}>
+      <header className={`pub-reading-identity ${styles.identity}`}><p className="pub-kicker">{t('researchObject')}</p><h1>{research.title}</h1><p>{version.publicVersionId} · {publishedAt}</p></header>
+      <section className={styles.contribution}><h2>{t(version.status === 'withdrawn' ? 'withdrawnTitle' : 'restrictedTitle')}</h2><p>{t('unavailableVersionBody')}</p></section>
+      <p>{research.citation}</p>
+      {research.history.length > 0 && <details><summary>{t('history.title')}</summary><ul>{research.history.map(item => <li key={item.publicVersionId}><Link href={item.url}>{item.publicVersionId}</Link></li>)}</ul></details>}
+    </article>
+  );
+
   return (
     <div className={`pub-reading-surface research-product ${styles.surface}`} data-public-reading-surface="true" data-has-evidence={Boolean(selectedEvidence)}>
       <div className="pub-reading-layout">

@@ -34,11 +34,15 @@ import { registerSandboxJobsRoutes } from './routes/sandbox-jobs';
 import { registerTemporaryDocumentRoutes } from './routes/temporary-documents';
 import { registerPresentationAssetRoutes } from './routes/presentation-assets';
 import { registerResearchRunRoutes } from './routes/research-runs';
+import { registerTrashRoutes } from './routes/trash';
+import type { TrashDeps } from '@openscience/domain';
 import type { HermesResearchRunDeps } from '@openscience/domain';
 import { registerRateLimit } from './security/rate-limit';
 import { registerSecurity, type SecurityOptions } from './security/security';
 
 export interface BuildAppOptions extends AuthRouteDeps {
+  deleteSearchContent?: TrashDeps['deleteSearchContent'];
+  setSearchContentVisibility?: TrashDeps['setSearchContentVisibility'];
   sceneImageEnabled?: boolean;
   videoEnabled?: boolean;
   canResumeImageBeforeSubmission?: HermesResearchRunDeps['canResumeImageBeforeSubmission'];
@@ -125,6 +129,7 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
   await app.register(async (instance) => registerResearchRunRoutes(instance, opts), {});
   if (opts.storage) {
     const storage = opts.storage;
+    await app.register(async (instance) => registerTrashRoutes(instance, { ...opts, storage }), {});
     await app.register(async (instance) => registerArtifactRoutes(instance, { ...opts, storage }), {});
     await app.register(async (instance) => registerIngestionRoutes(instance, { ...opts, storage }), {});
     await app.register(async (instance) => registerCommitRoutes(instance, { ...opts, storage }), {});

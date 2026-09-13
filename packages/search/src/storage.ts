@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { PrismaClient as CorePrismaClient } from '@prisma/client';
+import { withLiveSearchSources, type SearchSourceIdentity } from './lifecycle';
 
 import { validateSourceLocator, type SourceLocator } from '@openscience/domain';
 
@@ -49,6 +51,9 @@ interface HydrationRow {
   id: string;
   tenant_id: string;
   artifact_id: string;
+  research_object_id: string;
+  source_version_id: string | null;
+  owner_task_id: string | null;
   content_hash: string;
   text: string;
   locators: unknown;
@@ -441,7 +446,8 @@ function buildLexicalMatchCountQuery(input: {
 }
 
 export class SearchStorage {
-  constructor(private readonly client: PrismaClient) {}
+  private coreClient?: CorePrismaClient;
+  constructor(private readonly client: PrismaClient, core?: CorePrismaClient) { this.coreClient = core; }
 
   async upsertChunks(input: UpsertSearchChunksInput): Promise<void> {
     assertUuid(input.tenantId, 'tenantId');
@@ -862,7 +868,8 @@ export class SearchStorage {
     if (input.ids.length === 0) return { status: 'ok', candidates: [], needsReviewCount: 0 };
     const idArray = Prisma.sql`ARRAY[${Prisma.join(input.ids)}]::text[]`;
     try {
-      return await this.client.$transaction(async (transaction) => {
+      const identities: SearchSourceIdentity[] = [];
+      const result = await this.client.$transaction(async (transaction) => {
         await transaction.$executeRaw(Prisma.sql`
           SELECT set_config('statement_timeout', ${String(STATEMENT_TIMEOUT_MILLISECONDS)}, true)
         `);
@@ -879,13 +886,15 @@ export class SearchStorage {
           return { status: 'unavailable', code: 'lexical_capacity_exceeded' } as const;
         }
         const rows = await transaction.$queryRaw<HydrationRow[]>(Prisma.sql`
-          SELECT "id", "workspace_id"::text AS tenant_id, "artifact_id"::text AS artifact_id,
-                 "content_hash", "text", "locators", "claim_ids"
-          FROM "search_chunks"
-          WHERE "workspace_id" = ${input.tenantId}::uuid
-            AND "active" = true
-            AND "id"::text = ANY(${idArray})
-          ORDER BY "id" ASC
+          SELECT chunk."id", chunk."workspace_id"::text AS tenant_id, chunk."artifact_id"::text AS artifact_id,
+                 chunk."research_object_id"::text AS research_object_id, chunk."source_version_id"::text AS source_version_id,
+                 task."fence_owner_task_id"::text AS owner_task_id,
+                 chunk."content_hash", chunk."text", chunk."locators", chunk."claim_ids"
+          FROM "search_chunks" chunk LEFT JOIN "search_index_tasks" task ON task.id = chunk.index_task_id
+          WHERE chunk."workspace_id" = ${input.tenantId}::uuid
+            AND chunk."active" = true
+            AND chunk."id"::text = ANY(${idArray})
+          ORDER BY chunk."id" ASC
         `);
         const candidates: LexicalCandidatePayload[] = [];
         let needsReviewCount = input.ids.length - rows.length;
@@ -905,6 +914,8 @@ export class SearchStorage {
             locators,
             claimIds,
           });
+          identities.push({ id: row.id, workspaceId: row.tenant_id, researchObjectId: row.research_object_id,
+            artifactId: row.artifact_id, sourceVersionId: row.source_version_id, ownerTaskId: row.owner_task_id });
         }
         return { status: 'ok', candidates, needsReviewCount } as const;
       }, {
@@ -912,6 +923,12 @@ export class SearchStorage {
         maxWait: 2_000,
         timeout: 5_000,
       });
+      if (result.status !== 'ok') return result;
+      // Release the search transaction before taking the core lock: writers take core then search.
+      // If core is unavailable, no indexed text is returned.
+      this.coreClient ??= new CorePrismaClient();
+      const live = await withLiveSearchSources(this.coreClient, identities);
+      return { ...result, candidates: result.candidates.filter(row => live.has(row.id)) };
     } catch {
       return { status: 'unavailable', code: 'search_storage_unavailable' };
     }

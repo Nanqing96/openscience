@@ -574,6 +574,13 @@ transaction_publish_capability_and_cas() {
 }
 transaction_perform_application_rollback() {
   local rollback_ok=1 rollback_active
+  # Pre-lifecycle readers expose live private drafts of public ROs. Checking only
+  # version numbers or whether trash is empty cannot make that rollback safe.
+  if [ -d "$RELEASE_ROOT/infra/migrations/20260913010000_publication_identity" ] \
+    && [ ! -d "$PREVIOUS_RELEASE_ROOT/infra/migrations/20260913010000_publication_identity" ]; then
+    echo "ROLLBACK_FAILED_READER_INCOMPATIBLE: preserve the candidate and migration journal; repair forward with a lifecycle-compatible release" >&2
+    return 70
+  fi
   rollback_active="$(run_remote "cat '$REMOTE_ROOT/.release-id' 2>/dev/null || true")"
   case "$rollback_active" in
     "$PREVIOUS_RELEASE_SHA"|"$RELEASE_SHA") ;;
@@ -621,6 +628,10 @@ transaction_perform_application_rollback() {
   return 0
 }
 
+# Install the host-owned queue before Docker bind-mounts it into the candidate.
+# Failure here leaves the previous application running; no content is submitted.
+run_remote "bash '$RELEASE_ROOT/infra/private-cleanup/install.sh' --source '$RELEASE_ROOT'"
+
 transaction_initialize_state
 transaction_install_traps
 
@@ -629,25 +640,35 @@ transaction_begin
 
 if [ "$SKIP_MIGRATE" -ne 1 ]; then
   transaction_mark_phase migrating
+  # A publication writer from the previous release must not run after ordinal backfill.
+  # Build has completed and the durable rollback trap is installed before quiescing.
+  log "[3] 暂停旧 API/Web/Worker 写入，迁移后由候选版本一并恢复..."
+  compose_current "stop --timeout 600 api web agent-worker"
   run_remote "grep -q '^SEARCH_DATABASE_URL=.' $PROD_ENV" || {
     echo "错误：生产环境缺少 SEARCH_DATABASE_URL，拒绝把搜索索引写入核心数据库" >&2
     exit 66
   }
-  log "[2c] 验证核心库/搜索库物理隔离..."
-  compose_current "run --rm --no-deps -T -w /opt/openscience api node scripts/verify-database-isolation.mjs"
+  if [ "$NO_TESTS" -eq 0 ]; then
+    log "[2c] 验证核心库/搜索库物理隔离..."
+    compose_current "run --rm --no-deps -T -w /opt/openscience api node scripts/verify-database-isolation.mjs"
+  fi
   log "[3] 迁移 deploy..."
   compose_current "run --rm --no-deps -T -w /opt/openscience api node packages/database/dist/migrate-cli.js deploy"
   log "[3b] 搜索库迁移 deploy..."
   compose_current "run --rm --no-deps -T -w /opt/openscience api node node_modules/prisma/build/index.js migrate deploy --schema /opt/openscience/infra/search/schema.prisma"
-  compose_current "run --rm --no-deps -T -w /opt/openscience api node node_modules/prisma/build/index.js migrate status --schema /opt/openscience/infra/search/schema.prisma"
-  log "[3c] search migration status=2/2"
+  if [ "$NO_TESTS" -eq 0 ]; then
+    compose_current "run --rm --no-deps -T -w /opt/openscience api node node_modules/prisma/build/index.js migrate status --schema /opt/openscience/infra/search/schema.prisma"
+  fi
   if [ "$BGE_M3_ENABLED" -eq 1 ]; then
     log "[3d] 注册精确 BGE-M3 搜索模型身份..."
     compose_current "run --rm --no-deps -T -w /opt/openscience api node scripts/register-search-model.mjs"
   fi
   log "[4] seed-quota..."
   compose_current "run --rm --no-deps -T -w /opt/openscience api node scripts/seed-quota.mjs --confirm"
-  transaction_complete_migration
+  # Services are quiesced: an error before startup still requires application
+  # recovery. Persist switching under deferred signals without an intermediate
+  # prepared state that could clear the journal and leave services stopped.
+  transaction_mark_phase switching
 fi
 
 verify_candidate_switch_contract pre-switch

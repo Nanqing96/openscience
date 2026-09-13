@@ -188,7 +188,7 @@ export async function authorizeIngestionWrite(
   input: { userId: string; researchObjectId: string },
 ) {
   const ro = await deps.prisma.researchObject.findUnique({ where: { id: input.researchObjectId } });
-  if (!ro) throw new IngestionError('INGESTION_NOT_FOUND', 'Research object not found');
+  if (!ro || ro.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Research object not found');
   const { workspace, membership } = await requireMembership(deps, ro.workspaceId, input.userId);
   requireActive(workspace);
   if (!INGESTION_WRITE_ROLES.has(membership.role)) throw new WorkspaceError('FORBIDDEN', '权限不足');
@@ -295,9 +295,9 @@ export async function getIngestionBatch(
   input: { userId: string; batchId: string },
 ): Promise<IngestionBatchView> {
   const batch = await deps.prisma.ingestionBatch.findUnique({
-    where: { id: input.batchId }, include: { researchObject: true, tasks: { include: { artifact: true }, orderBy: { createdAt: 'asc' } } },
+    where: { id: input.batchId }, include: { researchObject: true, tasks: { where: { artifact: { deletedAt: null }, OR: [{ agentTaskId: null }, { agentTask: { deletedAt: null } }] }, include: { artifact: true }, orderBy: { createdAt: 'asc' } } },
   });
-  if (!batch) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion batch not found');
+  if (!batch || batch.researchObject.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion batch not found');
   await requireMembership(deps, batch.researchObject.workspaceId, input.userId);
   return {
     batchId: batch.id, researchObjectId: batch.researchObjectId,
@@ -310,7 +310,7 @@ export async function getIngestionTask(
   input: { userId: string; taskId: string },
 ): Promise<{ task: IngestionTaskView & { result: Record<string, unknown> | null }; batchId: string; researchObjectId: string; version: number }> {
   const task = await deps.prisma.ingestionTask.findUnique({ where: { id: input.taskId }, include: { artifact: true, agentTask: true, batch: { include: { researchObject: true }, } } });
-  if (!task) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
+  if (!task || task.artifact.deletedAt || task.agentTask?.deletedAt || task.batch.researchObject.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
   await requireMembership(deps, task.batch.researchObject.workspaceId, input.userId);
   const result = projectAgentTaskResult(task.agentTask?.result, task.agentTask?.kind ?? '');
   return { task: { ...taskToView(task), result }, batchId: task.batchId, researchObjectId: task.batch.researchObjectId, version: task.batch.researchObject.version };
@@ -327,17 +327,19 @@ export async function listActionableIngestionTasks(
 ): Promise<ActionableIngestionTaskView[]> {
   if (input.researchObjectId !== undefined) {
     const ro = await deps.prisma.researchObject.findUnique({ where: { id: input.researchObjectId } });
-    if (!ro) throw new IngestionError('INGESTION_NOT_FOUND', 'Research object not found');
+    if (!ro || ro.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Research object not found');
     await requireMembership(deps, ro.workspaceId, input.userId);
   }
   const tasks = await deps.prisma.ingestionTask.findMany({
     where: {
       batch: input.researchObjectId === undefined
-        ? { userId: input.userId, researchObject: { status: { not: 'archived' } } }
+        ? { userId: input.userId, researchObject: { deletedAt: null, status: { not: 'archived' } } }
         : { researchObjectId: input.researchObjectId },
+      artifact: { deletedAt: null },
+      OR: [{ agentTaskId: null }, { agentTask: { deletedAt: null } }],
       state: { in: [...ACTIONABLE_INGESTION_STATES] },
     },
-    include: { artifact: true, batch: { include: { researchObject: true } } },
+    include: { artifact: true, agentTask: true, batch: { include: { researchObject: true } } },
     orderBy: { updatedAt: 'desc' },
     take: 20,
   });
@@ -360,7 +362,7 @@ export async function retryIngestionTask(
         const task = await tx.ingestionTask.findUnique({
           where: { id: input.taskId }, include: { artifact: true, agentTask: true, batch: { include: { researchObject: true } } },
         });
-        if (!task) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
+        if (!task || task.artifact.deletedAt || task.agentTask?.deletedAt || task.batch.researchObject.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
         const { workspace, membership } = await requireActiveMembership(tx, task.batch.researchObject.workspaceId, input.userId);
         if (!INGESTION_WRITE_ROLES.has(membership.role)) throw new WorkspaceError('FORBIDDEN', '权限不足');
         const result = task.agentTask?.result;
@@ -556,9 +558,9 @@ export async function refreshIngestionAnalysis(
 ): Promise<IngestionTaskView> {
   if (!input.processingConsent) throw new IngestionError('PROCESSING_CONSENT_REQUIRED', 'Processing consent is required');
   const initial = await deps.prisma.ingestionTask.findUnique({
-    where: { id: input.taskId }, include: { artifact: true, batch: { include: { researchObject: true } } },
+    where: { id: input.taskId }, include: { artifact: true, agentTask: true, batch: { include: { researchObject: true } } },
   });
-  if (!initial) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
+  if (!initial || initial.artifact.deletedAt || initial.agentTask?.deletedAt || initial.batch.researchObject.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
   const { workspace, membership } = await requireActiveMembership(deps.prisma, initial.batch.researchObject.workspaceId, input.userId);
   if (!INGESTION_WRITE_ROLES.has(membership.role)) throw new WorkspaceError('FORBIDDEN', '权限不足');
   if (initial.batch.userId !== input.userId || initial.artifact.workspaceId !== workspace.id) {
@@ -626,9 +628,9 @@ export async function refreshIngestionAnalysis(
         queued = await deps.prisma.$transaction(async (tx) => {
           const source = await tx.ingestionTask.findUnique({
             where: { id: input.taskId },
-            include: { artifact: true, batch: { include: { researchObject: true } } },
+            include: { artifact: true, agentTask: true, batch: { include: { researchObject: true } } },
           });
-          if (!source) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
+          if (!source || source.artifact.deletedAt || source.agentTask?.deletedAt || source.batch.researchObject.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
           const { workspace, membership } = await requireActiveMembership(tx, source.batch.researchObject.workspaceId, input.userId);
           if (!INGESTION_WRITE_ROLES.has(membership.role)) throw new WorkspaceError('FORBIDDEN', '权限不足');
           if (source.batch.userId !== input.userId || source.artifact.workspaceId !== workspace.id) {
@@ -781,9 +783,9 @@ export async function refreshIngestionAnalysis(
       queued = await deps.prisma.$transaction(async (tx) => {
         const source = await tx.ingestionTask.findUnique({
           where: { id: input.taskId },
-          include: { artifact: true, batch: { include: { researchObject: true } } },
+          include: { artifact: true, agentTask: true, batch: { include: { researchObject: true } } },
         });
-        if (!source) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
+        if (!source || source.artifact.deletedAt || source.agentTask?.deletedAt || source.batch.researchObject.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
         const { workspace, membership } = await requireActiveMembership(tx, source.batch.researchObject.workspaceId, input.userId);
         if (!INGESTION_WRITE_ROLES.has(membership.role)) throw new WorkspaceError('FORBIDDEN', '权限不足');
         if (source.batch.userId !== input.userId || source.artifact.workspaceId !== workspace.id) {
@@ -878,7 +880,7 @@ export async function reanalyzeConfirmedIngestion(
     where: { id: input.taskId },
     include: { artifact: true, agentTask: { include: { session: true } }, batch: { include: { researchObject: true } } },
   });
-  if (!initial) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
+  if (!initial || initial.artifact.deletedAt || initial.agentTask?.deletedAt || initial.batch.researchObject.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
   const { workspace, membership } = await requireActiveMembership(deps.prisma, initial.batch.researchObject.workspaceId, input.userId);
   if (!INGESTION_WRITE_ROLES.has(membership.role)) throw new WorkspaceError('FORBIDDEN', '权限不足');
   const sourceAgent = initial.agentTask;
@@ -909,7 +911,7 @@ export async function reanalyzeConfirmedIngestion(
           where: { id: initial.id },
           include: { artifact: true, agentTask: { include: { session: true } }, batch: { include: { researchObject: true } } },
         });
-        if (!source) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
+        if (!source || source.artifact.deletedAt || source.agentTask?.deletedAt || source.batch.researchObject.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
         const { workspace: transactionWorkspace, membership: transactionMembership } = await requireActiveMembership(
           tx, source.batch.researchObject.workspaceId, input.userId,
         );
@@ -1050,10 +1052,10 @@ async function savedConfirmation(deps: IngestionDeps, taskId: string, researchOb
 /** Durable RO-scoped material history, including completed imports and their fixed versions. */
 export async function getResearchObjectIngestion(deps: IngestionDeps, input: { userId: string; researchObjectId: string }) {
   const ro = await deps.prisma.researchObject.findUnique({ where: { id: input.researchObjectId } });
-  if (!ro) throw new IngestionError('INGESTION_NOT_FOUND', 'Research object not found');
+  if (!ro || ro.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Research object not found');
   await requireMembership(deps, ro.workspaceId, input.userId);
   const rows = await deps.prisma.ingestionTask.findMany({
-    where: { batch: { researchObjectId: ro.id } }, include: { artifact: true }, orderBy: { updatedAt: 'desc' },
+    where: { batch: { researchObjectId: ro.id }, artifact: { deletedAt: null }, OR: [{ agentTaskId: null }, { agentTask: { deletedAt: null } }] }, include: { artifact: true }, orderBy: { updatedAt: 'desc' },
   });
   const tasks = await Promise.all(rows.map(async task => {
     const saved = await savedConfirmation(deps, task.id, ro.id);
@@ -1075,7 +1077,7 @@ export async function confirmIngestionTask(
         const scoped = { ...deps, prisma: tx as IngestionDeps['prisma'] };
         const task = await tx.ingestionTask.findUnique({ where: { id: input.taskId },
           include: { artifact: true, agentTask: true, batch: { include: { researchObject: true } } } });
-        if (!task) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
+        if (!task || task.artifact.deletedAt || task.agentTask?.deletedAt || task.batch.researchObject.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
         const { researchObject: ro } = await authorizeIngestionWrite(scoped, { userId: input.userId, researchObjectId: task.batch.researchObjectId });
         let commit = await savedConfirmation(scoped, task.id, ro.id);
         if (!commit) {

@@ -1,6 +1,12 @@
 export { WorkspaceError, type WorkspaceErrorCode } from './workspace/errors';
 export { now, type WorkspaceDeps } from './workspace/types';
 export { createPersonalWorkspace, type PersonalWorkspaceUser } from './workspace/personal';
+export { restoreVersionDraft } from './commit/restore-draft';
+export { publicHistoryMedia } from './commit/version-history';
+export { TrashError } from './trash/errors';
+export { TRASH_KINDS, moveToTrash, listTrash, restoreTrash, purgeTrash, listCleanableContent, purgeExpiredTrash, cleanTrashObjects, lockTrashReferences, lockLiveResearchObject, type TrashDeps, type TrashSearchScope } from './trash/trash';
+export { canAccessPrivateRo, requirePrivateRoAccess } from './visibility/access';
+export { readPublicationMetadata, publicVersionNumber, type PublicationMetadata } from './publish/publication-metadata';
 export {
   createTeamWorkspace,
   getWorkspace,

@@ -1,8 +1,10 @@
 import { carryVersionEvidence } from '../ingestion/ingestion-evidence';
 import { freezeResearchRecord } from './research-record-snapshot';
+import { carryVersionMedia } from './carry-media';
 import type { ArtifactDeps } from '../artifact/artifacts';
+import type { WorkspaceDeps } from '../workspace/types';
 import { getBlobStorageKey } from '@openscience/storage';
-import { validateSdfCore, validateSdfDraftCore } from '@openscience/sdf-schema';
+import { validateSdfDraftCore } from '@openscience/sdf-schema';
 import { buildSnapshot, diffSdfCore, type ManifestEntryInput, type VersionSnapshot } from '@openscience/versioning';
 import type { Prisma } from '@prisma/client';
 import type { AuditContext } from '@openscience/observability';
@@ -10,6 +12,9 @@ import { requireMembership } from '../workspace/helpers';
 import { recordAudit } from '../workspace/audit';
 import { CommitError } from './errors';
 import { SDF_NODE_TYPES } from '../research-object/types';
+import { publicVersionNumber, readPublicationMetadata } from '../publish/publication-metadata';
+import { lockTrashReferences } from '../trash/trash';
+import { sealVersionHistory } from './version-history';
 
 export type { VersionSnapshot };
 
@@ -45,6 +50,11 @@ export interface CreateCommitResult {
 export interface VersionDetail {
   versionId: string;
   versionNo: number;
+  publicationNo: number | null;
+  publishedAt: Date | null;
+  commitCreatedAt: Date;
+  commitMessage: string;
+  title: string | null;
   status: string;
   commitId: string;
   createdAt: Date;
@@ -54,6 +64,11 @@ export interface VersionDetail {
 export interface VersionSummary {
   versionId: string;
   versionNo: number;
+  publicationNo: number | null;
+  publishedAt: Date | null;
+  commitCreatedAt: Date;
+  commitMessage: string;
+  title: string | null;
   status: string;
   commitId: string;
   createdAt: Date;
@@ -70,13 +85,13 @@ const DEFAULT_BRANCH = 'main';
  * 5. RO.version+1 + 审计
  */
 export async function createCommit(
-  deps: ArtifactDeps,
+  deps: WorkspaceDeps,
   input: CreateCommitInput,
   ctx: AuditContext = {},
   transaction?: Prisma.TransactionClient,
 ): Promise<CreateCommitResult> {
   // Internal composition: all reads and writes use the caller's transaction.
-  if (transaction) deps = { ...deps, prisma: transaction as ArtifactDeps['prisma'] };
+  if (transaction) deps = { ...deps, prisma: transaction as WorkspaceDeps['prisma'] };
   if (!transaction && input.idempotencyKey?.startsWith('ingestion-confirm:')) {
     throw new CommitError('VALIDATION_ERROR', 'Reserved ingestion idempotency key');
   }
@@ -91,7 +106,7 @@ export async function createCommit(
     if (existing) {
       if (existing.researchObjectId !== input.researchObjectId) throw new CommitError('VALIDATION_ERROR', 'Idempotency key belongs to another research object');
       const existingRo = await deps.prisma.researchObject.findUnique({ where: { id: existing.researchObjectId } });
-      if (!existingRo) throw new CommitError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
+      if (!existingRo || existingRo.deletedAt) throw new CommitError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
       await requireMembership(deps, existingRo.workspaceId, input.userId);
       const version = await deps.prisma.version.findFirst({ where: { commitId: existing.id } });
       const snapshot = await loadSnapshot(deps, version?.id ?? '');
@@ -105,7 +120,7 @@ export async function createCommit(
     where: { id: input.researchObjectId },
     include: { sdfDocument: true },
   });
-  if (!ro) throw new CommitError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
+  if (!ro || ro.deletedAt) throw new CommitError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
   await requireMembership(deps, ro.workspaceId, input.userId);
 
   // 乐观锁（§16）
@@ -163,7 +178,7 @@ export async function createCommit(
   const liveCore = (ro.sdfDocument?.coreJson as Record<string, unknown> | undefined) ?? predecessorCore;
   const changesets: Array<{ kind: string; payload: Prisma.InputJsonValue }> = [];
   const finalCore = input.sdfCore ?? (branch.isDefault ? liveCore : predecessorCore);
-  const check = ro.status === 'draft' ? validateSdfDraftCore(finalCore) : validateSdfCore(finalCore);
+  const check = validateSdfDraftCore(finalCore);
   if (!check.ok) throw new CommitError('VALIDATION_ERROR', 'SDF 文档不符合 core Schema');
   const patch = diffSdfCore(predecessorCore, finalCore);
   if (patch.length) {
@@ -212,8 +227,10 @@ export async function createCommit(
   }
 
   const persist = async (tx: Prisma.TransactionClient) => {
+    await lockTrashReferences(tx);
+    if (predecessorVersion) await sealVersionHistory(tx, { researchObjectId: ro.id, versionId: predecessorVersion.id });
     const advanced = await tx.researchObject.updateMany({
-      where: { id: ro.id, version: input.version },
+      where: { id: ro.id, version: input.version, deletedAt: null },
       data: { version: input.version + 1 },
     });
     if (advanced.count !== 1) throw new CommitError('CONCURRENT_UPDATE', '版本冲突，请刷新后重试');
@@ -252,7 +269,10 @@ export async function createCommit(
       }
     }
     if (!transaction) {
-      if (predecessorVersion) await carryVersionEvidence(tx, { researchObjectId: ro.id, previousVersionId: predecessorVersion.id, versionId: version.id });
+      if (predecessorVersion) {
+        await carryVersionEvidence(tx, { researchObjectId: ro.id, previousVersionId: predecessorVersion.id, versionId: version.id });
+        await carryVersionMedia(tx, { researchObjectId: ro.id, previousVersionId: predecessorVersion.id, versionId: version.id });
+      }
       await freezeResearchRecord(tx, { researchObjectId: ro.id, versionId: version.id });
     }
     await recordAudit(
@@ -286,14 +306,19 @@ export async function getVersion(
 ): Promise<VersionDetail> {
   const version = await deps.prisma.version.findUnique({
     where: { id: input.versionId },
-    include: { researchObject: true },
+    include: { researchObject: true, commit: true, publications: { orderBy: { publishedAt: 'asc' }, take: 1 } },
   });
-  if (!version) throw new CommitError('RESEARCH_OBJECT_NOT_FOUND', '版本不存在');
+  if (!version || version.researchObject.deletedAt) throw new CommitError('RESEARCH_OBJECT_NOT_FOUND', '版本不存在');
   await requireMembership(deps, version.researchObject.workspaceId, input.userId);
   const snapshot = await loadSnapshot(deps, version.id);
   return {
     versionId: version.id,
     versionNo: version.versionNo,
+    publicationNo: publicVersionNumber(version),
+    publishedAt: version.publications[0]?.publishedAt ?? null,
+    commitCreatedAt: version.commit.createdAt,
+    commitMessage: version.commit.message,
+    title: readPublicationMetadata(version.researchRecord).title,
     status: version.status,
     commitId: version.commitId,
     createdAt: version.createdAt,
@@ -307,16 +332,22 @@ export async function listVersions(
   input: { researchObjectId: string; userId: string },
 ): Promise<VersionSummary[]> {
   const ro = await deps.prisma.researchObject.findUnique({ where: { id: input.researchObjectId } });
-  if (!ro) throw new CommitError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
+  if (!ro || ro.deletedAt) throw new CommitError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
   await requireMembership(deps, ro.workspaceId, input.userId);
   const rows = await deps.prisma.version.findMany({
     where: { researchObjectId: ro.id },
     orderBy: { versionNo: 'desc' },
+    include: { commit: true, publications: { orderBy: { publishedAt: 'asc' }, take: 1 } },
   });
   return rows
     .map((version) => ({
       versionId: version.id,
       versionNo: version.versionNo,
+      publicationNo: publicVersionNumber(version),
+      publishedAt: version.publications[0]?.publishedAt ?? null,
+      commitCreatedAt: version.commit.createdAt,
+      commitMessage: version.commit.message,
+      title: readPublicationMetadata(version.researchRecord).title,
       status: version.status,
       commitId: version.commitId,
       createdAt: version.createdAt,
@@ -355,7 +386,7 @@ export async function rebuildVersion(
 }
 
 /** 从 Manifest 读快照（core + entries）。 */
-async function loadSnapshot(deps: ArtifactDeps, versionId: string): Promise<VersionSnapshot> {
+async function loadSnapshot(deps: WorkspaceDeps, versionId: string): Promise<VersionSnapshot> {
   const manifest = await deps.prisma.versionManifest.findUnique({
     where: { versionId },
     include: { entries: true },

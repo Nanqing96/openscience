@@ -234,10 +234,9 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
     if (videoOutput ? videoOutput.size < 32 || videoOutput.size > 128 * 1024 * 1024 : bytes.length < 32 || bytes.length > 10 * 1024 * 1024) throw new Error('[blocked] presentation output size is invalid');
     const contentHash = videoOutput?.contentHash ?? createHash('sha256').update(bytes).digest('hex');
     const objectKey = `presentation/${payload.researchObjectId}/${payload.versionId}/${contentHash}.${extension}`;
-    await deps.storage.putObject(objectKey, videoOutput ? createReadStream(videoOutput.filePath) : bytes, { contentType, sha256: contentHash });
     const asset = await withPresentationAssetWrite(deps.prisma, scope, async (tx) => {
       const currentTask = await tx.agentTask.findUnique({ where: { id: task.id }, include: { session: true } });
-      if (!currentTask || currentTask.kind !== 'presentation.generate' || currentTask.status !== 'running'
+      if (!currentTask || currentTask.deletedAt || currentTask.session.deletedAt || currentTask.kind !== 'presentation.generate' || currentTask.status !== 'running'
         || currentTask.executionAttempt !== task.executionAttempt
         || currentTask.session.userId !== scope.userId || currentTask.session.researchObjectId !== payload.researchObjectId) {
         throw new Error('[blocked] presentation task authority changed');
@@ -259,6 +258,9 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       if (sceneParent && (await requireSceneImageParent(tx, payload))?.identity !== sceneParent.identity) throw new Error('[blocked] approved storyboard changed before scene image completion');
       if (videoParents && (await requireVideoGenerationParents(tx, payload))?.identity !== videoParents.identity) throw new Error('[blocked] approved video inputs changed before completion');
       await requireUnchangedEvidence(tx);
+      // withPresentationAssetWrite holds the shared storage-reference lock through upload and row creation.
+      await tx.trashObjectCleanup.updateMany({ where: { objectKey }, data: { state: 'retained', lastError: null } });
+      await deps.storage!.putObject(objectKey, videoOutput ? createReadStream(videoOutput.filePath) : bytes, { contentType, sha256: contentHash });
       const created = await tx.presentationAsset.create({ data: {
         id: task.id, researchObjectId: payload.researchObjectId, versionId: payload.versionId, kind: payload.kind,
         objectKey, contentHash, generator, generatorVersion, promptHash, label: PRESENTATION_ASSET_LABEL,

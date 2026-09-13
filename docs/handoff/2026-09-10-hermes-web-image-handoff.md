@@ -1,10 +1,10 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 用户已逐项确认草稿/公开版本/删除规则，见 docs/specs/2026-09-13-draft-publication-trash-design.md 与 ADR-014；本轮仅设计落盘，未改代码/部署/删除。下一步按方案实施公开编号分离、历史入口迁移、回收站。第二篇正确图文保留，质量确认及公开仍未完成；视频/批量暂停。
+- 用户已授权“执行”草稿/公开版本/删除方案（spec 2026-09-13、ADR-014）；三部分已有未提交实现，正在收尾独立High指出的冻结图文恢复、公开依赖和真实清除边界。未构建部署，不得宣称上线。第二篇正确图文保留，质量确认及公开仍未完成；视频/批量暂停。
 - 生产MiniMax-M3；自动生成、引导共编、人工校正分别标记，独立审核不冒称产品自动审核。
 - 本机仅编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/start与实际产品生成/阅读按授权执行。
 ## Version and workspace
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；设计起点文档HEAD/originc3d20046，代码releasec0bc653d；本轮后续文档HEAD以Git为准。部署clean detached .worktrees/reader-clean-release-c0bc653d；原dirty spec保留。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；实施起点HEAD/origina3025b8b，当前未提交候选。服务器本轮只读确认仍releasec0bc653d；原dirty spec保留。旧clean detached reader-clean-release-c0bc653d不用于新候选。
 - 当前应用releasec0bc653d745e0dd84b8598a1e23cd80472559386 / rollback871ed7025168fdeb68cca98398590d9d3a1e2c03；tmp/reader-clean-deploy-20260913.log exit0，必要服务器build/start及实际/__release同SHA，无测试/CI/迁移/依赖。独立High前端静态PASS。
 - 根目录旧dirty main不是生产基线；未合并main。unrelated dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
 - 网页生图base bundle d1630135 / rollback92cc416e；实际image/review runner为501da7a3、page-lifecycle为d369ccc2；image broker为b78fb94d派生bundle，均独立于应用release。video runner0df87c9b、浏览器镜像8aa21251不变；浏览器09-13 07:55:11Z自行重启一次，登录保留，旧target ID失效。

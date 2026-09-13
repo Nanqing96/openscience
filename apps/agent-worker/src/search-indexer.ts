@@ -83,7 +83,7 @@ type SearchIndexResult =
   | { status: 'needs_review'; chunkCount: number; errorCode: 'embedding_unavailable' | 'no_searchable_content' };
 
 export interface SearchIndexer {
-  index(job: SearchIndexJob): Promise<SearchIndexResult>;
+  index(job: SearchIndexJob, withWriteAuthority?: <T>(operation: () => Promise<T>) => Promise<T>): Promise<SearchIndexResult>;
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
@@ -162,14 +162,14 @@ export async function authorizeSearchIndexJob(
     where: { id: task.id },
     include: { session: { include: { researchObject: true } } },
   });
-  if (!ownerTask || ownerTask.kind !== 'search.index' || ownerTask.status !== 'running'
+  if (!ownerTask || ownerTask.deletedAt || ownerTask.session.deletedAt || ownerTask.kind !== 'search.index' || ownerTask.status !== 'running'
     || ownerTask.executionAttempt !== task.executionAttempt) {
     throw new Error('[blocked] search index task authority mismatch');
   }
   const payload = parseSearchIndexPayload(ownerTask.payload);
   const researchObject = ownerTask?.session.researchObject;
   const artifact = await deps.prisma.artifact.findUnique({ where: { id: payload.artifactId } });
-  if (!researchObject || !artifact
+  if (!researchObject || researchObject.deletedAt || !artifact || artifact.deletedAt
     || artifact.workspaceId !== researchObject.workspaceId
     || payload.sourceMap.artifactId !== artifact.id
     || !sameHash(payload.sourceMap.contentHash, artifact.blobSha256)) {
@@ -298,7 +298,7 @@ export function createSearchIndexer(dependencies: {
 }): SearchIndexer {
   const modelIdentity = { ...dependencies.modelIdentity };
   return {
-    async index(job: SearchIndexJob): Promise<SearchIndexResult> {
+    async index(job: SearchIndexJob, withWriteAuthority = <T>(operation: () => Promise<T>) => operation()): Promise<SearchIndexResult> {
       validateJob(job);
       const generationSha256 = sourceGenerationSha256(job);
       const chunks = chunkDocument({ sourceMap: job.sourceMap, claimIdsByBlockId: job.claimIdsByBlockId })
@@ -307,7 +307,7 @@ export function createSearchIndexer(dependencies: {
           id: scopeChunkId(chunk.id, job, modelIdentity.modelVersionId, generationSha256),
         }));
       const leaseToken = randomBytes(32).toString('hex');
-      const begin = await dependencies.storage.beginIndexTask({
+      const begin = await withWriteAuthority(() => dependencies.storage.beginIndexTask({
         taskId: job.taskId,
         tenantId: job.tenantId,
         researchObjectId: job.researchObjectId,
@@ -320,7 +320,7 @@ export function createSearchIndexer(dependencies: {
         leaseToken,
         executionAttempt: job.sourceExecutionAttempt,
         modelIdentity,
-      });
+      }));
       if (begin.action === 'skip') {
         if (begin.status === 'running') throw new Error('index_generation_running');
         if (begin.status === 'failed') throw new Error('index_task_attempts_exhausted');
@@ -329,21 +329,21 @@ export function createSearchIndexer(dependencies: {
           : { status: 'succeeded', chunkCount: 0, denseChunkCount: 0, activated: false };
       }
       try {
-        await dependencies.storage.stageIndexGeneration({
+        await withWriteAuthority(() => dependencies.storage.stageIndexGeneration({
           taskId: begin.taskId, leaseToken: begin.leaseToken, chunks,
-        });
+        }));
       } catch {
         await failIndexTaskBestEffort(dependencies.storage, begin);
         throw new Error('index_storage_unavailable');
       }
       if (chunks.length === 0) {
-        await finalizeWithCompensation(dependencies.storage, begin, {
+        await withWriteAuthority(() => finalizeWithCompensation(dependencies.storage, begin, {
           taskId: begin.taskId,
           leaseToken: begin.leaseToken,
           status: 'needs_review',
           errorCode: 'no_searchable_content',
           embeddings: [],
-        });
+        }));
         return { status: 'needs_review', chunkCount: 0, errorCode: 'no_searchable_content' };
       }
 
@@ -364,22 +364,22 @@ export function createSearchIndexer(dependencies: {
             embeddings.push(encodeVector(batch[index]!.id, result.vectors[index] ?? []));
           }
         } catch {
-          await finalizeWithCompensation(dependencies.storage, begin, {
+          await withWriteAuthority(() => finalizeWithCompensation(dependencies.storage, begin, {
             taskId: begin.taskId,
             leaseToken: begin.leaseToken,
             status: 'needs_review',
             errorCode: 'embedding_unavailable',
             embeddings: [],
-          });
+          }));
           return { status: 'needs_review', chunkCount: chunks.length, errorCode: 'embedding_unavailable' };
         }
       }
-      const finalization = await finalizeWithCompensation(dependencies.storage, begin, {
+      const finalization = await withWriteAuthority(() => finalizeWithCompensation(dependencies.storage, begin, {
         taskId: begin.taskId,
         leaseToken: begin.leaseToken,
         status: 'succeeded',
         embeddings,
-      });
+      }));
       return {
         status: 'succeeded',
         chunkCount: chunks.length,

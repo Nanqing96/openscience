@@ -79,6 +79,9 @@ export interface ResearchObjectSummary {
 export interface VersionSummary {
   versionId: string;
   versionNo: number;
+  publicationNo?: number | null;
+  publishedAt?: string | null;
+  commitMessage?: string;
   status: string;
   commitId: string;
   createdAt: string;
@@ -980,7 +983,7 @@ export async function transitionVersionStatus(versionId: string, status: string)
   return request(`/api/versions/${versionId}/status`, { method: 'POST', body: JSON.stringify({ status }) });
 }
 
-export async function publishVersion(versionId: string): Promise<{ published: { versionId: string; publicId: string; publicVersionId: string; publishedAt: string; status: string; visibility: 'public' } }> {
+export async function publishVersion(versionId: string): Promise<{ published: { versionId: string; publicId: string; publicVersionId: string; publicationNo: number | null; publishedAt: string; status: string; visibility: 'public' } }> {
   return request(`/api/versions/${versionId}/publish`, { method: 'POST', body: JSON.stringify({ r3Confirmed: true }) });
 }
 

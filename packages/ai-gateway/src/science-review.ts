@@ -25,6 +25,7 @@ export interface ChatGptWebScienceReviewConfig {
   pollIntervalMs?: number;
   now?: () => number;
   sleep?: (ms: number) => Promise<void>;
+  withSubmission?: <T>(owner: { taskId: string; executionAttempt?: number; artifactId?: string }, publish: () => Promise<T>) => Promise<T>;
 }
 
 const fail = (): never => { throw new Error('INVALID_OUTPUT'); };
@@ -149,28 +150,35 @@ export class ChatGptWebScienceReviewProvider implements ScienceReviewProvider {
       source: input.source,
       ...(attachments?.length ? { attachments: attachments.map(({ record }) => record) } : {}),
     });
-    for (const attachment of attachments ?? []) {
-      const path = join(this.config.inboxDir, `${request.id}.${attachment.record.fileName}`);
-      if (!await publish(path, attachment.bytes)) {
-        const existing = await boundedRead(path, SCIENCE_REVIEW_MAX_ATTACHMENT_BYTES);
-        if (existing.byteLength !== attachment.bytes.byteLength
-          || createHash('sha256').update(existing).digest('hex') !== attachment.record.sha256) fail();
+    const submit = async (): Promise<ScienceReviewProviderResult | null> => {
+      for (const attachment of attachments ?? []) {
+        const path = join(this.config.inboxDir, `${request.id}.${attachment.record.fileName}`);
+        if (!await publish(path, attachment.bytes)) {
+          const existing = await boundedRead(path, SCIENCE_REVIEW_MAX_ATTACHMENT_BYTES);
+          if (existing.byteLength !== attachment.bytes.byteLength
+            || createHash('sha256').update(existing).digest('hex') !== attachment.record.sha256) fail();
+        }
       }
-    }
-    const reservation = join(this.config.inboxDir, `${input.requestId}.submitted.json`);
-    if (!await publish(reservation, JSON.stringify(request))) {
-      request = validateScienceReviewRequest(JSON.parse((await boundedRead(reservation, SCIENCE_REVIEW_MAX_JSON_BYTES)).toString('utf8')));
-      if (request.promptHash !== sha256Text(input.prompt) || request.source.candidateHash !== input.source.candidateHash
-        || JSON.stringify(request.attachments ?? []) !== JSON.stringify(attachments?.map(({ record }) => record) ?? [])) fail();
-    }
-    const existingOutput = await successfulOutput(this.config.resultsDir, request);
+      const reservation = join(this.config.inboxDir, `${input.requestId}.submitted.json`);
+      if (!await publish(reservation, JSON.stringify(request))) {
+        request = validateScienceReviewRequest(JSON.parse((await boundedRead(reservation, SCIENCE_REVIEW_MAX_JSON_BYTES)).toString('utf8')));
+        if (request.promptHash !== sha256Text(input.prompt) || request.source.candidateHash !== input.source.candidateHash
+          || JSON.stringify(request.attachments ?? []) !== JSON.stringify(attachments?.map(({ record }) => record) ?? [])) fail();
+      }
+      const existingOutput = await successfulOutput(this.config.resultsDir, request);
+      if (existingOutput) return existingOutput;
+      validateScienceReviewRequest(request, this.now());
+      const queued = join(this.config.inboxDir, `${input.requestId}.json`);
+      if (!await publish(queued, JSON.stringify(request))) {
+        const existing = validateScienceReviewRequest(JSON.parse((await boundedRead(queued, SCIENCE_REVIEW_MAX_JSON_BYTES)).toString('utf8')));
+        if (existing.promptHash !== request.promptHash) fail();
+      }
+      return null;
+    };
+    const existingOutput = this.config.withSubmission
+      ? await this.config.withSubmission({ taskId: input.authorizationContext.taskId, artifactId: input.source.artifactId }, submit)
+      : await submit();
     if (existingOutput) return existingOutput;
-    validateScienceReviewRequest(request, this.now());
-    const queued = join(this.config.inboxDir, `${input.requestId}.json`);
-    if (!await publish(queued, JSON.stringify(request))) {
-      const existing = validateScienceReviewRequest(JSON.parse((await boundedRead(queued, SCIENCE_REVIEW_MAX_JSON_BYTES)).toString('utf8')));
-      if (existing.promptHash !== request.promptHash) fail();
-    }
     while (this.now() < request.deadlineAt) {
       try {
         const result = await successfulOutput(this.config.resultsDir, request);

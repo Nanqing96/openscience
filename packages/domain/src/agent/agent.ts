@@ -1,5 +1,6 @@
 import type { Redis } from 'ioredis';
 import { isDeepStrictEqual } from 'node:util';
+import { lockLiveResearchObject, lockTrashReferences, rememberDiscardedTaskResult } from '../trash/trash';
 import { Prisma, type AgentSession, type AgentTask } from '@prisma/client';
 import { SDF_CORE_FIELDS } from '@openscience/sdf-schema';
 import { MAX_CANONICAL_EVIDENCE_CHARS, MAX_CANONICAL_EVIDENCE_SEGMENTS } from '../ingestion/canonical-evidence-contract';
@@ -148,7 +149,7 @@ function evaluateAgentTaskRetryEligibility(
   userId: string,
 ): { authorityValid: boolean; canRetry: boolean } {
   const session = task.session;
-  if (session.userId !== userId || session.status !== 'active') return { authorityValid: false, canRetry: false };
+  if (task.deletedAt || session.deletedAt || session.researchObject?.deletedAt || session.userId !== userId || session.status !== 'active') return { authorityValid: false, canRetry: false };
   const researchObject = session.researchObject;
   if (session.researchObjectId) {
     if (!researchObject || researchObject.id !== session.researchObjectId
@@ -200,6 +201,7 @@ async function findNewestRetryableSourceTask(
     INNER JOIN "workspaces" AS workspace ON workspace."id" = research_object."workspace_id"
     WHERE session."user_id" = ${userId}::uuid
       AND session."status" = 'active'
+      AND task.deleted_at IS NULL AND session.deleted_at IS NULL AND research_object.deleted_at IS NULL
       AND workspace."status" = 'active'
       AND EXISTS (
         SELECT 1 FROM "memberships" AS membership
@@ -341,13 +343,15 @@ export async function listAgentTasks(
       ? { id: input.recoveryTarget.researchObjectId }
       : {};
     const baseWhere: Prisma.AgentTaskWhereInput = {
+      deletedAt: null,
       kind: input.kind,
       payload: targetPayload,
       session: {
         userId: input.userId,
+        deletedAt: null,
         status: 'active',
         researchObject: {
-          is: { ...researchObjectScope, workspace: { status: 'active', members: { some: { userId: input.userId } } } },
+          is: { ...researchObjectScope, deletedAt: null, workspace: { status: 'active', members: { some: { userId: input.userId } } } },
         },
       },
     };
@@ -366,7 +370,9 @@ export async function listAgentTasks(
   }
   const rows = await deps.prisma.agentTask.findMany({
     where: {
-      session: { userId: input.userId },
+      deletedAt: null,
+      session: { userId: input.userId, OR: [{ researchObjectId: null }, { researchObject: { deletedAt: null } }] },
+      AND: [{ OR: [{ session: { deletedAt: null } }, { result: { path: ['writingDraft'], not: Prisma.AnyNull } }] }],
       ...(input.kind ? { kind: input.kind } : {}),
       ...(input.actionableOnly ? { status: { in: ['pending', 'running', 'failed'] } } : {}),
     },
@@ -390,14 +396,17 @@ export async function findOrCreateAgentSessionInTransaction(
   input: CreateAgentSessionInput,
   ctx: AuditContext = {},
 ): Promise<{ session: AgentSession; replayed: boolean }> {
+  await lockTrashReferences(tx);
   if (input.researchObjectId) {
+    await lockLiveResearchObject(tx, input.researchObjectId);
     const ro = await tx.researchObject.findUnique({ where: { id: input.researchObjectId } });
-    if (!ro) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
+    if (!ro || ro.deletedAt) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
     await requireMembership({ prisma: tx }, ro.workspaceId, input.userId);
   }
   if (input.idempotencyKey) {
     const existing = await tx.agentSession.findUnique({ where: { idempotencyKey: input.idempotencyKey } });
     if (existing) {
+      if (existing.deletedAt) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '会话已移入回收站');
       assertSessionReplay(existing, input);
       return { session: existing, replayed: true };
     }
@@ -451,8 +460,9 @@ async function persistAgentTaskCoreInTransaction(
   ctx: AuditContext = {},
   billing: 'ai_credit' | 'deterministic' = 'ai_credit',
 ): Promise<{ task: AgentTask; replayed: boolean }> {
+  await lockTrashReferences(tx);
   const session = await tx.agentSession.findUnique({ where: { id: input.sessionId } });
-  if (!session || session.userId !== input.userId) {
+  if (!session || session.deletedAt || session.status !== 'active' || session.userId !== input.userId) {
     throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '会话不存在');
   }
   if (!(AGENT_TASK_KINDS as readonly string[]).includes(input.kind)) {
@@ -464,7 +474,7 @@ async function persistAgentTaskCoreInTransaction(
   let workspaceId: string | null = null;
   if (session.researchObjectId) {
     const ro = await tx.researchObject.findUnique({ where: { id: session.researchObjectId } });
-    if (!ro) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
+    if (!ro || ro.deletedAt) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '研究对象不存在');
     await requireActiveMembership(tx, ro.workspaceId, input.userId);
     workspaceId = ro.workspaceId;
   }
@@ -476,7 +486,7 @@ async function persistAgentTaskCoreInTransaction(
       throw new AgentError('VALIDATION_ERROR', 'Artifact 提取任务未绑定当前研究对象');
     }
     const artifact = await tx.artifact.findUnique({ where: { id: artifactId } });
-    if (!artifact || artifact.workspaceId !== workspaceId) {
+    if (!artifact || artifact.deletedAt || artifact.workspaceId !== workspaceId) {
       throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', 'Artifact 不存在或不可访问');
     }
   }
@@ -649,7 +659,7 @@ export async function submitDeterministicPresentationTask(
 
 export async function dispatchAgentTask(deps: AgentDeps, taskId: string): Promise<boolean> {
   const task = await deps.prisma.agentTask.findUnique({ where: { id: taskId } });
-  if (!task || task.dispatchedAt != null) return false;
+  if (!task || task.deletedAt || task.dispatchedAt != null) return false;
   await deps.redis.lpush(AGENT_TASK_QUEUE, task.id);
   await deps.prisma.agentTask.updateMany({
     where: { id: task.id, dispatchedAt: null },
@@ -661,7 +671,7 @@ export async function dispatchAgentTask(deps: AgentDeps, taskId: string): Promis
 /** DB task rows with dispatchedAt=null are the durable queue outbox. */
 export async function recoverUndispatchedAgentTasks(deps: AgentDeps, limit = 50): Promise<number> {
   const tasks = await deps.prisma.agentTask.findMany({
-    where: { kind: { in: ['workspace.guide', 'sdf.extract', 'presentation.generate', 'search.index', 'source.retrieve'] }, status: 'pending', dispatchedAt: null },
+    where: { deletedAt: null, session: { deletedAt: null, OR: [{ researchObjectId: null }, { researchObject: { deletedAt: null } }] }, kind: { in: ['workspace.guide', 'sdf.extract', 'presentation.generate', 'search.index', 'source.retrieve'] }, status: 'pending', dispatchedAt: null },
     orderBy: { createdAt: 'asc' },
     take: limit,
   });
@@ -675,7 +685,7 @@ export async function recoverUndispatchedAgentTasks(deps: AgentDeps, limit = 50)
 /** Convert only a crash-interrupted claim back to pending before its processing-list entry is requeued. */
 export async function prepareAgentTaskForCrashRecovery(deps: AgentDeps, taskId: string): Promise<boolean> {
   const task = await deps.prisma.agentTask.findUnique({ where: { id: taskId } });
-  if (!task) return false;
+  if (!task || task.deletedAt) return false;
   if (task.status === 'pending') return true;
   if (task.status !== 'running' && !(task.status === 'failed' && task.error === '[retryable] worker interrupted')) return false;
   const reset = await deps.prisma.agentTask.updateMany({
@@ -702,7 +712,7 @@ export async function claimAgentTask(deps: AgentDeps, taskId: string): Promise<A
     try {
       task = await deps.prisma.$transaction(async (tx) => {
         const claimed = await tx.agentTask.updateMany({
-          where: { id: taskId, status: 'pending' },
+          where: { id: taskId, status: 'pending', deletedAt: null, session: { deletedAt: null, OR: [{ researchObjectId: null }, { researchObject: { deletedAt: null } }] } },
           data: { status: 'running', progress: 10, error: null, executionAttempt: { increment: 1 } },
         });
         if (claimed.count !== 1) return null;
@@ -727,7 +737,9 @@ export async function getAgentTask(
   const task = await deps.prisma.agentTask.findUnique({
     where: { id: input.taskId }, include: retryAuthorityInclude(input.userId),
   });
-  if (!task || task.session.userId !== input.userId) {
+  const preservedProduct = task?.result && typeof task.result === 'object' && !Array.isArray(task.result)
+    && (task.kind !== 'workspace.guide' || Boolean((task.result as Record<string, unknown>).writingDraft));
+  if (!task || task.deletedAt || (task.session.deletedAt && !preservedProduct) || task.session.researchObject?.deletedAt || task.session.userId !== input.userId) {
     throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '任务不存在');
   }
   return { ...taskToView(task, evaluateAgentTaskRetryEligibility(task, input.userId).canRetry),
@@ -747,7 +759,7 @@ export async function retryAgentTask(
         const task = await tx.agentTask.findUnique({
           where: { id: input.taskId }, include: retryAuthorityInclude(input.userId),
         });
-        if (!task || task.session.userId !== input.userId) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '任务不存在');
+        if (!task || task.deletedAt || task.session.deletedAt || task.session.researchObject?.deletedAt || task.session.userId !== input.userId) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '任务不存在');
         const eligibility = evaluateAgentTaskRetryEligibility(task, input.userId);
         if (!eligibility.authorityValid) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '任务不存在');
         if (!eligibility.canRetry) {
@@ -789,7 +801,7 @@ export async function listAgentSessions(
   input: { userId: string },
 ): Promise<AgentSessionView[]> {
   const rows = await deps.prisma.agentSession.findMany({
-    where: { userId: input.userId },
+    where: { userId: input.userId, deletedAt: null, kind: { not: 'retained.products' }, OR: [{ researchObjectId: null }, { researchObject: { deletedAt: null } }] },
     orderBy: { createdAt: 'desc' },
   });
   return rows.map((s) => ({
@@ -818,7 +830,12 @@ export async function markTaskProgress(
     try {
       return await markTaskProgressOnce(deps, input);
     } catch (error) {
-      if (!isSerializableWriteConflict(error) || attempt >= SERIALIZABLE_RETRY_DELAYS_MS.length) throw error;
+      if (!isSerializableWriteConflict(error) || attempt >= SERIALIZABLE_RETRY_DELAYS_MS.length) {
+        // The initial read may predate trash while the transaction/CAS loses to
+        // deletion. Record derived bytes only after that transaction rolled back.
+        if (input.result !== undefined) await rememberDiscardedTaskResult(deps.prisma, input.taskId, input.result);
+        throw error;
+      }
       await waitForSerializableRetry(attempt);
     }
   }
@@ -836,7 +853,10 @@ async function markTaskProgressOnce(
   },
 ): Promise<AgentTaskView> {
   const task = await deps.prisma.agentTask.findUnique({ where: { id: input.taskId }, include: { session: true } });
-  if (!task) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '任务不存在');
+  if (!task || task.deletedAt || task.session.deletedAt) {
+    if (input.result !== undefined) await rememberDiscardedTaskResult(deps.prisma, input.taskId, input.result);
+    throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '任务不存在');
+  }
   const from = task.status as AgentTaskStatus;
   if (input.expectedExecutionAttempt !== undefined
     && task.executionAttempt !== input.expectedExecutionAttempt) {
@@ -851,7 +871,7 @@ async function markTaskProgressOnce(
     if (input.progress !== undefined && input.progress >= (task.progress ?? 0)) {
       const changed = await deps.prisma.agentTask.updateMany({
         where: {
-          id: task.id,
+          id: task.id, deletedAt: null, session: { deletedAt: null },
           status: from,
           ...(input.expectedExecutionAttempt === undefined
             ? {}
@@ -871,7 +891,7 @@ async function markTaskProgressOnce(
 
   const updated = await deps.prisma.$transaction(async (tx) => {
     const current = await tx.agentTask.findUnique({ where: { id: input.taskId } });
-    if (!current) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '任务不存在');
+    if (!current || current.deletedAt) throw new AgentError('RESEARCH_OBJECT_NOT_FOUND', '任务不存在');
     const currentStatus = current.status as AgentTaskStatus;
     if (input.expectedExecutionAttempt !== undefined
       && current.executionAttempt !== input.expectedExecutionAttempt) {
@@ -884,7 +904,7 @@ async function markTaskProgressOnce(
     }
     const changed = await tx.agentTask.updateMany({
       where: {
-        id: current.id,
+        id: current.id, deletedAt: null, session: { deletedAt: null },
         status: currentStatus,
         ...(input.expectedExecutionAttempt === undefined
           ? {}

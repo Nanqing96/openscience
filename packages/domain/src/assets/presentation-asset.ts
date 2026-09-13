@@ -1,5 +1,9 @@
 import { parseSceneImageRequest, presentationSceneImageView, requireSceneImageParent, hasSceneImageProvenance, type SceneImageRequest } from './scene-image';
 import { isDeepStrictEqual } from 'node:util';
+import { lockLiveResearchObject, lockTrashReferences } from '../trash/trash';
+import { isWorkingDraftVersion } from '../commit/version-history';
+import { refreshWorkingResearchRecord } from '../commit/research-record-snapshot';
+import { isVersionHistoryCopy, requireValidVersionHistoryCopy } from './version-history-copy';
 import { parseStoryboardRequest, presentationStoryboardView, type StoryboardRequest, type StoryboardView } from './storyboard';
 import type { AuditContext } from '@openscience/observability';
 import type { PresentationAsset, PresentationAssetStatus, Prisma } from '@prisma/client';
@@ -94,10 +98,11 @@ const WRITE_ROLES = new Set(['owner', 'maintainer', 'author', 'contributor']);
 
 async function requireScope(prisma: ScopeDb, input: PresentationScope, write = false) {
   const version = await prisma.version.findUnique({ where: { id: input.versionId }, include: { researchObject: true } });
-  if (!version || version.researchObjectId !== input.researchObjectId || !version.researchObject) throw new PresentationAssetError('NOT_FOUND', 'Research Object version not found');
+  if (!version || version.researchObjectId !== input.researchObjectId || !version.researchObject || version.researchObject.deletedAt) throw new PresentationAssetError('NOT_FOUND', 'Research Object version not found');
   const { workspace, membership } = await requireMembership({ prisma }, version.researchObject.workspaceId, input.userId);
   if (write && (workspace.status !== 'active' || !WRITE_ROLES.has(membership.role))) throw new PresentationAssetError('FORBIDDEN', 'Presentation writes require an active workspace and a content-writing role');
   if (write && version.status !== 'draft') throw new PresentationAssetError('ILLEGAL_TRANSITION', 'Presentation assets can only change on a draft version');
+  if (write && !await isWorkingDraftVersion(prisma, input.versionId)) throw new PresentationAssetError('ILLEGAL_TRANSITION', '历史稿不可修改，请保存或恢复为当前草稿');
   return version;
 }
 
@@ -114,11 +119,15 @@ export async function withPresentationAssetWrite<T>(
   for (let attempt = 0; ; attempt += 1) {
     try {
       return await prisma.$transaction(async (tx) => {
+        await lockTrashReferences(tx);
+        await lockLiveResearchObject(tx, input.researchObjectId);
         const version = await requirePresentationWriteScope(tx, input);
         const touched = await tx.version.updateMany({ where: { id: input.versionId, status: 'draft' }, data: { status: 'draft' } });
         if (touched.count !== 1) throw new PresentationAssetError('ILLEGAL_TRANSITION', 'Presentation assets can only change on a draft version');
-        return operation(tx, version);
-      }, { isolationLevel: 'Serializable' });
+        const result = await operation(tx, version);
+        await refreshWorkingResearchRecord(tx, input);
+        return result;
+      }, { isolationLevel: 'Serializable', timeout: 30_000 });
     } catch (error) {
       if ((error as { code?: unknown })?.code === 'P2034' && attempt < SERIALIZABLE_RETRY_DELAYS_MS.length) {
         const delayMs = SERIALIZABLE_RETRY_DELAYS_MS[attempt] ?? 200;
@@ -177,9 +186,9 @@ export async function listPresentationAssets(deps: AgentDeps, input: {
   const version = await requireScope(deps.prisma, input);
   const { workspace, membership } = await requireMembership(deps, version.researchObject.workspaceId, input.userId);
   const user = await deps.prisma.user.findUnique({ where: { id: input.userId }, select: { platformRole: true } });
-  const canWrite = version.status === 'draft' && workspace.status === 'active' && WRITE_ROLES.has(membership.role);
+  const canWrite = version.status === 'draft' && workspace.status === 'active' && WRITE_ROLES.has(membership.role) && await isWorkingDraftVersion(deps.prisma, input.versionId);
   const assets = await deps.prisma.presentationAsset.findMany({
-    where: { researchObjectId: input.researchObjectId, versionId: input.versionId },
+    where: { researchObjectId: input.researchObjectId, versionId: input.versionId, deletedAt: null },
     include: { sourceClaims: { select: { claimId: true } } },
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
   });
@@ -207,6 +216,10 @@ export async function listPresentationAssets(deps: AgentDeps, input: {
     const claimsValid = ids.length > 0 && ids.every(id => validClaimIds.has(id));
     let sceneValid = !hasSceneImageProvenance(asset);
     let videoValid = !hasVideoProvenance(asset);
+    if (isVersionHistoryCopy(asset)) {
+      try { await requireValidVersionHistoryCopy(deps.prisma, asset); }
+      catch (error) { if (!(error instanceof PresentationAssetError)) throw error; sceneValid = false; videoValid = false; }
+    }
     const sceneImage = presentationSceneImageView(asset);
     if (sceneImage && claimsValid) {
       try {
@@ -263,7 +276,7 @@ export async function listPresentationAssets(deps: AgentDeps, input: {
 export async function getPresentationAssetForRead(deps: AgentDeps, input: PresentationScope & { assetId: string }): Promise<PresentationAsset> {
   await requireScope(deps.prisma, input);
   const asset = await deps.prisma.presentationAsset.findUnique({ where: { id: input.assetId } });
-  if (!asset || asset.researchObjectId !== input.researchObjectId || asset.versionId !== input.versionId) {
+  if (!asset || asset.deletedAt || asset.researchObjectId !== input.researchObjectId || asset.versionId !== input.versionId) {
     throw new PresentationAssetError('NOT_FOUND', 'Presentation asset not found');
   }
   return asset;
@@ -275,8 +288,9 @@ export async function transitionPresentationAsset(deps: AgentDeps, input: {
   return withPresentationAssetWrite(deps.prisma, input, async (tx, version) => {
     const transaction = { ...deps, prisma: tx as AgentDeps['prisma'] };
     const asset = await tx.presentationAsset.findUnique({ where: { id: input.assetId } });
-    if (!asset || asset.researchObjectId !== input.researchObjectId || asset.versionId !== input.versionId) throw new PresentationAssetError('NOT_FOUND', 'Presentation asset not found');
+    if (!asset || asset.deletedAt || asset.researchObjectId !== input.researchObjectId || asset.versionId !== input.versionId) throw new PresentationAssetError('NOT_FOUND', 'Presentation asset not found');
     if (input.status === 'approved') {
+      await requireValidVersionHistoryCopy(tx, asset);
       const links = await tx.presentationAssetClaim.findMany({ where: { presentationAssetId: asset.id } });
       const storyboard = presentationStoryboardView(asset, links.map(link => link.claimId));
       if (storyboard) {
@@ -353,7 +367,7 @@ export async function requireStoryboardBase(prisma: Pick<Prisma.TransactionClien
     const asset = await prisma.presentationAsset.findUnique({ where: { id }, include: { sourceClaims: { select: { claimId: true } } } });
     const ids = asset?.sourceClaims.map(link => link.claimId).sort() ?? [];
     const view = asset && presentationStoryboardView(asset, ids);
-    if (!asset || asset.researchObjectId !== payload.researchObjectId || asset.versionId !== payload.versionId || !['draft', 'approved'].includes(asset.status) || !view || JSON.stringify(ids) !== JSON.stringify(payload.sourceClaimIds))
+    if (!asset || asset.deletedAt || asset.researchObjectId !== payload.researchObjectId || asset.versionId !== payload.versionId || !['draft', 'approved'].includes(asset.status) || !view || JSON.stringify(ids) !== JSON.stringify(payload.sourceClaimIds))
         throw new PresentationAssetError('VALIDATION_ERROR', 'Base storyboard is invalid for these sources');
     return { view, identity: JSON.stringify({ contentHash: asset.contentHash, provenance: asset.provenance, ids }) };
 }

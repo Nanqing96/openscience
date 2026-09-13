@@ -25,6 +25,17 @@
 
 .navSpacer { flex: 1 1 auto; }
 
+.moreMenu { position: relative; flex: 0 0 auto; color: #596875; font-size: 14px; }
+.moreMenu > summary { min-height: 40px; cursor: pointer; padding: 10px 13px; border-radius: 8px; }
+.moreMenu > div { position: absolute; z-index: 30; top: 100%; right: 0; min-width: 170px; padding: 6px; border-radius: 8px; background: #fff; box-shadow: 0 4px 18px #1d29351f; }
+.moreMenu > div > button { width: 100%; min-height: 42px; padding: 10px 12px; border: 0; border-radius: 6px; background: transparent; color: #1d2935; text-align: left; font: inherit; cursor: pointer; }
+.moreMenu > div > button:hover { background: #eaf5f3; }
+.moreMenu > div > button:focus-visible, .moreMenu > summary:focus-visible { outline: 3px solid #126a7070; outline-offset: 2px; }
+.hermesSourceReview { min-width: 0; max-width: 100%; margin-block: 12px; color: #1d2935; }
+.hermesSourceReview > section { margin-bottom: 0; padding: 12px; border: 0; border-radius: 8px; background: #f5f8fa; }
+.hermesSourceReview textarea { font-size: 14px; line-height: 1.65; }
+.hermesSourceReview h2 { font-size: 17px; }
+
 .hermesButton,
 .detailsLink {
   min-height: 40px;

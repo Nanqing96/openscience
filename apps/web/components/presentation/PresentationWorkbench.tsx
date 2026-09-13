@@ -4,6 +4,7 @@ import { ChevronDown, Image as ImageIcon, Plus, RotateCw } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
+import { useVersionLabels } from '@/components/research/useVersionLabels';
 import { presentationAssetContentUrl, type PresentationAsset, type PresentationClaim, type VersionSummary } from '@/lib/api';
 import type { SceneImageRequest, StoryboardRequest } from '@/lib/api';
 import { StoryboardPanel } from './StoryboardPanel';
@@ -12,7 +13,7 @@ import { PresentationResultGallery } from './PresentationResultGallery';
 import { ResearchMediaDeck, type ResearchMediaSlide } from './ResearchMediaDeck';
 import type { PresentationVideoRequest } from '@/lib/api';
 
-type PresentationVersion = Pick<VersionSummary, 'versionId' | 'versionNo' | 'status'>;
+type PresentationVersion = Pick<VersionSummary, 'versionId' | 'publicationNo' | 'createdAt' | 'commitMessage' | 'status'>;
 
 export interface PresentationTaskState {
   status: 'pending' | 'running' | 'succeeded' | 'failed';
@@ -52,6 +53,7 @@ export function PresentationWorkbench({
   onCreateClaim, onGenerate, onAskHermes, onGenerateStoryboard, onGenerateSceneImage, onGenerateVideo, onResumeTask, onRetryData, onTransition, working = false, error = '', resultsOnly = false,
 }: PresentationWorkbenchProps) {
   const t = useTranslations('presentation');
+  const versionLabels = useVersionLabels();
   const tw = useTranslations('workbench');
   const selectionTouched = useRef(false);
   const [selected, setSelected] = useState<string[]>([]);
@@ -130,7 +132,7 @@ export function PresentationWorkbench({
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 text-os-ink sm:px-8 lg:px-12" data-presentation-workbench="true">
       <header className="border-b border-os-rule-paper pb-3">
-        <p data-reading-role="caption" className="m-0 truncate text-xs text-os-muted-paper">{researchTitle || t('kicker')} · {t('versionNumber', { number: version.versionNo })}</p>
+        <p data-reading-role="caption" className="m-0 break-words text-xs text-os-muted-paper">{researchTitle || t('kicker')} · {versionLabels.label(version)}</p>
         <h1 className="m-0 mt-1 text-xl font-semibold leading-tight tracking-[-0.012em]">{t('previewTitle')}</h1>
       </header>
 

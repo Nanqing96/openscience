@@ -1,12 +1,16 @@
 # OpenScience (XGS) 项目文件索引
 
-> CURRENT 2026-09-13：用户已确认草稿/公开版本/删除产品规则，设计已落盘、尚未实施；唯一续作入口仍为 docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，设计起点HEAD/origin c3d20046；最近实测应用c0bc653d / rollback871ed702，本轮仅文档、未重查服务器。后续文档HEAD以Git为准。
+> CURRENT 2026-09-13：草稿/公开版本/删除规则正在实施；唯一续作入口为 docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，实施起点HEAD/origin a3025b8b；本轮只读确认应用c0bc653d / rollback871ed702。候选未提交、未构建部署，不能把本地实现当作线上功能。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
-| `docs/specs/2026-09-13-draft-publication-trash-design.md` | 用户逐项确认的草稿、公开版本、历史入口、个人空间删除与30天回收站方案；含实际代码依据和兼容建议，待实施 |
+| `docs/specs/2026-09-13-draft-publication-trash-design.md` | 用户逐项确认的草稿、公开版本、历史入口、个人空间删除与30天回收站方案；正在实施，部署状态见CURRENT |
+| `packages/domain/src/commit/{version-history,restore-draft,carry-media}.ts` / `packages/domain/src/publish/publication-metadata.ts` / `infra/migrations/20260913010000_publication_identity/` | 私有历史恢复、完整图文快照、独立公开序号与旧公开元数据兼容；候选未部署 |
+| `packages/domain/src/trash/` / `apps/api/src/routes/trash.ts` / `infra/migrations/20260913020000_private_trash/` | 回收站、公开依赖保留、可重试清除与共同写锁；候选未部署 |
+| `apps/web/components/research/{EditHistory,ResearchContentManager,TrashActionButton}.tsx` / `apps/web/app/trash/` | 编辑历史、内容管理与回收站；分析操作并入Hermes；候选未部署 |
+| `packages/search/src/{purge,lifecycle}.ts` / `apps/agent-worker/src/trash-job-copies.ts` / `infra/private-cleanup/` | 独立搜索库删除/存续过滤、解析任务副本及宿主受限清理执行器；实施中 |
 | `docs/decisions/ADR-014-draft-publication-and-private-deletion.md` | 公开版本与内部修订分离、私有删除/公开引用保留的决策及取舍；规则唯一维护于上述spec |
-| `docs/OpenScience_Kimi_Development_Spec.md` §2.2 | 同步上述已确认需求，明确尚未实施 |
+| `docs/OpenScience_Kimi_Development_Spec.md` §2.2 | 同步上述已确认需求，实施与部署状态由CURRENT跟踪 |
 
 > **最近部署实读 2026-09-13:** branch codex/onchip-video-release；应用c0bc653d / rollback871ed702。阅读层内部[S数字]及媒体制作长文已移除，实际四入口编号0/10式正常、桌面/窄屏已看；数据与图片未改。第二篇private/内部快照v5/4266e4ed/revision6，待质量确认，未公开。后续产品规则与实施方向以上方CURRENT为准。
 > 最新质量推进：867方法笔记与3f68d30b结果/边界笔记均经服务器来源绑定修订及独立High科学/引用PASS，后者1745字符/19引用、实际Markdown20620字符完整。0685已修复Markdown改变TeX间距，实读26/26公式源逐字相等、6处间距保留，正文/引用/导出不变。通用来源机制已固化，具体指导与独立科学复核仍由本会话承担；六字段全自动仍失败，跨论文质量尚未确认，未采用/发布。

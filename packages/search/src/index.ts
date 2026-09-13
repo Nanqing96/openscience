@@ -1,3 +1,5 @@
+export { deleteSearchContent } from './purge';
+export { setSearchContentVisibility } from './lifecycle';
 export {
   createSearchPrismaClient,
   type CreateSearchPrismaClientOptions,

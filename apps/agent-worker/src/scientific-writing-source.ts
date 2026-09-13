@@ -83,7 +83,7 @@ export async function resolveScientificWritingSource(
     include: { session: { include: { researchObject: { include: { workspace: true } } } } },
   });
   const ownerResearch = ownerTask?.session.researchObject;
-  if (!ownerTask || ownerTask.kind !== 'workspace.guide' || !ownerResearch || ownerResearch.workspace.status !== 'active') {
+  if (!ownerTask || ownerTask.deletedAt || ownerTask.session.deletedAt || ownerResearch?.deletedAt || ownerTask.kind !== 'workspace.guide' || !ownerResearch || ownerResearch.workspace.status !== 'active') {
     throw new Error('[blocked] Scientific writing owner scope is invalid');
   }
   const userId = ownerTask.session.userId;
@@ -100,7 +100,7 @@ export async function resolveScientificWritingSource(
       where: { id: input.baseDraft.baseDraftTaskId },
       include: { session: true },
     });
-    baseDraft = baseTask && baseTask.kind === 'workspace.guide' && baseTask.status === 'succeeded'
+    baseDraft = baseTask && !baseTask.deletedAt && baseTask.kind === 'workspace.guide' && baseTask.status === 'succeeded'
       && baseTask.session.userId === userId && baseTask.session.researchObjectId === ownerResearch.id
       ? parseStoredWritingDraft(baseTask.result) : undefined;
     sourceTaskId = baseDraft?.sourceTaskId;
@@ -110,7 +110,7 @@ export async function resolveScientificWritingSource(
       where: { id: input.writingSource.ingestionTaskId },
       include: { batch: true, artifact: true },
     });
-    if (!selected || selected.batch.userId !== userId || selected.batch.researchObjectId !== ownerResearch.id
+    if (!selected || selected.artifact.deletedAt || selected.batch.userId !== userId || selected.batch.researchObjectId !== ownerResearch.id
       || selected.artifact.workspaceId !== ownerResearch.workspaceId) {
       throw new Error('[blocked] Scientific writing source is outside the authorized research scope');
     }
@@ -123,7 +123,7 @@ export async function resolveScientificWritingSource(
       by: ['artifactId'],
       where: {
         batch: { userId, researchObjectId: ownerResearch.id },
-        artifact: { workspaceId: ownerResearch.workspaceId },
+        artifact: { workspaceId: ownerResearch.workspaceId, deletedAt: null },
       },
       orderBy: { artifactId: 'asc' },
       take: 2,
@@ -142,7 +142,7 @@ export async function resolveScientificWritingSource(
         where: {
           kind: 'sdf.extract',
           status: 'succeeded',
-          session: { userId, researchObjectId: ownerResearch.id },
+          deletedAt: null, session: { userId, researchObjectId: ownerResearch.id },
           ingestionTask: { artifactId: inferredArtifactId },
         },
         include: { session: true, ingestionTask: { include: { batch: true, artifact: true } } },
@@ -150,7 +150,7 @@ export async function resolveScientificWritingSource(
         take: 12,
       });
   for (const candidate of candidates) {
-    if (!candidate || candidate.kind !== 'sdf.extract' || candidate.status !== 'succeeded'
+    if (!candidate || candidate.deletedAt || candidate.ingestionTask?.artifact.deletedAt || candidate.kind !== 'sdf.extract' || candidate.status !== 'succeeded'
       || candidate.session.userId !== userId || candidate.session.researchObjectId !== ownerResearch.id) continue;
     const extractionResult = record(candidate.result);
     try {

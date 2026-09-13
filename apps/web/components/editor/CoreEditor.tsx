@@ -72,11 +72,12 @@ function ProseTextarea({ autoFocus = false, field, label, value, placeholder, on
   );
 }
 
-export default function CoreEditor({ core, onEdit, activeField, onSelectField }: {
+export default function CoreEditor({ core, onEdit, activeField, onSelectField, readOnly = false }: {
   core: SdfCore;
   onEdit: (field: keyof Omit<SdfCore, 'schemaVersion'>, value: string) => void;
   activeField: keyof Omit<SdfCore, 'schemaVersion'> | null;
   onSelectField: (field: keyof Omit<SdfCore, 'schemaVersion'>) => void;
+  readOnly?: boolean;
 }) {
   const t = useTranslations('editor');
   const current = activeField ?? 'problem';
@@ -98,7 +99,7 @@ export default function CoreEditor({ core, onEdit, activeField, onSelectField }:
               <span className={styles.sectionNumber}>{String(index + 1).padStart(2, '0')}</span>
             </h2>
             <HermesAnchor id={HERMES_FIELD_ANCHORS[field]}>
-              {hasExplicitMath(core[field]) && editingField !== field ? (
+              {readOnly ? <ScientificText hideSourceMarkers as="p" className={styles.mathSurface} data-reading-role="reading">{core[field] || t(`hints.${field}`)}</ScientificText> : hasExplicitMath(core[field]) && editingField !== field ? (
                 <ScientificText
                   hideSourceMarkers
                   aria-label={`${t(field)} · ${t('coreEdit')}`}
