@@ -1,12 +1,12 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 2026-09-14用户确认原创、按昵称署名、允许PDF下载，授权研究选许可。真实API已保存完整原题、作者DHL、版本许可text CC-BY-4.0/code MIT/data CC-BY-4.0，当前private/revision8。实际review因旧3–7核心Claim配额阻断；公开附件下载尚无能力，正在实现两项修复后继续发布，视频/批量暂停。
+- 2026-09-14第二篇已真实发布OSR-2026-000023/v/1，作者DHL、完整原题、文字/数据CC-BY-4.0、代码MIT，原PDF允许匿名下载。用户确认原创/昵称/下载并委托选许可；两篇真实论文已公开，等待用户对产品质量反馈，视频/批量暂停。
 - 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/migrate/start与真实页面阅读已执行，不通过删除/发布受保护论文验证功能。
 - 服务器MiniMax-M3。自动生成、引导共编、人工校正分别记录；独立High审核不能冒称产品自动审校。
 ## Version and workspace
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；代码HEAD/origin0931cf122c93fb9730926771bfe9739d9a87e108，随后仅文档补记；实际文档HEAD从Git读取，不等于应用release。
-- 当前ECS release0931cf122c93fb9730926771bfe9739d9a87e108 / 兼容rollback02d67ddf1e54ebd7f67b635b01597f8d64bbcb7e。02d保留生命周期但有带图草稿保存500，回退须知；c0bc及以前不兼容，禁止回退。tmp/media-copy-deploy-0931cf12.log exit0；--no-tests --skip-migrate，必要服务器完整build/start及实际/__release同093。
-- clean发布树.worktrees/media-copy-release-0931cf12；先前各发布树保留。根目录dirty main不是生产基线，未合并main；无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
+- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；代码HEAD/origine7f95180643a852951cfcfb4f7cc8dd65fac58d5，随后仅文档补记；实际文档HEAD从Git读取，不等于应用release。
+- 当前ECS releasee7f95180643a852951cfcfb4f7cc8dd65fac58d5 / rollback0931cf122c93fb9730926771bfe9739d9a87e108。093保留生命周期/媒体保存修复，但回退将暂时失去公开附件下载及单结论发布；c0bc及以前不兼容，禁止回退。tmp/public-download-deploy-e7f95180.log exit0，--no-tests --skip-migrate，服务器完整build/start、精确release切换完成；无迁移/新服务/依赖。
+- clean发布树.worktrees/public-download-release-e7f95180；先前各发布树保留。根目录dirty main不是生产基线，未合并main；无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
 ## Lifecycle delivered and observation
 - 公开序号publicationNo独立于内部versionNo；发布时分配，旧公开v10/URL保留；冻结公开元数据/图谱/来源/媒体。私有草稿权限单独判断，历史恢复创建新私有草稿并沿用冻结图文。
 - 主页面分析记录收进Hermes；无公开记录不显示发布历史。更多内编辑历史按日期/摘要、可查看再恢复；个人空间和内容项删除、会话默认保留产物、30天回收站/恢复/清除、公开聚合长期归档。
@@ -17,20 +17,24 @@
 - 实际第二篇object/history/record/media均200，core与reader-clean-before逐字同值，private/revision6、四条历史publicationNo=null，10式/0错误、图1280×720、368CSS窄屏无横溢出；截图已看。
 - 第一篇公开OSR-2026-000022/v/10正常，publicVersionId保留OSR-2026-000022-v10、published/1图。Hermes来源可展开、管理内容80项、回收站空状态可读。
 - 02d最后实读：编辑历史四条时间/摘要，无内部笔记UUID/机器英文；桌面/移动截图已看，窄屏dialog354/scroll354/viewport380CSS。打开冻结正文1617字符，恢复入口可用但未点击；管理80项最新在前，已知内部标题0，列表与确认/回收站共用标签。证据tmp/lifecycle-final-reading.{sh,log,json}及四截图，服务器/jobs同名。
-- 证据：本地tmp/lifecycle-{reading,management-reading}.sh/log/json与截图，服务器/jobs同名json/png；原图/正文未重生成。真实清除、历史恢复写入、30天到期及新首发v1尚未实际操作，不冒称完整运行验收。
+- 证据：本地tmp/lifecycle-{reading,management-reading}.sh/log/json与截图，服务器/jobs同名json/png；原图/正文未重生成。首发v1已在第二篇真实发布观察；真实清除、历史恢复写入和30天到期仍未实际操作，不冒称完整运行验收。
 ## Protected second paper and next action
-- 本轮实测0931/rollback02d，API/Worker healthy、Web running，目标72仍private。用户DHL；标题/作者/许可三个实际写入均200，review132699b5返回blocked，唯一hardBlock claim_graph_invalid。证据tmp/quantization-license-state.log、quantization-save-publication-metadata.log；服务器/jobs同名JSON收据。
+- 本轮先实测0931/rollback02d，再保存DHL/完整原题/许可三个写入均200；review132699b5曾唯一阻于claim_graph_invalid。e7f去除旧机械3–7配额（符合已授权出版PRD§3.2），保留至少1core/图结构/500总量及来源验证；独立High PASS，未拆写科学内容。
+- e7f实现本次发布明确允许全部附件下载，默认false；授权/安全MIME/版本限定URL冻结到已有researchRecord.dto.manifest。匿名端严格匹配公开Version/Publication/唯一冻结附件/活Artifact/workspace/blobSha，NO-DOWNLOAD冲突同事务拒绝。旧版不追溯开放；独立High PASS，无新表/hash/测试。
+- 实际发布：review132699b5变passed、under_review/approved各200、publish201，版本72c315af→OSR-2026-000023-v1，publicationNo=1（内部6），公开时间2026-09-13T17:17:14.002Z，contentSha d0b6c47953f71209d69d405ff004895c332eaa0d8a3f5515c4ffb28e463b9699。收据/jobs/quantization-publish-selected-version.json及本地同名.log。已完成，不得重跑该写入脚本。
+- 匿名实际阅读：页面/API200，DHL、完整题名及CC-BY-4.0/MIT/CC-BY-4.0一致，core保留、1Claim/40Evidence/1图，原图hash保持/1280×720，公式错误0、内部S标记0。PDF匿名200/application/pdf/568765字节，SHA24d11cc8与上传原件相同；下载链接DOM可见且名称正常。tmp/quantization-public-reading-download.json、*-via-browser.log、quantization-public-download-view.log；identity/image截图已看，下载局部截图受既有浏览器缩放裁切影响，不作视觉证据。
+- 读页脚本首次APIRequestContext直连绕过Chrome代理导致EAI_AGAIN，产品页面本身成功；改用同一匿名页面fetch沿用Chrome代理后API/下载均200。不要将此误报产品登录/代理故障，也不要再用context.request做服务器公网阅读。没有重启浏览器或重复发布。
 - 真实整理操作：保留4b的来源引用，当前附件列表合一并以文件名展示，不删除任何文件；POST commits(version6)返回500 req-n7，Prisma在carryVersionMedia.create拒绝researchObjectId。随后GET实测revision6、core/history/record/media与此前全等，事务已回滚。收据/jobs/quantization-attachment-deduplicate-20260914.json（原幂等键保留），本地tmp/quantization-draft-save-error.log（很大，只解析err结尾）、quantization-draft-failure-state.log。不得盲重发或改DB绕过保存。
 - 根因/修复：Prisma嵌套CreateWithoutPresentationAssetInput仅接受claimId；093改为同一tx内asset.create→presentationAssetClaim.createMany四个范围字段→原requireValidVersionHistoryCopy，权限/来源/批准判定不变。独立High静态PASS，服务器build/start完成，未测试/迁移；原幂等键续保存返回201，commitd74979fb-9440-416f-8692-df2e829f5e47，没有重复草稿。
-- Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；当前private/draft/revision8、快照72c315af-cd76-452a-8bbb-6e1284612114（内部6，publicationNo=null）；完整题名Quantization of a Deep-Subwavelength-Aperture-Confined Optical Near Field。旧已审快照4266e4ed-9a89-45d8-8c0e-c6393bbc503d保留全等。首次公开应v1。
+- Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；RO visibility public、工作revision8；Version72c315af-cd76-452a-8bbb-6e1284612114已published且冻结，禁止原地改写。完整题名Quantization of a Deep-Subwavelength-Aperture-Confined Optical Near Field。旧已审快照4266e4ed-9a89-45d8-8c0e-c6393bbc503d保留。
 - 实际72读取：core逐字等已审稿、Claim正文不变、40Evidence内容/locator/核对状态保留；只有新证据/Claim ID与版本来源URL改变，抽取新旧来源接口均200且响应相同。manifest仅4b94c626、正常PDF文件名；新继承图a6f51e93-4ce0-4438-b18f-bbe82ed00bfa approved、原hash4ee0df4c/1280×720。0公式错误，预览/工作台截图已看。证据tmp/quantization-deduplicate-{reading,source-reading}.log/json、preview/edit.png，服务器/jobs同名；原始reading.evidenceUnchanged=false因新ID/URL，已用后续逐字段比较解释，不能误报来源丢失。
-- 当前审阅入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=f34d8ee2-5120-4ca1-a22b-a98f3473117a
+- 当前公开入口：https://openscience.428312321.xyz/research/OSR-2026-000023/v/1；工作台/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=f34d8ee2-5120-4ca1-a22b-a98f3473117a；后续正文变更须新私有草稿/再次公开产生v2。
 - 六项笔记f34d8ee2-5120-4ca1-a22b-a98f3473117a：1523字符/23引用、user_edited、独立High科学/来源PASS；六字段111/251/364/325/210/175字符、10式。人工纠正后经既有无模型save与SDF写入，不能冒称自动正确。
 - 长笔记71ed6fae-21c3-49d2-bfff-e394bf307323：3643字符/40引用/57式；来源指导服务器e758→918→b66→71后独立High PASS，原文/导出实读一致。自动初稿及后续60d/4c45六字段稿仍未通过，均保留。
 - 来源ingestioncee71443-ae46-4ed1-b4e4-6c5b59e674ef、source agent960ffcc1-75f6-4418-b9a6-8bf413f4e18d、artifact4b94c626-1748-4c5a-934b-2bb94585bd9c；15页SourceMap已完整，不重解析。08ed仅压缩重复来源元数据，2201片段/53954全文完整。
 - 正确快照Claim18bbfa21-4099-49be-9f55-21e0fda960ef/40Evidence；已批图56e58572-705b-4182-b064-a9df30f1060f，原字节652786B/hash4ee0df4c、原图1672×941/产品1280×720。
 - 图56经admin_reviewed_import复用原图86ffe202-928e-49fd-8877-7ec0787b69f6；原generator/version与importRun来源保留，非重生成。旧version58a45cb5-758f-4d6f-9e94-533b460e8b06科学正文有误，绝不发布；stagingc8e625c4-39cb-4a6c-a0d1-3129c48558f8冻结内容有历史差异，恢复只用冻结记录。
-- 下一步先完成/独立High复核/部署下载授权与Claim配额修复，再继续当前72的真实发布。仅允许1条core符合已授权出版PRD§3.2，保留图结构/来源核查；下载复用冻结manifest权限，默认不开放，只有本次主动允许才公开，旧版本不追溯开放。代码由publication_lifecycle负责下载，主代理负责claim-graph.ts和文档；无测试/预检/本机构建/新生成。
+- 本轮任务完成：许可选择/署名/下载/第二篇发布已落实。下一步由用户在公开页或Hermes提出具体质量反馈，再决定第三篇/视频；先保留2篇真实交付，不自动启动批量。自动首稿科学质量仍未稳定，不把人工审校及本轮发布审核冒充通用自动审校通过。
 ## Protected first paper
 - ROc896802c-35dd-4b59-8db1-5f374f83a6d8、草稿revision11；正式v10 f4e2dc71-1fe8-406f-8c19-e1849503d698、公开OSR-2026-000022/v/10保留。PDF7bb96cc1-bb6f-4d3b-b0bf-352f41971faf与已批图b19a65bd-6497-4b61-bb81-0154b264d58c保护。
 - 保护已审92cafb82-73bc-4937-bb9c-bf1228b23dd3（1118字/17引用）、40e23948-4b41-4440-a3a1-49dd9acb8824（2696字/41引用/57式）、方法867ce8b9-1e48-4412-b1bf-1800a5d64dc9（1605字/19引用）、结果3f68d30b-5cab-44f9-9623-2f057aada7ff（1745字/19引用）。均独立原文PASS/真实页面与下载一致；后两稿未采用SDF。
