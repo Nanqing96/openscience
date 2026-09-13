@@ -41,8 +41,10 @@ export async function carryVersionMedia(tx: Prisma.TransactionClient, input: {
       generator: asset.generator, generatorVersion: asset.generatorVersion, label: asset.label, promptHash: asset.promptHash,
       status: approvalRetained ? 'approved' : asset.status === 'rejected' ? 'rejected' : 'draft',
       provenance: versionHistoryCopyProvenance(asset, links.map(link => ({ sourceClaimId: link.sourceClaimId, claimId: link.copy!.id })), links.map(link => link.copy as unknown as Record<string, unknown>), mappedEvidence, approvalRetained),
-      sourceClaims: { create: links.map(({ copy }) => ({ claimId: copy!.id, researchObjectId, versionId })) },
     } });
+    await tx.presentationAssetClaim.createMany({ data: links.map(({ copy }) => ({
+      presentationAssetId: created.id, claimId: copy!.id, researchObjectId, versionId,
+    })) });
     await requireValidVersionHistoryCopy(tx, created);
   }
 }

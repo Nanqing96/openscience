@@ -1,6 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 用户已授权“执行”草稿/公开版本/删除方案（spec2026-09-13、ADR-014）；三部分及真实页面发现的显示问题均已交付，最终应用02d67ddf。第二篇质量确认与公开仍未完成；视频/批量暂停。
+- 2026-09-14用户“好的，继续”：进入第二篇发布准备；实际去重附件保存遇到500，正在局部修复carryVersionMedia，未公开。生命周期先前部署02d67ddf；视频/批量暂停。
 - 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/migrate/start与真实页面阅读已执行，不通过删除/发布受保护论文验证功能。
 - 服务器MiniMax-M3。自动生成、引导共编、人工校正分别记录；独立High审核不能冒称产品自动审校。
 ## Version and workspace
@@ -19,6 +19,9 @@
 - 02d最后实读：编辑历史四条时间/摘要，无内部笔记UUID/机器英文；桌面/移动截图已看，窄屏dialog354/scroll354/viewport380CSS。打开冻结正文1617字符，恢复入口可用但未点击；管理80项最新在前，已知内部标题0，列表与确认/回收站共用标签。证据tmp/lifecycle-final-reading.{sh,log,json}及四截图，服务器/jobs同名。
 - 证据：本地tmp/lifecycle-{reading,management-reading}.sh/log/json与截图，服务器/jobs同名json/png；原图/正文未重生成。真实清除、历史恢复写入、30天到期及新首发v1尚未实际操作，不冒称完整运行验收。
 ## Protected second paper and next action
+- 本轮实测02d/rollbackef9，七个发布相关GET均200。标题Quantization，作者为空、许可none、发布review无记录；当前manifest同hash两PDF（2b5c92af/4b94c626），40Evidence均指4b。已向用户询问原创研究/文献解读、公开署名、PDF下载权限，尚未答复；不默认替用户选许可或公开。
+- 真实整理操作：保留4b的来源引用，当前附件列表合一并以文件名展示，不删除任何文件；POST commits(version6)返回500 req-n7，Prisma在carryVersionMedia.create拒绝researchObjectId。随后GET实测revision6、core/history/record/media与此前全等，事务已回滚。收据/jobs/quantization-attachment-deduplicate-20260914.json（原幂等键保留），本地tmp/quantization-draft-save-error.log（很大，只解析err结尾）、quantization-draft-failure-state.log。不得盲重发或改DB绕过保存。
+- 根因/修复：Prisma嵌套CreateWithoutPresentationAssetInput仅接受claimId；改为同一tx内asset.create→presentationAssetClaim.createMany四个范围字段→原requireValidVersionHistoryCopy，权限/来源/批准判定不变。独立High静态PASS，无测试；候选待服务器build/start，schema未变，部署使用既有--skip-migrate。
 - Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；private/draft/revision6；正确内部快照4266e4ed-9a89-45d8-8c0e-c6393bbc503d（历史内部5，未公开，首次公开应v1）。
 - 当前审阅入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=f34d8ee2-5120-4ca1-a22b-a98f3473117a
 - 六项笔记f34d8ee2-5120-4ca1-a22b-a98f3473117a：1523字符/23引用、user_edited、独立High科学/来源PASS；六字段111/251/364/325/210/175字符、10式。人工纠正后经既有无模型save与SDF写入，不能冒称自动正确。
@@ -26,7 +29,7 @@
 - 来源ingestioncee71443-ae46-4ed1-b4e4-6c5b59e674ef、source agent960ffcc1-75f6-4418-b9a6-8bf413f4e18d、artifact4b94c626-1748-4c5a-934b-2bb94585bd9c；15页SourceMap已完整，不重解析。08ed仅压缩重复来源元数据，2201片段/53954全文完整。
 - 正确快照Claim18bbfa21-4099-49be-9f55-21e0fda960ef/40Evidence；已批图56e58572-705b-4182-b064-a9df30f1060f，原字节652786B/hash4ee0df4c、原图1672×941/产品1280×720。
 - 图56经admin_reviewed_import复用原图86ffe202-928e-49fd-8877-7ec0787b69f6；原generator/version与importRun来源保留，非重生成。旧version58a45cb5-758f-4d6f-9e94-533b460e8b06科学正文有误，绝不发布；stagingc8e625c4-39cb-4a6c-a0d1-3129c48558f8冻结内容有历史差异，恢复只用冻结记录。
-- 下一步回到第二篇图文质量确认，再准备明确公开流程。没有公开授权前不得发布；不继续通用测试工程或批量冷启动。生命周期功能交付完成，真实清除/恢复写入/首发v1及到期清理的运行观察边界继续保留。
+- 下一步修复上述真实保存阻塞、服务器部署后以原幂等键续同一整理操作，并核对正文/40来源/已批配图保留；等待用户发布身份与PDF权限答复，再落实署名/许可并准备明确公开流程。没有公开授权前不得发布；不继续通用测试工程或批量冷启动。
 ## Protected first paper
 - ROc896802c-35dd-4b59-8db1-5f374f83a6d8、草稿revision11；正式v10 f4e2dc71-1fe8-406f-8c19-e1849503d698、公开OSR-2026-000022/v/10保留。PDF7bb96cc1-bb6f-4d3b-b0bf-352f41971faf与已批图b19a65bd-6497-4b61-bb81-0154b264d58c保护。
 - 保护已审92cafb82-73bc-4937-bb9c-bf1228b23dd3（1118字/17引用）、40e23948-4b41-4440-a3a1-49dd9acb8824（2696字/41引用/57式）、方法867ce8b9-1e48-4412-b1bf-1800a5d64dc9（1605字/19引用）、结果3f68d30b-5cab-44f9-9623-2f057aada7ff（1745字/19引用）。均独立原文PASS/真实页面与下载一致；后两稿未采用SDF。

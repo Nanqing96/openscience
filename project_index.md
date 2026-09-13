@@ -1,6 +1,6 @@
 # OpenScience (XGS) 项目文件索引
 
-> CURRENT 2026-09-13：草稿/公开版本/删除规则及显示收尾已交付；唯一续作入口为 docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，代码HEAD/origin02d67ddf，其后仅文档补记；应用02d67ddf / 兼容rollback ef9e6e97。必要服务器构建/迁移/启动及实际页面读取完成，没有测试/真实删除/新发布。下一步回到第二篇质量确认，视频/批量暂停。
+> CURRENT 2026-09-14：第二篇发布准备中，实际合并重复附件的保存被媒体继承Prisma写入阻塞，正在局部修复；唯一续作入口为 docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，HEAD/origin c0c31487（代码02d），应用02d67ddf / rollback ef9e6e97。失败事务已确认回滚，图文未改；待用户明确发布身份/署名/PDF权限，未公开/删除/测试，视频/批量暂停。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
@@ -9,6 +9,7 @@
 | `packages/domain/src/trash/` / `apps/api/src/routes/trash.ts` / `infra/migrations/20260913020000_private_trash/` | 回收站、公开依赖保留、可重试清除与共同写锁；ef9已部署，无真实删除操作 |
 | `apps/web/components/research/{EditHistory,ResearchContentManager,TrashActionButton}.tsx` / `apps/web/app/trash/` | 编辑历史、内容管理与回收站；分析操作并入Hermes；02d最终桌面/窄屏、冻结正文与80项管理列表已实读 |
 | `apps/web/components/research/{useVersionLabels,useContentLabels}.ts` | 历史摘要及内容/删除确认/回收站的已知机器标签本地化；保留原数据与未知用户标题 |
+| `packages/domain/src/commit/carry-media.ts` | 2026-09-14真实草稿保存500：复合关联从嵌套创建改同事务createMany，High静态PASS；候选待部署，续原业务操作 |
 | `packages/search/src/{purge,lifecycle}.ts` / `apps/agent-worker/src/trash-job-copies.ts` / `infra/private-cleanup/` | 独立搜索库删除/存续过滤、解析副本及宿主受限清理执行器；ef9已部署，清理timer已安装，无实际清除收据 |
 | `docs/decisions/ADR-014-draft-publication-and-private-deletion.md` | 公开版本与内部修订分离、私有删除/公开引用保留的决策及取舍；规则唯一维护于上述spec |
 | `docs/OpenScience_Kimi_Development_Spec.md` §2.2 | 同步上述已确认需求，实施与部署状态由CURRENT跟踪 |
