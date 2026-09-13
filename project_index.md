@@ -1,6 +1,6 @@
 # OpenScience (XGS) 项目文件索引
 
-> **CURRENT 2026-09-13:** 用户截图纠偏：顶部贡献/概览/版本正文统一ScientificText，去版本内部核查面板与CoreEditor核查链接；四处前端候选待部署实读。branch codex/onchip-video-release / base c847763b；production08ed3b35 / rollbackdf94fae0。第二篇f34私有SDF revision4及86ffe图保留，未批准/发布，不能发旧version2；唯一CURRENT handoff见下。
+> **CURRENT 2026-09-13:** 用户截图修复已部署80809452 / rollback08ed3b35：工作台顶部、概览、版本正文统一公式渲染，内部核查面板与正文链接移除；真实lead5式/正文10式、0错误、六栏等API、桌面与窄屏实读。branch codex/onchip-video-release；后台记录/论文内容未变，第二篇仍private/draft/revision4，新图86ffe仍draft，不能发布旧version2。唯一CURRENT handoff见下。
 > 最新质量推进：867方法笔记与3f68d30b结果/边界笔记均经服务器来源绑定修订及独立High科学/引用PASS，后者1745字符/19引用、实际Markdown20620字符完整。0685已修复Markdown改变TeX间距，实读26/26公式源逐字相等、6处间距保留，正文/引用/导出不变。通用来源机制已固化，具体指导与独立科学复核仍由本会话承担；六字段全自动仍失败，跨论文质量尚未确认，未采用/发布。
 > 唯一入口：docs/handoff/2026-09-10-hermes-web-image-handoff.md。当前自动agent d5c6f699真实字段审校仍失败；4bedbb4b具体方法回读核心科学PASS，但多问与局部共编仍丢条件。a8修复笔记漏路由/科学共编推理配置，10799ba3实产仍经High原文复核拒绝；停止重试，保留人工审校流程。
 > 私有92cafb82人工原文审校稿1118字符/17引用：1e627修复指定任务被较新失败63e正文覆盖，实际打开/只读编辑/回阅读/展开来源/截图均成功，正文和全部引用逐字等保存API与此前复核稿，user_edited保留；原40e23948、公开v10与已批图保留，尚未采用新稿/发布，视频/批量暂停。
@@ -594,7 +594,7 @@
 
 - DEPLOYED infra/chatgpt-browser/{Dockerfile,start.sh,relay.mjs,host.mjs,install.sh,seccomp.json} / docs/runbooks/chatgpt-browser.md：服务器交互浏览器与生产 `chatgpt-web` provider；真实Hermes图片已回传，真实PDF完成6 Pro初审与补证；区域附件子域、图片/科学审阅独立锁、30分钟窗口、15秒science heartbeat、协议版本化幂等和逐字段保留部署于`36e6a8c4`；infra/scripts/ssh-run.sh固定browser-tunnel。
 
-- CURRENT docs/runbooks/server-capabilities.md：2026-09-13应用0685a846 / rollback 1e627177；数学原文经过Markdown的保护已部署实读，来源写作/指定稿件恢复保留；科学自动质量与浏览器剩余问题见CURRENT，服务器任务先读，只补真实缺口。
+- CURRENT docs/runbooks/server-capabilities.md：应用80809452 / rollback08ed3b35；阅读公式与内部核查UI修复已部署实读；服务器复用能力与独立浏览器执行器版本见CURRENT。
 
 - `infra/scripts/browser-tunnel.ps1`：Windows隐藏SSH隧道断线重连；固定localhost6081，复用ssh-run.sh，2026-09-09本机页面恢复HTTP200。
 
@@ -607,4 +607,6 @@
 | `.agents/skills/apple-design/` / `.agents/skills/emil-design-eng/` / `.agents/skills/design-artifact/` / `.agents/skills/html-prototype/` | 用户授权的项目设计Skills，固定上游提交/原始引用/MIT许可证；由frontend-design按需应用 | 2026-09-11安装；来源见各SOURCE.md，最新实现/部署见CURRENT handoff |
 | `apps/web/components/presentation/ResearchMediaDeck.tsx` / `apps/web/components/presentation/ResearchMediaDeck.module.css` | 工作台/公开页共用单图与多图HTML幻灯片、图片视频占位和真实图注 | 已部署；公开只用发布版本已审资产，多图真实样本尚未完成，见CURRENT handoff |
 
-| apps/web/app/research-objects/[id]/edit/page.tsx / overview/page.tsx / apps/web/components/editor/CoreEditor.tsx / apps/web/components/research/VersionRecord.tsx | 阅读入口共用安全公式渲染、移除内部核查面板和导航 | 2026-09-13候选；生产实读与release见CURRENT handoff |
+| apps/web/app/research-objects/[id]/edit/page.tsx / overview/page.tsx / apps/web/components/editor/CoreEditor.tsx / apps/web/components/research/VersionRecord.tsx | 阅读入口共用安全公式渲染、移除内部核查面板和导航 | DEPLOYED80809452；真实桌面/窄屏及数据未变见CURRENT handoff |
+
+| .agents/skills/frontend-design/SKILL.md | 科研阅读入口统一公式渲染、内部核查留后台、Hermes反馈规则 | 2026-09-13用户纠偏已固化；无新增工具或测试门禁 |

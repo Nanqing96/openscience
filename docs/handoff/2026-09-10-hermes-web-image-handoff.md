@@ -6,8 +6,8 @@
 - 本机仅编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/start与实际产品生成/阅读按授权执行。
 
 ## Version and workspace
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；本轮基线HEAD/origin c847763b，候选修改阅读公式/内部核查显示；应用release以服务器为准，浏览器执行器独立部署。
-- 当前应用release 08ed3b35113a512fbd414524ab8958ec4f87deeb / rollback df94fae0e25b109791f41d71691611bb88d78ebd；xgs-writing-source-confidence-deploy-20260913.log exit0，必要服务器build/start完成，实际页面/__release200同SHA。1e/a8为历史应用版本。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；应用代码HEAD/origin80809452，后续仅文档提交以Git为准。部署用clean detached .worktrees/reading-ui-release-80809452，原dirty spec保留。
+- 当前应用release80809452117fdb9a71382c28de95c3c4ff84392e / rollback08ed3b35113a512fbd414524ab8958ec4f87deeb；tmp/reading-ui-clean-deploy-20260913.log exit0，必要服务器build/start完成，实际/__release同SHA。dirty交付树首发在传输前被拒，隔离clean树重发，无测试/CI。
 - 根目录旧dirty main不是生产基线；未合并main。unrelated dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
 - 网页生图base bundle d1630135 / rollback92cc416e；实际image/review runner为501da7a3、page-lifecycle为d369ccc2；image broker为b78fb94d派生bundle，均独立于应用release。video runner0df87c9b、浏览器镜像8aa21251不变；浏览器09-13 07:55:11Z自行重启一次，登录保留，旧target ID失效。
 - TTS a2158409、renderer ff6042f6、模型qwen3-tts-customvoice-0c0e305复用；无新服务/依赖；本轮仅实产第二篇图解，媒体版本不能混作应用release。
@@ -74,4 +74,6 @@
 - PUT /api/sdf经既有版本锁将六项原样拆分写入私有工作草稿；RO revision3→4、private/draft，六字段字符111/251/364/325/210/175。71原稿和两次未采用稿均保留；已提交媒体version2/58a45与Claim848/40Evidence未改，图片86ffe仍draft，未正式定稿/公开。
 - 真实页面六字段逐字等API、10/10 TeX源保留且0渲染错误、23条引文逐字等API；同一编辑页轮播第3/3张显示86ffe1280×720。默认仍优先旧已批准图eb48809b，未改默认顺序。截图已实际看图，平台渲染不等于外部Markdown阅读器保证。
 - 当前入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=f34d8ee2-5120-4ca1-a22b-a98f3473117a 。/jobs/hermes-quantization-sdf-{before,condense-request,condense-state,final-request,final-state,edited-request,edited-state,stage,reading,reading-complete}-20260913.json；reading-complete初始quoteCount0来自折叠稿卡，sourceReading实际展开23/23。本地tmp/quantization-sdf-*.sh、human-edits.json、edited-review.json及两张reading截图。
-- 当前优先修复用户截图：顶部贡献TeX直出、版本页内部核查面板。实际before确认leadMath0、核查链接2、version2核查按钮15；候选四处前端复用ScientificText，去面板/链接/内部说明，不改论文或核查API。待部署后实读；记录/jobs/reading-ui-before-20260913.json。图文快照/公开顺延，不能发旧version2。
+- 用户截图修复已部署80809452：贡献/概览/版本正文复用ScientificText，去CoreEditor及版本页内部核查面板/链接/说明，保留后台数据/API/资料。独立High静态PASS；实读lead5式、正文/概览10式、0错误、六字段逐字等API、核查控件0，SDF/revision/visibility/frozen record与before相同。
+
+- 证据/jobs/reading-ui-{before,after,visual-state}-20260913.json及full-{desktop,mobile}截图；本地tmp/reading-ui-*.sh/log/png。Chrome125%使element clip截错，最终整页截图已实际看图；移动端正常关闭Hermes遮层后5式完整，桌面编辑入口已恢复。下一步仍先图文质量反馈，再新建正确图文快照；不得发布旧version2，未新生图/公开。
