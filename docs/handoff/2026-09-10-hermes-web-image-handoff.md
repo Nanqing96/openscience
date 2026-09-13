@@ -34,7 +34,7 @@
 - 写作意图早期导航误判已由a8修复；历史失败与来源指导链详见Git c742f7a2，当前保护867/3f68/71结论。
 - 4bed→797→867为第一篇方法核对的来源指导修订链；最终867核心科学/引用PASS，未采用SDF。
 - 回读正确区分n(z)→n(t,θ)→I(t,θ)→角积分I(t)，以及强度+继承驱动场相位→E_y(t,θ)→角积分E_y(t)→Fourier E(ν)。末尾修正语仍漏远场/正峰同步前提；超过700字目标，不能声称全文要求全部通过。
-- 五问合并的63e2acc5-8ed4-45d6-9005-f41ae1911dce再次失败：正碰与π/2自相矛盾，声称单电子未披露N_SP但其S16原文明给2.5e-8/1.7e16 W/m²，30dB仍未保留up to；“无法直接复现/未公开原始数值”等超出S103支持。原文绑定不等于科学正确，不能采用。
+- 五问63e2acc5未采用：角度冲突、已知参数称未披露、条件缺失，历史细节见Git c742f7a2；原文绑定不能替代科学正确性。
 - 8ff290f5-9b14-4e39-9478-90dda22dc309复用editorDraft只改method，1653字符原文目标来自4bed引用；M3已改Fourier对象但遗漏I(t)支路与明确同步，不满足完整修订。保留为共编建议，不写入SDF。
 - 代码根因之一：科学写作使用adaptive，而editorDraft共编原来只传temperature0.2，M3兼容默认thinking off。a8已部署，仅共编复用既有SCIENTIFIC_SYNTHESIS_OPTIONS，导航保持原选项；同时修复有长度/语言/主题修饰的明确笔记请求，保留否定/咨询/保存语义。精确diff High静态复核通过。
 - a8新配置实产10799ba3-87c0-450b-971f-6f8dd9f3678f，仅method/183字符符合篇幅，但独立High判NOT ACCEPTED：删正确n(z)→时间压缩起始链，对I直接赋相位漏√I幅度，正峰同步仍不明确。只修对Fourier对象不构成合格，未采用；停止同路线模型重试。
@@ -68,6 +68,6 @@
 - 最终71《深度亚波长小孔限制光学近场的量子化：Bethe偶极到Weyl角谱》：3643字符/40引用；真实UI正文/quotes逐字等API，57/57 TeX源一致/0排版错误；截图实读可用，Markdown27609字符完整。证据Temp/xgs-quantization-writing-citation-{task,result,reading,math,tail,export,download}-20260913.*及服务器/jobs/hermes-quantization-writing-citation-*。RO实读仍private/draft/version3；sourceStatus仍grounded_with_unresolved_review，外部High结论未冒充产品自动审校状态。
 - 最终私有入口：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=71ed6fae-21c3-49d2-bfff-e394bf307323 。第一篇92/40e/867/3f68及v10/已批图保留；采用/公开仍待用户质量确认，视频/批量暂停。
 - 2026-09-13用户纠偏：停止把通用引用语义核验/自动审校扩展当交付前置，复用71已通过科学/公式/实读证据，直接推进图解制作、审核与发布预览；Markdown导出是TeX源，平台57式已实渲染，不能承诺所有外部阅读器。实际制作：复用71全文和40条已核对引用，创建制作Claim848479cc-680b-4768-9eaa-5d0b143a4d43；Evidence经API创建/确认，边缘空白裁剪同步调整range，原71不改。旧SDF仍只有错误problem，不能据新图直接发布。
-- 新图解：version58a45cb5-758f-4d6f-9e94-533b460e8b06；首方案ca7a812f多余公式/曲线未接受；一次有界修订aa05b703-0497-4f3d-b9d1-48aa1d46a2cc已批准。服务器生图40d64c3b-9156-4d7b-8021-078e503edcfd已失败image generation failed（03:51:09Z）；/jobs/同ID仅request.json，无submitted/conversation/result；不盲重发，下一步只修制作执行器阻塞。证据/jobs/hermes-quantization-postreview-*，同名Temp脚本；CSRF_INVALID后按现有API正常取token续同ID，无重复生成。
+- 新图解：version58a45cb5-758f-4d6f-9e94-533b460e8b06；首方案ca7a812f多余公式/曲线未接受；一次有界修订aa05b703-0497-4f3d-b9d1-48aa1d46a2cc已批准。服务器生图40d64c3b-9156-4d7b-8021-078e503edcfd已失败image generation failed（03:51:09Z）；/jobs/同ID仅request.json，无提交记录。04:27Z只读实查ChatGPT账户菜单/空输入框可见，无登录/挑战/错误提示；raw页面读取正常，Playwright连接8秒TimeoutError。原始broker仅保留泛化错误，历史具体失败点未还原；优先修连接层，不要求重登。证据/jobs/hermes-quantization-postreview-*，同名Temp脚本；CSRF_INVALID后按现有API正常取token续同ID，无重复生成。
 - 长综述ROaa450f1e旧任务因163815字符超过120k理解上限模型前失败，24页完整SourceMap已定位：derived/source-maps/1bdef65fc775a9b89e71ca81fb71988c9cbaa07f71209ea3ecc581406a4222c0.json（4,661,218 bytes）。ref未挂失败任务、无普通retry；后续复用既有解析收敛续跑路线，未实现新恢复能力，勿重解析或只增limit。
 - 继续前读此handoff、需求基线相关章节、server-capabilities；GitHub方法及真实调用对照见Hermes台账。当前版本看Git/服务器，不恢复旧MVP next action。
