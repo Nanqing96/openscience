@@ -134,9 +134,9 @@ async function recoverUncertainWebImage(config) {
       if (result.id !== id || result.promptHash !== request.promptHash || result.status !== 'uncertain') continue;
       const jobDir = join(config.jobs, id);
       if (!await exists(join(jobDir, 'submitted.json')) || !await exists(join(jobDir, 'conversation.json'))
-        || await exists(join(privateDir, 'late-recovery.started'))) continue;
-      await atomicWrite(join(privateDir, 'late-recovery.started'), String(Date.now()), 0o600);
+        || (await exists(join(privateDir, 'late-recovery.started')) && !await exists(join(jobDir, 'result.json')))) continue;
       if (!await exists(join(jobDir, 'result.json'))) {
+        await atomicWrite(join(privateDir, 'late-recovery.started'), String(Date.now()), 0o600);
         try {
           await docker(['exec', config.browserContainer, 'timeout', '--signal=TERM', '--kill-after=5', '330',
             'node', '/jobs/provider/runner.cjs', 'recover-late', id], 340000);

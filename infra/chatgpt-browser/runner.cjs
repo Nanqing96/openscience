@@ -115,6 +115,42 @@ async function waitAndDownload(browser, page, request) {
   if (await recoverFromImages(browser, page.context(), request, conversation, request.deadlineAt - 45000)) return;
   throw Error('RESULT_TIMEOUT_NO_RESEND');
 }
+async function readVisibleImage(generated, conversation, deadlineAt) {
+  const image = await generated.evaluate(async (element, { conversation, timeout }) => {
+    if (location.href !== conversation) throw Error('CONVERSATION_CHANGED');
+    const candidates = element.querySelectorAll('img[alt^="Generated image:"], img[alt^="Open image:"]');
+    if (candidates.length !== 1) throw Error('EXPECTED_ONE_GENERATED_IMAGE');
+    const img = candidates[0];
+    const url = new URL(img.currentSrc);
+    if (!img.complete || !img.naturalWidth || !img.naturalHeight || !img.getClientRects().length
+      || url.origin !== 'https://chatgpt.com' || url.pathname !== '/backend-api/estuary/content'
+      || url.username || url.password || url.hash) throw Error('INVALID_IMAGE_SOURCE');
+    // Use only the already displayed image URL; keep its signed query inside Chrome.
+    const response = await fetch(url.href, { credentials: 'same-origin', redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(timeout) });
+    if (!response.ok || response.url !== url.href || response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'image/png'
+      || !response.body) throw Error('EXPECTED_PNG');
+    const reader = response.body.getReader(), chunks = [];
+    let bytes = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > 30 * 1024 * 1024) { await reader.cancel(); throw Error('INVALID_IMAGE'); }
+      chunks.push(value);
+    }
+    if (location.href !== conversation || img.currentSrc !== url.href) throw Error('IMAGE_SOURCE_CHANGED');
+    const binary = chunks.map(chunk => {
+      const parts = [];
+      for (let offset = 0; offset < chunk.length; offset += 8192) parts.push(String.fromCharCode(...chunk.subarray(offset, offset + 8192)));
+      return parts.join('');
+    }).join('');
+    return { base64: btoa(binary), width: img.naturalWidth, height: img.naturalHeight };
+  }, { conversation, timeout: Math.min(30000, Math.max(1, deadlineAt - Date.now() - 45000)) });
+  const data = Buffer.from(image.base64, 'base64');
+  if (data.length < 24 || data.length > 30 * 1024 * 1024 || data.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a'
+    || data.readUInt32BE(16) !== image.width || data.readUInt32BE(20) !== image.height) throw Error('INVALID_IMAGE');
+  return data;
+}
 async function downloadImage(browser, page, request, conversation) {
   if (fs.existsSync(path.join(dir, 'result.json'))) throw Error('OUTPUT_EXISTS');
   if (canonicalUrl(page.url()) !== canonicalUrl(conversation)) throw Error('CONVERSATION_CHANGED');
@@ -122,31 +158,41 @@ async function downloadImage(browser, page, request, conversation) {
   if (!generated) throw Error('EXPECTED_ONE_GENERATED_IMAGE');
   const dialog = page.getByRole('dialog');
   if (await dialog.count() === 0) await generated.click();
-  await dialog.getByRole('button', { name: 'Save', exact: true }).waitFor({ timeout: Math.min(30000, Math.max(1, request.deadlineAt - Date.now() - 45000)) });
+  const save = dialog.getByRole('button', { name: 'Save', exact: true });
+  let nativeSave = true;
+  try { await save.waitFor({ timeout: Math.min(3000, Math.max(1, request.deadlineAt - Date.now() - 45000)) }); }
+  catch (error) { if (error.name !== 'TimeoutError') throw error; nativeSave = false; }
   const output = path.join(dir, 'output');
   if (fs.existsSync(output)) {
     const outputStat = fs.lstatSync(output);
     if (!outputStat.isDirectory() || outputStat.isSymbolicLink() || fs.readdirSync(output).length) throw Error('OUTPUT_EXISTS');
   } else fs.mkdirSync(output, { mode: 0o700 });
-  const cdp = await browser.newBrowserCDPSession();
-  await cdp.send('Browser.setDownloadBehavior', { behavior: 'allowAndName', downloadPath: output, eventsEnabled: true });
-  const completed = new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(Error('DOWNLOAD_TIMEOUT')), Math.min(30000, Math.max(1, request.deadlineAt - Date.now() - 45000)));
-    cdp.on('Browser.downloadProgress', event => {
-      if (event.state === 'completed') { clearTimeout(timer); resolve(event.guid); }
-      if (event.state === 'canceled') { clearTimeout(timer); reject(Error('DOWNLOAD_CANCELED')); }
+  let guid;
+  if (!nativeSave) {
+    const data = await readVisibleImage(generated, conversation, request.deadlineAt);
+    guid = 'visible-image';
+    fs.writeFileSync(path.join(output, guid), data, { flag: 'wx', mode: 0o600 });
+  } else {
+    const cdp = await browser.newBrowserCDPSession();
+    await cdp.send('Browser.setDownloadBehavior', { behavior: 'allowAndName', downloadPath: output, eventsEnabled: true });
+    const completed = new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(Error('DOWNLOAD_TIMEOUT')), Math.min(30000, Math.max(1, request.deadlineAt - Date.now() - 45000)));
+      cdp.on('Browser.downloadProgress', event => {
+        if (event.state === 'completed') { clearTimeout(timer); resolve(event.guid); }
+        if (event.state === 'canceled') { clearTimeout(timer); reject(Error('DOWNLOAD_CANCELED')); }
+      });
     });
-  });
-  await dialog.getByRole('button', { name: 'Save', exact: true }).click();
-  // Multi-image responses expose Save as a menu; download only the displayed core image.
-  const singleImage = page.getByRole('menuitem', { name: 'Download image', exact: true });
-  await Promise.race([
-    completed,
-    singleImage.waitFor({ state: 'visible', timeout: 5000 }).then(() => singleImage.click()).catch(error => {
-      if (error.name !== 'TimeoutError') throw error;
-    }),
-  ]);
-  const guid = await completed;
+    await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+    // Multi-image responses expose Save as a menu; download only the displayed core image.
+    const singleImage = page.getByRole('menuitem', { name: 'Download image', exact: true });
+    await Promise.race([
+      completed,
+      singleImage.waitFor({ state: 'visible', timeout: 5000 }).then(() => singleImage.click()).catch(error => {
+        if (error.name !== 'TimeoutError') throw error;
+      }),
+    ]);
+    guid = await completed;
+  }
   if (!/^[a-zA-Z0-9-]+$/.test(guid)) throw Error('INVALID_DOWNLOAD_ID');
   const file = path.join(output, guid);
   const stat = fs.lstatSync(file);
@@ -255,7 +301,14 @@ let stage = 'request';
 (async () => {
   const stat = fs.lstatSync(dir);
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw Error('INVALID_JOB_DIRECTORY');
-  let request = validateRequest(read('request.json'), mode === 'recover-late');
+  let request = validateRequest(read('request.json'), mode === 'recover-late' || mode === 'download');
+  if (mode === 'download') {
+    // A repaired downloader may collect an existing result within the same recovery grace.
+    // This mode never submits and does not reset either recovery marker or the original deadline.
+    if (request.deadlineAt + 60 * 60 * 1000 <= Date.now() || !fs.existsSync(path.join(dir, 'submitted.json'))
+      || !fs.existsSync(path.join(dir, 'conversation.json'))) throw Error('LATE_RECOVERY_UNAVAILABLE');
+    request = { ...request, deadlineAt: Date.now() + 90000 };
+  }
   if (mode === 'recover-late') {
     if (request.deadlineAt + 60 * 60 * 1000 <= Date.now() || fs.existsSync(path.join(dir, 'result.json'))
       || !fs.existsSync(path.join(dir, 'submitted.json')) || !fs.existsSync(path.join(dir, 'conversation.json'))) {
