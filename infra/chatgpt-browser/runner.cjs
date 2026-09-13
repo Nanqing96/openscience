@@ -330,9 +330,15 @@ let stage = 'request';
   // Image mode has its own controls (for example "Extra High"). The 6 Pro
   // requirement belongs to scientific review, not the native image composer.
   if (mode === 'prepare' || mode === 'execute') {
-    await composer.fill(prompt);
+    // Use editor transactions so its stored selection and rendered content agree.
+    await composer.focus();
+    await composer.press('Control+A');
+    await composer.press('Backspace');
+    await page.keyboard.insertText(prompt);
   }
   // Selecting the image tool inserts an inline pill; filling afterwards removes it.
+  // Put it after the prompt, otherwise the editor can insert its spacer mid-sentence.
+  await composer.press('Control+End');
   stage = 'image_mode';
   if (!await activateImageMode(page, composer, Math.min(request.deadlineAt, Date.now() + 10000))) throw Error('IMAGE_MODE_NOT_READY');
   stage = 'send_readiness';
