@@ -1,6 +1,5 @@
 // Private ChatGPT scientific-review operator. The host broker owns queue validation and publication.
 const fs = require('node:fs');
-const http = require('node:http');
 const path = require('node:path');
 const { chromium } = require('/app/node_modules/playwright-core');
 const [mode, id] = process.argv.slice(2);
@@ -115,38 +114,12 @@ function canonicalUrl(value) {
   if (parsed.origin !== 'https://chatgpt.com' || !/^\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(parsed.pathname) || parsed.search || parsed.hash) throw Error('INVALID_CONVERSATION');
   return parsed.href;
 }
-function devtoolsJson(pathname, timeout = 3000) {
-  return new Promise((resolve, reject) => {
-    const request = http.get({ host: '127.0.0.1', port: 9233, path: pathname, timeout }, response => {
-      if (response.statusCode !== 200) { response.resume(); reject(Error('DEVTOOLS_HTTP')); return; }
-      const chunks = []; let bytes = 0;
-      response.on('data', chunk => { bytes += chunk.length; if (bytes > 128 * 1024) request.destroy(Error('DEVTOOLS_RESPONSE_SIZE')); else chunks.push(chunk); });
-      response.on('end', () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); } catch { reject(Error('DEVTOOLS_RESPONSE_INVALID')); } });
-    });
-    request.on('timeout', () => request.destroy(Error('DEVTOOLS_TIMEOUT'))); request.on('error', reject);
-  });
-}
-function targetCall(target, method, params = {}, timeout = 3000) {
-  if (!target || target.type !== 'page' || typeof target.webSocketDebuggerUrl !== 'string') return Promise.reject(Error('DEVTOOLS_TARGET_INVALID'));
-  const socketUrl = new URL(target.webSocketDebuggerUrl);
-  if (socketUrl.protocol !== 'ws:' || socketUrl.hostname !== '127.0.0.1' || socketUrl.port !== '9233') return Promise.reject(Error('DEVTOOLS_TARGET_INVALID'));
-  return new Promise((resolve, reject) => {
-    const socket = new WebSocket(socketUrl.href); let settled = false;
-    const finish = (error, result) => { if (settled) return; settled = true; clearTimeout(timer); try { socket.close(); } catch {} error ? reject(error) : resolve(result); };
-    const timer = setTimeout(() => finish(Error('DEVTOOLS_TARGET_TIMEOUT')), timeout);
-    socket.addEventListener('open', () => socket.send(JSON.stringify({ id: 1, method, params })), { once: true });
-    socket.addEventListener('message', event => { try { const message = JSON.parse(String(event.data)); if (message.id === 1) finish(message.error ? Error('DEVTOOLS_TARGET_ERROR') : undefined, message.result); } catch { finish(Error('DEVTOOLS_TARGET_INVALID')); } });
-    socket.addEventListener('error', () => finish(Error('DEVTOOLS_TARGET_ERROR')), { once: true });
-  });
-}
 async function reconnectBrowser() {
   try { return await chromium.connectOverCDP('http://127.0.0.1:9233', { timeout: 15000 }); }
-  catch {
-    const targets = await devtoolsJson('/json/list');
-    const chat = Array.isArray(targets) ? targets.filter(target => { try { return target.type === 'page' && new URL(target.url).origin === 'https://chatgpt.com'; } catch { return false; } }) : [];
-    if (!chat.length) throw Error('CHAT_TARGET_NOT_FOUND');
-    await Promise.all(chat.map(target => targetCall(target, 'Page.reload', { ignoreCache: false }, 5000).catch(() => {})));
-    return chromium.connectOverCDP('http://127.0.0.1:9233', { timeout: 15000 });
+  catch (error) {
+    // Do not reload another task's conversation when an existing page blocks attachment.
+    if (error?.name === 'TimeoutError') throw Error('BROWSER_ATTACH_TIMEOUT');
+    throw error;
   }
 }
 function bounded(promise, timeout = 3000) { return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(Error('PAGE_UNRESPONSIVE')), timeout))]); }

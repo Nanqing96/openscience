@@ -1,6 +1,5 @@
 // Private browser operator. The host broker owns queue validation and publication.
 const fs = require('node:fs');
-const http = require('node:http');
 const path = require('node:path');
 const { chromium } = require('/app/node_modules/playwright-core');
 const [mode, id] = process.argv.slice(2);
@@ -31,76 +30,6 @@ async function visibleFailureCode(page) {
     if (/unable to generate|couldn.t generate|generation failed|无法生成|生成失败/.test(text)) return 'IMAGE_GENERATION_FAILED';
     return null;
   }).catch(() => null);
-}
-function devtoolsJson(pathname, timeout = 3000) {
-  return new Promise((resolve, reject) => {
-    const request = http.get({ host: '127.0.0.1', port: 9233, path: pathname, timeout }, response => {
-      if (response.statusCode !== 200) { response.resume(); reject(Error('DEVTOOLS_HTTP')); return; }
-      const chunks = [];
-      let bytes = 0;
-      response.on('data', chunk => {
-        bytes += chunk.length;
-        if (bytes > 128 * 1024) { request.destroy(Error('DEVTOOLS_RESPONSE_SIZE')); return; }
-        chunks.push(chunk);
-      });
-      response.on('end', () => {
-        try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); }
-        catch { reject(Error('DEVTOOLS_RESPONSE_INVALID')); }
-      });
-    });
-    request.on('timeout', () => request.destroy(Error('DEVTOOLS_TIMEOUT')));
-    request.on('error', reject);
-  });
-}
-function targetCall(target, method, params = {}, timeout = 3000) {
-  if (!target || target.type !== 'page' || typeof target.webSocketDebuggerUrl !== 'string') return Promise.reject(Error('DEVTOOLS_TARGET_INVALID'));
-  const socketUrl = new URL(target.webSocketDebuggerUrl);
-  if (socketUrl.protocol !== 'ws:' || socketUrl.hostname !== '127.0.0.1' || socketUrl.port !== '9233'
-    || !/^\/devtools\/page\/[A-Fa-f0-9]+$/.test(socketUrl.pathname) || socketUrl.search || socketUrl.hash) return Promise.reject(Error('DEVTOOLS_TARGET_INVALID'));
-  return new Promise((resolve, reject) => {
-    const socket = new WebSocket(socketUrl.href);
-    let settled = false;
-    const timer = setTimeout(() => finish(Error('DEVTOOLS_TARGET_TIMEOUT')), timeout);
-    const finish = (error, result) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      try { socket.close(); } catch {}
-      if (error) reject(error); else resolve(result);
-    };
-    socket.addEventListener('open', () => socket.send(JSON.stringify({ id: 1, method, params })), { once: true });
-    socket.addEventListener('message', event => {
-      try {
-        const message = JSON.parse(String(event.data));
-        if (message.id !== 1) return;
-        finish(message.error ? Error('DEVTOOLS_TARGET_ERROR') : undefined, message.result);
-      } catch { finish(Error('DEVTOOLS_TARGET_INVALID')); }
-    });
-    socket.addEventListener('error', () => finish(Error('DEVTOOLS_TARGET_ERROR')), { once: true });
-  });
-}
-async function responsiveChatTarget(target) {
-  const result = await targetCall(target, 'Runtime.evaluate', { expression: 'location.origin', returnByValue: true });
-  return result?.result?.value === 'https://chatgpt.com';
-}
-async function reloadChatTargetsAfterAttachFailure() {
-  const targets = await devtoolsJson('/json/list');
-  if (!Array.isArray(targets)) throw Error('DEVTOOLS_RESPONSE_INVALID');
-  const chatTargets = targets.filter(target => {
-    let origin;
-    try { origin = new URL(target?.url).origin; } catch { return false; }
-    return target.type === 'page' && origin === 'https://chatgpt.com';
-  });
-  if (!chatTargets.length) throw Error('CHAT_TARGET_NOT_FOUND');
-  await Promise.all(chatTargets.map(async target => {
-    await targetCall(target, 'Page.reload', { ignoreCache: false }, 5000);
-    const deadline = Date.now() + 10000;
-    while (Date.now() < deadline) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (await responsiveChatTarget(target).catch(() => false)) return;
-    }
-    throw Error('STALE_CHAT_TARGET');
-  }));
 }
 function validateRequest(request, allowExpired = false) {
   const source = request?.source;
@@ -311,6 +240,7 @@ async function closeStaleOperatorPages(context) {
     }
   }
 }
+let activePage;
 (async () => {
   const stat = fs.lstatSync(dir);
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw Error('INVALID_JOB_DIRECTORY');
@@ -327,10 +257,9 @@ async function closeStaleOperatorPages(context) {
   try {
     browser = await chromium.connectOverCDP('http://127.0.0.1:9233', { timeout: 15000 });
   } catch (error) {
-    if (fs.existsSync(path.join(dir, 'submitted.json')) || !['prepare', 'send', 'execute'].includes(mode)) throw error;
-    await reloadChatTargetsAfterAttachFailure();
-    if (fs.existsSync(path.join(dir, 'submitted.json'))) throw Error('SUBMITTED_DO_NOT_RECOVER');
-    browser = await chromium.connectOverCDP('http://127.0.0.1:9233', { timeout: 15000 });
+    // A stalled unrelated page can block Playwright initialization. Preserve shared tabs.
+    if (error?.name === 'TimeoutError') throw Error('BROWSER_ATTACH_TIMEOUT');
+    throw error;
   }
   const context = browser.contexts()[0];
   if (!context) throw Error('BROWSER_CONTEXT_NOT_FOUND');
@@ -359,10 +288,13 @@ async function closeStaleOperatorPages(context) {
   let page;
   if (mode === 'send') {
     page = await findPreparedPage(context);
+    activePage = page;
   } else {
     page = await claimAuthenticatedImagePage(context);
+    activePage = page;
     if (!page) {
       page = await context.newPage();
+      activePage = page;
       await page.goto('https://chatgpt.com/', { waitUntil: 'domcontentloaded', timeout: Math.min(30000, Math.max(1, request.deadlineAt - Date.now())) });
       let ready = await waitForImageComposer(page, Math.min(request.deadlineAt, Date.now() + 5000));
       for (let attempt = 0; !ready && attempt < 3; attempt += 1) {
@@ -409,7 +341,10 @@ async function closeStaleOperatorPages(context) {
     await page.close().catch(() => {});
   }
   process.exit(0);
-})().catch(error => {
+})().catch(async error => {
+  if (activePage && !fs.existsSync(path.join(dir, 'submitted.json'))) {
+    await bounded(activePage.close({ runBeforeUnload: false }), 3000).catch(() => {});
+  }
   // Never print page contents, login data, request payload, conversation URL or CDP transport errors.
   console.log(JSON.stringify({ state: fs.existsSync(path.join(dir, 'submitted.json')) ? 'ambiguous_no_resend' : 'not_submitted', error: /^[A-Z0-9_]+$/.test(error.message) ? error.message : error.name }));
   process.exit(1);
