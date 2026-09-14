@@ -21,11 +21,20 @@ export async function reviewIllustrationStoryboard(
   gateway: Pick<AiGateway, 'reviewScientific'>,
   claims: readonly PresentationClaim[], settings: StoryboardRequest, candidate: StoryboardDocument, context: ReviewContext,
 ) {
-  const sources = claims.flatMap(claim => (claim.sourcePassages ?? []).map(passage => ({ ...passage, claimId: claim.id })));
+  // Imported evidence is field-scoped and often all marked supports. Keep the
+  // selected Claims' whole source context: unused passages can carry qualifiers.
+  const selectedClaimIds = new Set(candidate.scenes.flatMap(scene => scene.sourceClaimIds));
+  const selectedClaims = claims.filter(claim => selectedClaimIds.has(claim.id));
+  const sources = selectedClaims.flatMap(claim => (claim.sourcePassages ?? [])
+    .map(passage => ({ ...passage, claimId: claim.id })));
   const sourceIds = new Map(sources.map((source, index) => [`${source.claimId}:${source.evidenceId}`, `s${index}`]));
-  const sourceLookup = new Map(sources.map((source, index) => [`s${index}`, source]));
   const candidateView = { title: candidate.title, scenes: candidate.scenes.map(scene => {
-    if (!scene.illustration) throw new Error('[blocked] Illustration review requires a structured brief');
+    if (scene.illustration?.schemaVersion !== 2) throw new Error('[blocked] Illustration review requires separate science and layout');
+    requireIllustrationSourceSupport(scene.illustration, claims);
+    if (scene.illustration.subjects.some(subject => !sources.some(source => source.claimId === subject.basis.claimId
+      && source.evidenceId === subject.basis.evidenceId && source.relation === 'supports'))) {
+      throw new Error('[blocked] Illustration subject lacks supporting evidence');
+    }
     const { schemaVersion: _schemaVersion, ...brief } = scene.illustration;
     return { title: scene.title, narration: scene.narration, ...brief,
       subjects: brief.subjects.map(subject => ({ description: subject.description, basis: {
@@ -35,11 +44,14 @@ export async function reviewIllustrationStoryboard(
   const candidateHash = createHash('sha256').update(JSON.stringify(candidate)).digest('hex');
   const reviewSkills = loadInstalledMediaSkills(settings.style, settings.instruction, 'review');
   const prompt = `Apply the shared scientific-critical-thinking skill below to the FINAL proposed research illustration. Use only the supplied analysis and original evidence; do not browse or operate tools. The image-specific task is to check what every axis, distance, color, region, arrow and curve communicates, including meaning introduced by composition and treatment. Decorative placement must not invent quantitative behavior or physical relationships.
-Choose accepted only if the complete picture faithfully explains a supported relationship. If repairable, return revised with a complete corrected picture: choose a narrower supported relationship where needed, resolve subjects to supplied sourceIds, and retain safe accepted art qualities and the user's style preference. It is acceptable to remove an unnecessary formula or unsupported feature. Do not invent missing evidence or use a style reference as scientific authority. If no supported coherent picture is possible, return blocked and explain what source information is missing. Perform the audit yourself; do not return a plan for another reviewer.
-Return ONLY JSON with EXACT keys {decision,summary,storyboard}. decision is accepted|revised|blocked; summary is a concise explanation in the requested locale. For accepted or blocked, storyboard MUST be null. For revised, storyboard is {title,scenes:[{title,narration,message,domain,subjects,composition,treatment,labels,constraints}]} with 1–6 scenes. title/narration/message: nonempty single-line strings<=120 characters. domain: real-space|wavevector-space|time|frequency|parameter-space|conceptual. subjects: 1–4 entries {description:string<=100,basis:{sourceId}}; each FULL description must be entailed by its chosen supports passage. composition:string<=400 includes scientific encoding and layout. treatment:string<=240 concerns material, palette, edges and typography. labels: 0–8 strings<=80 each. constraints: 1–5 strings<=120 each. All fields single-line strings, no HTML or code. Use concise Unicode mathematical labels; do not introduce unescaped TeX into JSON. The final drawing instructions including all brief fields must fit 1500 characters; aim below 900 characters of actual prose per picture. Quotes and sourceIds are provenance and are not drawn.
+Choose accepted only if the complete picture faithfully explains the supplied selected relationship. Science is carried in message/domain/subjects/encoding/labels/constraints plus title/narration; it is not yours to rewrite or replace. If any of those fields needs correction, or a different focus or source is necessary, return blocked and identify the exact scene, field, source and problem for upstream correction. Do not invent missing evidence or use a style reference as scientific authority.
+If only artistic placement or treatment introduced a misleading meaning, return revised with a minimal correction to that scene's composition or treatment. Preserve scene order/count, all scientific fields and unaffected artwork. Composition chooses placement, focal scale, reading path and spacing; treatment chooses material, palette, edges and typography. Neither may add a new scientific mark, label, relationship or condition. Refer to existing subjects, encoding and labels. Do not reselect a topic, rewrite a complete storyboard or add another review stage.
+Return ONLY JSON with EXACT keys {decision,summary,corrections}. decision is accepted|revised|blocked; summary is a concise explanation in the requested locale. For accepted or blocked, corrections MUST be []. For revised, corrections is a nonempty list of {sceneIndex,composition?,treatment?}; each existing zero-based sceneIndex appears once, with at least one changed field and no other keys. composition:nonempty single-line string<=200; treatment:nonempty single-line string<=220. No HTML or code. Keep corrections concise and in the requested locale. The final drawing instructions including unchanged scientific fields must fit 1500 characters; never shorten science to fit art. SourceIds and review notes are internal and are not drawn. Perform this focused audit yourself.
 ${reviewSkills.instructions}
 ${JSON.stringify({ locale: settings.locale, userRequest: settings.instruction, style: settings.style,
-    upstream: claims.map(claim => ({ analysis: claim.statement, conditions: claim.conditions, limitations: claim.limitations })),
+    upstream: selectedClaims.map(claim => ({ kind: claim.kind, assessment: claim.assessment, analysis: claim.statement,
+      conditions: claim.conditions, limitations: claim.limitations,
+      sourceIds: (claim.sourcePassages ?? []).map(passage => sourceIds.get(`${claim.id}:${passage.evidenceId}`)) })),
     sources: sources.map((source, index) => ({ sourceId: `s${index}`, text: source.text, relation: source.relation })), candidate: candidateView })}`;
   if (prompt.length > SCIENCE_REVIEW_MAX_PROMPT_CHARS) throw new Error('[blocked] Illustration review sources exceed the Chat input limit; select fewer Claims');
   const response = await gateway.reviewScientific({ requestId: context.authorizationContext.taskId,
@@ -47,35 +59,36 @@ ${JSON.stringify({ locale: settings.locale, userRequest: settings.instruction, s
     source: { kind: 'illustration-plan', researchObjectId: context.researchObjectId, versionId: context.versionId,
       sourceEvidenceIdentity: context.sourceEvidenceIdentity, candidateHash }, prompt });
   const review = object(JSON.parse(response.text.trim().replace(/^```(?:json)?\s*/u, '').replace(/\s*```$/u, '')));
-  keys(review, ['decision', 'summary', 'storyboard']);
+  keys(review, ['decision', 'summary', 'corrections']);
   const decision = review.decision;
   if ((decision !== 'accepted' && decision !== 'revised' && decision !== 'blocked')
     || typeof review.summary !== 'string' || !review.summary.trim() || review.summary.length > 6000) {
     throw new Error('[blocked] Invalid scientific review decision');
   }
-  if (decision === 'blocked') throw new Error('[blocked] Illustration needs scientific revision: ' + review.summary.slice(0, 300));
+  if (!Array.isArray(review.corrections) || review.corrections.length > candidate.scenes.length
+    || (decision !== 'revised' && review.corrections.length !== 0)) throw new Error('[blocked] Invalid scientific review corrections');
+  if (decision === 'blocked') throw new Error('[blocked] Illustration needs upstream scientific revision: ' + review.summary.slice(0, 300));
   let document = candidate;
-  if (decision === 'accepted') {
-    if (review.storyboard !== null) throw new Error('[blocked] Accepted review must preserve the candidate');
-  } else {
-    const revised = object(review.storyboard); keys(revised, ['title', 'scenes']);
-    if (!Array.isArray(revised.scenes) || revised.scenes.length < 1 || revised.scenes.length > 6) throw new Error('[blocked] Invalid reviewed scene count');
-    const scenes = revised.scenes.map(raw => {
-      const scene = object(raw); keys(scene, ['title', 'narration', 'message', 'domain', 'subjects', 'composition', 'treatment', 'labels', 'constraints']);
-      if (!Array.isArray(scene.subjects)) throw new Error('[blocked] Invalid reviewed subjects');
-      const subjects = scene.subjects.map(rawSubject => {
-        const subject = object(rawSubject); keys(subject, ['description', 'basis']);
-        const basis = object(subject.basis); keys(basis, ['sourceId']);
-        const source = typeof basis.sourceId === 'string' ? sourceLookup.get(basis.sourceId) : undefined;
-        if (!source || source.relation !== 'supports') throw new Error('[blocked] Reviewed subject lacks supporting evidence');
-        return { description: subject.description, basis: { claimId: source.claimId, evidenceId: source.evidenceId, quote: source.text } };
-      });
-      const illustration = parseIllustrationBrief({ schemaVersion: 1, message: scene.message, domain: scene.domain, subjects,
-        composition: scene.composition, treatment: scene.treatment, labels: scene.labels, constraints: scene.constraints }, claims.map(claim => claim.id));
-      return { title: scene.title, narration: scene.narration, illustration,
-        visualAction: describeIllustrationBrief(illustration), sourceClaimIds: [...new Set(subjects.map(subject => subject.basis.claimId))] };
-    });
-    document = parseStoryboardDocument({ schemaVersion: 1, title: revised.title, scenes }, claims.map(claim => claim.id), 'image');
+  if (decision === 'revised') {
+    if (!review.corrections.length) throw new Error('[blocked] Revised review requires an actual correction');
+    const scenes = [...candidate.scenes];
+    const patched = new Set<number>();
+    for (const raw of review.corrections) {
+      const correction = object(raw);
+      const index = correction.sceneIndex;
+      if (typeof index !== 'number' || !Number.isInteger(index) || index < 0 || index >= scenes.length || patched.has(index)
+        || Object.keys(correction).some(key => !['sceneIndex', 'composition', 'treatment'].includes(key))
+        || (!('composition' in correction) && !('treatment' in correction))) throw new Error('[blocked] Invalid scene correction');
+      const scene = scenes[index]!;
+      const illustration = parseIllustrationBrief({ ...scene.illustration!,
+        ...('composition' in correction ? { composition: correction.composition } : {}),
+        ...('treatment' in correction ? { treatment: correction.treatment } : {}) }, scene.sourceClaimIds);
+      if (illustration.treatment.length > 220 || (illustration.composition === scene.illustration!.composition
+        && illustration.treatment === scene.illustration!.treatment)) throw new Error('[blocked] Invalid or unchanged art correction');
+      scenes[index] = { ...scene, illustration, visualAction: describeIllustrationBrief(illustration) };
+      patched.add(index);
+    }
+    document = parseStoryboardDocument({ ...candidate, scenes }, claims.map(claim => claim.id), 'image');
   }
   for (const scene of document.scenes) {
     requireIllustrationSourceSupport(scene.illustration!, claims);

@@ -1,7 +1,6 @@
 import { PresentationAssetError } from './errors';
 
-export interface IllustrationBrief {
-  schemaVersion: 1;
+interface IllustrationBriefFields {
   message: string;
   domain: 'real-space' | 'wavevector-space' | 'time' | 'frequency' | 'parameter-space' | 'conceptual';
   subjects: Array<{ description: string; basis: { claimId: string; evidenceId: string; quote: string } }>;
@@ -10,11 +9,18 @@ export interface IllustrationBrief {
   labels: string[];
   constraints: string[];
 }
+// Legacy briefs remain readable without rewriting stored assets or their hashes.
+export type IllustrationBrief = IllustrationBriefFields & (
+  { schemaVersion: 1 } | { schemaVersion: 2; encoding: string }
+);
 export function parseIllustrationBrief(value: unknown, claimIds?: readonly string[]): IllustrationBrief {
   const fail = (): never => { throw new PresentationAssetError('VALIDATION_ERROR', 'illustration_brief:invalid_shape_or_length'); };
   if (!value || typeof value !== 'object' || Array.isArray(value)) return fail();
   const v = value as Record<string, unknown>;
-  if (Object.keys(v).sort().join(',') !== 'composition,constraints,domain,labels,message,schemaVersion,subjects,treatment' || v.schemaVersion !== 1
+  const expectedKeys = v.schemaVersion === 2
+    ? 'composition,constraints,domain,encoding,labels,message,schemaVersion,subjects,treatment'
+    : 'composition,constraints,domain,labels,message,schemaVersion,subjects,treatment';
+  if (Object.keys(v).sort().join(',') !== expectedKeys || (v.schemaVersion !== 1 && v.schemaVersion !== 2)
     || !['real-space', 'wavevector-space', 'time', 'frequency', 'parameter-space', 'conceptual'].includes(String(v.domain))) return fail();
   const line = (input: unknown, max: number): string => {
     if (typeof input !== 'string' || !input.trim() || input.length > max || /[\u0000-\u001f]/.test(input)) return fail();
@@ -35,14 +41,17 @@ export function parseIllustrationBrief(value: unknown, claimIds?: readonly strin
       || typeof b.quote !== 'string' || b.quote.trim().length < 12 || b.quote.length > 12000) return fail();
     return { description: line(raw.description, 100), basis: { claimId: b.claimId, evidenceId: b.evidenceId, quote: b.quote } };
   });
-  return { schemaVersion: 1, message: line(v.message, 120), domain: v.domain as IllustrationBrief['domain'],
-    subjects, composition: line(v.composition, 400), treatment: line(v.treatment, 240),
+  const fields: IllustrationBriefFields = { message: line(v.message, 120), domain: v.domain as IllustrationBrief['domain'],
+    subjects, composition: line(v.composition, v.schemaVersion === 2 ? 200 : 400), treatment: line(v.treatment, 240),
     labels: list(v.labels, 0, 8, 80), constraints: list(v.constraints, 1, 5, 120) };
+  return v.schemaVersion === 2
+    ? { schemaVersion: 2, ...fields, encoding: line(v.encoding, 200) }
+    : { schemaVersion: 1, ...fields };
 }
 
 /** One representation shared by plan review and image compilation. */
 export function describeIllustrationBrief(brief: IllustrationBrief): string {
-  return `核心关系：${brief.message}。科学域：${brief.domain}。对象：${brief.subjects.map(subject => subject.description).join('；')}。构图：${brief.composition}。视觉处理：${brief.treatment}。可见标签：${brief.labels.length ? brief.labels.join('；') : '无'}。科学限定：${brief.constraints.join('；')}。`;
+  return `核心关系：${brief.message}。科学域：${brief.domain}。对象：${brief.subjects.map(subject => subject.description).join('；')}。${brief.schemaVersion === 2 ? `科学编码：${brief.encoding}。` : ''}构图：${brief.composition}。视觉处理：${brief.treatment}。可见标签：${brief.labels.length ? brief.labels.join('；') : '无'}。科学限定：${brief.constraints.join('；')}。`;
 }
 
 export function requireIllustrationSourceSupport(brief: IllustrationBrief, claims: readonly {

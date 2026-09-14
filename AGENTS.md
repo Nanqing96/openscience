@@ -50,6 +50,7 @@ OpenScience 是科研基础设施平台：Research Object / SDF / 公开出版�
 - 创建前查 project_index.md，同主题原地迭代。方案 docs/proposals/，设计 docs/specs/，计划 docs/plans/，决策 docs/decisions/ADR-NNN-*.md，交接 docs/handoff/，安全 docs/security/。
 - docs/OpenScience_Kimi_Development_Spec.md 是路径例外，原地保留；外部 docx/zip 等原件只读，移动或改名需授权。
 - 按 .agents/skills/docs-sync/SKILL.md 同步实际改动；历史状态明确降级，需求有效性与完成情况分开，不按日期抹掉未完成需求。
+- 有项目状态变化的回合在最终回复前主动执行 docs-sync；长任务在决策、修改或阻塞节点先保存。无变化问答不重写；意外中断后从实际 Git/运行事实恢复，Skill 不冒充后台自动回调。
 - 提交/交接前核对差异和 Git 状态，分别报告候选、部署、已观察、未确认；只在规则允许时执行检查，不恢复默认预检。AGENTS/Skill 修改要进入交付分支，不能只留在旧 main。
 - 其他工作树只保留交付入口导航，不复制 release/next action；未提交独立工作保留并说明归属，不混入当前提交。
 - AGENTS ≤100 行、CURRENT handoff ≤80 行、progress ≤120 行。长证据留原记录/Git，启动只读相关短段；不新增重复治理平台。

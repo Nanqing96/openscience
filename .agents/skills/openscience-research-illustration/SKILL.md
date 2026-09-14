@@ -2,7 +2,7 @@
 name: openscience-research-illustration
 description: Plan and refine evidence-grounded research illustrations for OpenScience through Hermes and Chat image generation, using structured briefs, source-scoped visual references and reusable art directions. Use for paper illustrations, scientific concept images and research covers; quantitative plots require a data renderer.
 metadata:
-  version: "1"
+  version: "2"
 ---
 
 # OpenScience research illustration
@@ -12,6 +12,8 @@ Create a readable scientific image with a deliberate composition. The source sup
 ## Scientific intent
 
 Use the upstream reviewed scientific result and its bound original passages before selecting a visual explanation. In Hermes, the existing `scientific-critical-thinking` runtime skill supplies shared scientific reasoning to this stage and scientific review; this skill adds visual meaning and art direction. Read the actual loader/call path to distinguish installed guidance from consumed guidance. Do not repeat the full paper analysis when a supported upstream focus already exists; unresolved upstream conclusions must not become image facts.
+
+Claim `kind` and `assessment` describe argument role and internal review state, not additional evidence. Do not present partial/disputed/missing support or a counter/boundary Claim as an unqualified established result. Such inputs can explain uncertainty or limits when supported; do not discard them merely for their status. Ingestion completion alone does not establish scientific support.
 
 First select one useful scientific explanation from the upstream reviewed analysis and its complete original passages. This stage chooses what the reader should understand, not an artistic style. A whole-paper conclusion often contains several independent ideas; select one coherent relationship instead of compressing all of them into one picture. Follow an explicitly requested number of pictures, otherwise prefer one. Preserve complete source context: do not split equations from definitions or qualifiers to fit a short quotation field.
 
@@ -32,14 +34,15 @@ Produce a structured illustration brief, not a long drawing monologue:
 - `message`: one concise scientific takeaway.
 - `domain`: the single domain depicted in this image: real-space, wavevector-space, time, frequency, parameter-space or conceptual.
 - `subjects`: the scientific elements and relationships needed for the takeaway, each linked to the supplied Claim and original passage. A description can establish a relationship or condition, not just name an object. Select supplied passage identifiers; the server resolves them to exact evidence, never manufacture a quotation.
-- `composition`: focal subject, relative scale, reading path, placement of labels and meaning of visual encodings.
+- `encoding`: the scientific meaning of each necessary mark, axis, region, arrow or color, kept separate from artwork in a v2 brief.
+- `composition`: focal scale, reading path, spacing and placement of existing subjects and labels; it cannot redefine their scientific meaning.
 - `treatment`: concrete material, palette, line/edge treatment and type hierarchy; select a relevant direction from [art-directions.md](references/art-directions.md).
 - `labels`: the exact short visible text. Essential symbols and conditions must survive intact. Put titles, long equations and derivations in the article unless indispensable to this picture.
 - `constraints`: the few source conditions and visual exclusions needed to prevent a wrong reading.
 
-Every scientific relationship, variable, formula and condition in `message`, `composition`, `labels` or `constraints` must be established in at least one subject description and supported by that subject's original basis. The remaining composition and treatment decisions concern visual design only. An object existing in the source does not establish an invented relationship between objects.
+Every scientific relationship, variable, formula and condition in `message`, `encoding`, `labels` or `constraints` must be established in at least one subject description and supported by that subject's original basis. Composition and treatment concern visual design only. An object existing in the source does not establish an invented relationship between objects.
 
-Resolve the visual encoding before arranging the composition. For each meaningful axis, distance, region, line, arrow or color, state which sourced subject/relationship it represents and in which domain. Physical position, a parameter coordinate and a logical grouping are different encodings; do not turn one into another for visual richness. Calling a mark symbolic does not excuse a false mapping. Keep one consistent meaning per color. Put semantic color/mark meanings in `composition`; keep `treatment` to material, palette, edges and typography. Prefer a narrower takeaway over a collage of loosely related source facts. Each basis must support the complete subject description, including its qualifiers; remove unsupported extensions instead of attaching a nearby quotation.
+Resolve the visual encoding before arranging the composition. For each meaningful axis, distance, region, line, arrow or color, state which sourced subject/relationship it represents and in which domain. Physical position, a parameter coordinate and a logical grouping are different encodings; do not turn one into another for visual richness. Calling a mark symbolic does not excuse a false mapping. Keep one consistent meaning per color. Put semantic color/mark meanings in `encoding`; keep `treatment` to material, palette, edges and typography. Prefer a narrower takeaway over a collage of loosely related source facts. Each basis must support the complete subject description, including its qualifiers; remove unsupported extensions instead of attaching a nearby quotation.
 
 Keep independent scientific domains distinct. Coordinate dimensionality, units and variables must agree with their stated domain. When an explanation needs several domains, use separate scenes/images with explicit relationships, rather than blending axes and gradients. Every mark that looks like data needs source support. Texture belongs to the artistic treatment and must not imply a measured field.
 
@@ -51,9 +54,11 @@ Before submitting a brief, read its subjects, labels and constraints together: t
 
 ## Scientific review
 
-Review the final proposed image against the complete upstream analysis and original passages, including meanings introduced by composition and treatment. Citation identity establishes where text came from; it does not establish that a description follows from it. Check each subject, relationship, condition, formula and visible label, then the meaning of axes, distances, regions, arrows, curves and semantic colors. A layout must not turn a logical relationship into a physical trajectory or invent data from an equation.
+Review the selected scientific intent against its complete bound original passages and the upstream conditions, limitations and conflicting evidence, including meanings introduced by composition and treatment. Do not repeat the whole-paper synthesis. Citation identity establishes where text came from; it does not establish that a description follows from it. Check each subject, relationship, condition, formula and visible label, then the meaning of axes, distances, regions, arrows, curves and semantic colors. A layout must not turn a logical relationship into a physical trajectory or invent data from an equation.
 
-Use the existing Chat scientific review capability once for the final candidate. It may accept the candidate, return a complete corrected brief, or report the missing support. A correction can narrow the visual explanation and remove unsupported marks while preserving the user's accepted art qualities. Resolve the corrected sources against current evidence and compile the corrected brief directly; do not send it through another creative rewrite. Keep the review attached to the actual task, version, source evidence and candidate in internal provenance. A missing, ambiguous or unusable review does not authorize image generation. Scientific review is separate from the user's aesthetic approval.
+Retain the selected Claim's complete reviewed statement and Evidence while source roles remain field-scoped: an unselected passage marked `supports` may contain essential qualifiers. Claim kind/assessment are review context, not evidence or visible labels; preserve partial, disputed, counterexample and boundary meaning. Unconfirmed intermediate semanticStage output is not an approved finer-grained source. Do not silently reduce the context to subject citations alone.
+
+Use the existing Chat scientific review capability once for the final candidate. Accept it unchanged, or correct only the affected scene's composition/treatment while preserving scientific fields, scene order and unaffected artwork. A scientific error must identify the scene, field, source and needed upstream correction; it cannot be repaired by silently substituting another relationship or rewriting the complete storyboard. Compile accepted fields directly without another creative rewrite. Keep the review attached to the actual task, version, source evidence and candidate in internal provenance. A missing, ambiguous or unusable review does not authorize image generation. Scientific review is separate from the user's aesthetic approval.
 
 ## Execution
 

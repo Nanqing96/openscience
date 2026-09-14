@@ -13,7 +13,7 @@
 | `AGENTS.md` / `.agents/skills/architecture-guard/SKILL.md` / `.agents/skills/docs-sync/SKILL.md` / `docs/decisions/ADR-002-agent-tooling-portability.md` | 复用前定位产品意图、实际调用与已有结果；能力索引按需读取、唯一版本锚点，禁止安装/格式检查冒充运行效果 |
 | `README.md` / `.agents/skills/{brainstorming,finishing-a-development-branch,repo-map,requesting-code-review,subagent-driven-development,test-driven-development,test-gate,using-git-worktrees,using-superpowers,verification-before-completion,writing-plans,writing-skills}/` | 从根目录带入已有精简流程与对应引用，保留独有能力；统一当前入口和已授权范围，避免旧工作树恢复重复流程 |
 | `apps/agent-worker/src/skills/installed-media-skills.ts` / `apps/agent-worker/src/presentation/{illustration-planner,handler}.ts` | 本轮候选去重：共用 mergeDesignSkillUsage、保留单一来源入口及提交时重验；High静态GO，未构建部署 |
-| `apps/agent-worker/src/skills/installed-media-skills.ts` / `apps/agent-worker/src/presentation/illustration-review.ts` / `.agents/skills/openscience-research-illustration/SKILL.md` | 未部署候选：引用既有critical-thinking共享规则，删除审阅重复原则；修decision收窄。全文重写与上游传递问题仍待收敛，见CURRENT |
+| `packages/domain/src/assets/illustration-brief.ts` / `apps/agent-worker/src/presentation/{illustration-planner,illustration-review}.ts` / `apps/agent-worker/src/skills/installed-media-skills.ts` / `.agents/skills/openscience-research-illustration/SKILL.md` | 未部署候选：v2分开科学编码/排布，末审仅艺术局部修正，v1原样读取；共享critical-thinking与角色状态沿用。上游细粒度确认缺口见CURRENT/能力台账 |
 | `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | dd4c935a/v4已部署；区分科学批准与审美认可、定向修改保持/否定构图重排。新学术cdce/封面1a1d均被用户否定，仍只认可淡彩aa41；实际结果/局限见CURRENT |
 | `apps/web/app/dashboard/dashboard.module.css` | 6504c004已部署实看：收回Hermes遗留跨三行布局，首行等高、后续整行及紧凑导入；桌面/手机无横溢出 |
 | `infra/private-cleanup/{runner.mjs,install.sh}` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 已交付f8：Node符号链接精确身份、正常排空退出、安装等锁、回收站自动刷新；原4项已实际清除。独立Codex仅090文件补丁、base1ad运行环境保留 |
@@ -542,7 +542,7 @@
 | `.agents/skills/infra-runbook/SKILL.md` | 基础设施与运维 runbook 规范（单 ECS 拓扑、备份、部署） | 活文档 |
 | `.agents/skills/security-review/SKILL.md` | 安全审查清单（密钥、越权、上传、沙箱、日志脱敏） | 活文档 |
 | `.agents/skills/test-gate/SKILL.md` | 测试门禁（最小相关测试→阶段验收、禁隐藏失败） | 活文档 |
-| `.agents/skills/docs-sync/SKILL.md` / `scripts/docs/docs-sync-skill.test.mjs` | 文档同步与记忆卫生纪律：Git 定锚、每主题唯一 CURRENT、search-only index、120 行 progress、80 行 handoff、16 KiB active-doc 上限、历史转 Git/archive 且不进入默认读取 | CURRENT；TDD `8/8`，防旧记忆回流与重复证据膨胀 |
+| `.agents/skills/docs-sync/SKILL.md` / `scripts/docs/docs-sync-skill.test.mjs` | 有变化回合回复前/关键节点同步，启动Git恢复；唯一CURRENT、定向索引、短progress；Skill不充当后台回调 | 当前规则；本轮仅静态更新，历史TDD不代表新规则已运行验证 |
 
 ## 已废弃
 | 路径 | 说明 |

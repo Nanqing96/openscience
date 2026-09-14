@@ -1,11 +1,19 @@
 ---
 name: docs-sync
-description: Use when project files or task status change, before handoff/compaction/deployment, or when stale docs, old memory, conflicting CURRENT claims, version drift, or bloated context could misroute the next session.
+description: Sync actual project changes and decisions before ending a work turn, at meaningful checkpoints, and before handoff/compaction/deployment. Resolve stale or conflicting state; skip unchanged question-only turns.
 ---
 
 # Docs Sync
 
 核心原则：**先定版本，再定 CURRENT；缩小 active-memory surface，不删除历史证据。**
+
+## 触发与执行边界
+
+- 有代码、配置、需求决策、部署或任务状态变化的回合，在最终回复前主动同步，不等待用户提醒。普通问答且无状态变化时不重写文档。
+- 长任务在明确决策、完成一段修改、遇到阻塞或完成部署后保存必要状态，不把所有交接留到对话结束。中断后下一轮先核实际 Git 差异和相关运行记录，补齐未写下的状态。
+- 只更新变化的归属：当前任务/版本在 CURRENT handoff，短摘要在 progress，文件定位在 index，能力断点在原台账，长期决策按需进入 ADR/Memory。不逐回合复制全部表格或审查历史全文。
+- 记录已实现、已部署、已观察与未确认的区别；未完成事项写出具体位置、影响、下一动作和未提交改动归属。同步完再回复实际完成情况，不把文档写入当作功能验证。
+- 这是执行回合内的 Skill 指令，不是后台进程或关闭应用后的回调；中断时不能保证运行。不新增定时任务、自动提交/推送、自动部署或模型调用来伪装结束同步。
 
 ## 1. 启动时先定锚
 

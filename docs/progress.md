@@ -1,5 +1,13 @@
 # CURRENT Progress Window
 
+## 2026-09-14 — 回合状态同步与配图审阅边界
+- 更新既有 docs-sync/AGENTS：有状态变化的回合final前同步，关键节点先保存；普通问答不重写，意外中断后以Git恢复。Skill不是后台回调，不另装重复能力或定时任务。
+- 候选 IllustrationBrief v2 分开科学encoding与排布composition；末审只接受既有场景艺术字段的局部修正，其余沿用原candidate。旧v1继续读取/直接编译，修订显式要求新方案，不静默重画旧资产。
+- science/review保留Claim角色/审核状态；末审保留所选Claim完整文字与所有Evidence，并用sourceIds绑定。上游bridge各段均标supports，不能按单条basis过滤限定。
+- 定向核对发现：semanticStage未绑定用户确认；现有安全复用单位仍是已确认Claim/完整Evidence。后续沿现有确认/bridge保留语义点与限定关系，不能声称窄关系复用已完成。详见[能力台账](runbooks/hermes-capability-registry.md#当前技术债与处理)。
+- 本机自有配图Skill同步v2，Hermes候选加载章节同步。无测试/预检/CI/构建/服务器操作/模型调用或数据修改；本轮不恢复生图。无关dirty设计稿保留，精确版本与限制见[CURRENT handoff](handoff/2026-09-10-hermes-web-image-handoff.md)。
+- 独立High静态GO：局部修正字段、旧v1兼容与Claim/Evidence关联均已复核；不等于运行或图片质量通过。
+
 ## 2026-09-14 — 开发状态对齐与定向清债
 - 用户要求先治理后开发；本轮使用已有 docs-sync、token-smart、Brooks 审查与独立 High，不安装新工具、不新建治理平台。
 - 修正交付工作树规则落后于根目录的问题：AGENTS 与 17 个现有流程 Skill/引用对齐；旧计划/交接加历史适用说明，设计区分需求与运行状态，根目录保留导航，基线补录用户已确认阅读/配图原则。
@@ -19,6 +27,6 @@
 - 能力变化同步原[能力台账](runbooks/hermes-capability-registry.md)、[服务器清单](runbooks/server-capabilities.md)、ADR-002、项目索引和工具README；不新建规格/任务库或质量评分门禁。
 
 ## 未恢复的科研主线
-- 已有科学critical-thinking确在extractor使用；配图science/review重复规则的问题已静态修正，未随本轮部署科研应用。
-- 仍需收敛长Claim/全部证据二次分析与Chat全稿重写，先传递上游已审窄关系，再处理艺术表达。BGE检索不能代替科学蕴含判断。
+- 已有科学critical-thinking确在extractor使用；配图science/review共用规则及末审局部修正均为未部署候选。
+- 仍需在原确认链路保存细粒度语义/限定关系；当前只安全沿用Claim及完整证据，不能把未审semanticStage当已审结果。BGE检索不能代替科学蕴含判断。
 - 公开v1、真实论文/图/笔记保持；用户认可的淡彩图保留。下一步按CURRENT继续，不执行旧tmp生图或应用部署脚本。

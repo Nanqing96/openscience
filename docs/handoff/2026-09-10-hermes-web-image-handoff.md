@@ -1,11 +1,11 @@
 # Hermes / Workbench CURRENT Handoff
 ## 目标与约束
-- 用户2026-09-14最新要求：新功能暂停，先清理技术债并对齐开发文档。本轮入口治理/代码去重已收口；后续先处理下方科学行为债，再恢复配图，不再安装工具。
+- 用户2026-09-14最新要求：继续清债，并明确每回合结束如何同步状态。既有docs-sync已补回合结束前/关键节点同步；本轮修配图表示和末审边界，上游细粒度确认仍待处理，不再安装工具。
 - 禁止测试/预检/CI/本机构建；仅本机静态编辑/Git/传输，服务器执行必要安装/构建/启动及实际使用。没有新模型调用、图片生成或科研数据修改。
 - Chat生图主用，Codex CLI备用；科学认识来自上游解析/分析。Figma、视频、第三篇及批量仍暂停。
 ## 版本事实
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；本轮起点HEAD/origin 244726a42fec8709899200c7db18dadd79eb39b3，后续治理提交以git HEAD读取；均不是应用release。
-- 生产应用89d05d6dfcf432765697762864e9406ea3588ab8（本轮只读.release-id仍一致）；rollback b2f3cf373c0eafde1adc53d85f198588d1c23391沿用既有记录。本轮未部署应用，独立开发容器仍运行。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；本轮起点HEAD/origin 2f066ecdbdfd5b47f99222d589e8c2154b640f51，完整本轮候选以git HEAD读取；不是应用release。
+- 生产应用89d05d6dfcf432765697762864e9406ea3588ab8 / rollback b2f3cf373c0eafde1adc53d85f198588d1c23391沿用上一轮只读记录；本轮仅静态编辑/Git，无服务器操作，不把旧运行状态称新观察。
 - Catalog/Serena镜像与源83179c454b75688176060fabf9e611072d46813c；Serena所查源码89d05，快照/source和image不可混写。
 - Langfuse独立bundle83179c454b75688176060fabf9e611072d46813c，official v4.35.0；telemetry镜像c2b6683e8e804d07f2928ee4df2cba8d91fb5703，view/角色已provision，持久state复用。
 - Skills镜像83179（实际list/find在相同CLI代码ce02首次执行）；依赖图脚本c9d98bd70252d7ca21854ca9b05987d2d46af700，源89d05。
@@ -13,6 +13,10 @@
 - receiver bundle8e4已安装、兼容v1/v2；科研应用8e4在Prisma JSON类型构建失败，候选已静态修正但没有重新构建/部署。
 - 根目录dirty main不是交付基线。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。
 ## 已实际交付 / 使用证据
+- 本轮候选：IllustrationBrief v2独立encoding/composition；planner不再拆中文分隔符，末审只允许已有场景composition/treatment局部修正。v1保持原样读取/直接编译，v1 base修订显式要求新方案，不静默重画或改旧资产。
+- 本轮静态纠错：science/review都传kind/assessment；末审保留所选Claim全文及全部Evidence，upstream通过sourceIds与原文关联。旧bridge把同字段各段均标supports，不能按basis截掉可能的限定。
+- 本轮独立High静态GO：确认局部字段白名单/顺序与来源不变、v1兼容、v2解析、Claim与Evidence关联；未构建/运行，完整所选Claim上下文仍可能触及既有输入上限。
+- docs-sync/AGENTS：有实际状态变化回合final前同步、重要节点先保存、下轮核Git补中断；普通问答不重写。不承诺应用关闭后的回调，不加定时任务、自动提交/部署或重复Skill。根规则同步导航，本机自有配图Skill同步v2；Hermes候选加载v2章节，未部署/未观察新消费。
 - 本轮治理：交付AGENTS/17个流程Skill及引用对齐根目录既有精简规则；旧handoff/plan逐份标历史，设计注明需求适用性，根进度/旧交接只导航。无关dirty设计稿保留，不宣称所有旧设计条款已逐行复验。
 - 治理独立High静态GO：机械替换误伤活规则/历史正文的问题已撤销，恢复原文并仅定向标旧release状态。142历史执行记录/67设计适用说明覆盖；未删除文件/独有工具，也未逐行复验全部历史正文。
 - 代码去重：Skill usage 共用 mergeDesignSkillUsage，删除同批Evidence重复lineage遍历；来源/权限/并发重验保持。独立High静态GO；未构建/部署，不声称运行通过。发现及未解决行为债见能力台账“当前技术债与处理”。
@@ -33,9 +37,9 @@
 - 开发工具不会自动赋权给面向科研用户的Hermes。Hermes既有skill消费仍由runtime导入/注入与资产provenance确认。
 - 目录需维护，源码快照需按所查版本更新；生产DB容器重建后需恢复telemetry内部网络，state必须保留。Langfuse未设置定时备份/自动保留期/SSO/SMTP；人工备份入口保留，未演练。
 - 无工具保证绝对掌控/科学正确或全调用覆盖；快照无第三方类型，动态引用可能缺失，费用缺失不能当0。
-## 后续科研工作（本轮未执行）
-- 先沿用已审上游语义/原文限定向配图传一个窄视觉焦点，艺术阶段只负责表达；不能再把长Claim+全部Evidence重新混合分析。
-- 收敛8e4候选Chat最终审阅的全稿重写；修过的共享critical-thinking与类型收窄仍需随以后必要应用交付，不能称已上线。
+## 后续科研工作
+- 当前不存在已绑定用户确认的细粒度semanticStage；不能声称已有成品只需接线。先沿现有确认/claim-evidence-bridge链路保留语义点及限定/原文关系，再让配图选用；不用独立分析库，不拿未审stage顶替。
+- 本轮表示/末审修正及之前共享critical-thinking、JSON类型收窄均为未部署候选；没有构建/模型证据。下一步处理上述确认关系，再恢复必要应用交付和真实Chat配图；不复跑旧候选/脚本。
 - 自有skill/三套Baoyu有真实消费记录，但通用科学/审美质量未获确认；参考图bytes路径已部署但未实际上传生图。
 - RO9067a2d5-42ad-4c06-b234-753728b71064；private e77dc3c7-95cb-4269-ac3c-24276fea74e7；Claim93416292-0dbb-42b1-8810-6bdf77804c1f；40Evidence保持。
 - 喜爱图aa41a018-b2ff-4ffb-9557-19ecabe104bc保留；公开OSR-2026-000023/v1/version72c315af不改。旧图/原件/笔记不删除。
