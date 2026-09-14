@@ -1,6 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 当前风格任务进行中：art-direction v2应用41ae8902已部署，rollback6504c004。23/v1恢复为私有草稿e77dc3c7/revision9，原科学内容/40证据继承；不修改公开v1。三份初稿科学复核未过，经服务器修订后获准生成；淡彩真实图已接受为私有候选，封面光晕易误读为真实场须修订。学术图8aea8fcc发送前IMAGE_MODE_NOT_READY；runner仅共享有界30秒就绪等待修复High GO，安装与新实际生成待做。收据tmp/style-batch-*；完成三张后再检索skills，不安装、不启动视频/第三篇。
+- 当前风格任务进行中：art-direction v2应用41ae8902已部署，rollback6504c004。23/v1恢复为私有草稿e77dc3c7/revision9，原科学内容/40证据继承；不修改公开v1。三份初稿科学复核未过，经服务器修订后获准生成；淡彩真实图已接受为私有候选，封面光晕易误读为真实场须修订。学术图8aea8fcc发送前IMAGE_MODE_NOT_READY；runner3dc98140共享有界30秒等待已按三锁安装；新8ee965ae约6秒再次发送前失败(error=Error)，非超时证据。相同简报仅控件观察正常，未重现/未发送；正在补安全子阶段诊断，不宣称根因已解。收据tmp/style-batch-*；完成三张后再检索skills，不安装、不启动视频/第三篇。
 - 当前布局反馈已完成：6504c004已部署，rollback f8e44815。仅dashboard.module.css调整：Hermes与继续研究首行等高并排，后续工具整行，桌面导入说明/操作紧凑分栏、窄屏单列。独立High GO、必要服务器build/start exit0，无测试/预检/迁移/数据或生成操作。
 - 当前反馈已完成：f8e44815已部署；Node符号链接识别、Codex正常信号退出及清理安装等待锁修复。用户原4项purge_pending已全部purged：旧RO66已删除、两会话不存在、笔记内容清空；共享对象仍有引用而保留。整块证据默认关闭，Dashboard仅显示排队/上传/解析任务，核对建议和失败/历史保留Hermes，未伪造确认或重跑科学分析。
 - 2026-09-14最新续作完成：9a36c1e0已部署，卡片科学文本、同版本结构化折叠证据、工作台作者/公开号已实读；第一篇六字段默认折叠、第二篇四原章节分层。22已行政勘误v1/DHL并允许原PDF下载，audit6c93436f-3c2e-40fe-82ad-d0c751c32f73；不是新发布，禁止重跑旧publish或按旧文档恢复v10。scope见已审infra/scripts/correct-deep-sub-cycle-publication.mjs。

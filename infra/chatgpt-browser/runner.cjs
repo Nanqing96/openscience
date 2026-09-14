@@ -254,7 +254,9 @@ async function activateImageMode(page, composer, deadlineAt) {
   }
   if (Date.now() >= deadlineAt) return false;
   if (await plus.count() !== 1 || !await plus.isVisible().catch(() => false)) return false;
+  stage = 'image_mode_plus';
   await plus.click({ timeout: Math.max(1, deadlineAt - Date.now()) });
+  stage = 'image_mode_choice';
   const choice = page.getByText('Create image', { exact: true });
   const choiceDeadline = deadlineAt;
   while (Date.now() < choiceDeadline) {
@@ -264,6 +266,7 @@ async function activateImageMode(page, composer, deadlineAt) {
   if (await choice.count() !== 1 || !await choice.isVisible().catch(() => false)) return false;
   if (Date.now() >= deadlineAt) return false;
   await choice.click({ timeout: Math.max(1, deadlineAt - Date.now()) });
+  stage = 'image_mode_confirm';
   while (Date.now() < deadlineAt) {
     if (await imageModeActive(composer).catch(() => false)) return true;
     await new Promise(resolve => setTimeout(resolve, 250));
@@ -429,6 +432,12 @@ let stage = 'request';
   process.exit(0);
 })().catch(async error => {
   const failure = { stage, state: fs.existsSync(path.join(dir, 'submitted.json')) ? 'ambiguous_no_resend' : 'not_submitted', error: /^[A-Z0-9_]+$/.test(error.message) ? error.message : error.name };
+  if (stage.startsWith('image_mode')) {
+    // Keep only a fixed category: locator errors may embed the authored prompt or page URL.
+    failure.errorKind = /strict mode violation/.test(error.message) ? 'strict_locator'
+      : /closed|destroyed|detached/i.test(error.message) ? 'page_or_node_unavailable'
+      : /timeout/i.test(error.message) ? 'timeout' : 'other';
+  }
   // Preserve the first safe failure code; the broker otherwise returns only EXECUTION_FAILED.
   try { once('operator-error.json', failure); } catch {}
   if (activePage && !fs.existsSync(path.join(dir, 'submitted.json'))) {
