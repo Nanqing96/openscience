@@ -1,3 +1,4 @@
+import { requireStyleReferenceImage } from '@openscience/domain';
 import { createPrismaAuditSink, createPrismaClient, createRedisClient } from '@openscience/database';
 import {
   AiGateway,
@@ -89,6 +90,12 @@ function createSpoolSubmission(prisma: AgentDeps['prisma'], kind: 'sdf.extract' 
       }
       const scene = payload.sceneImage as Record<string, unknown> | undefined;
       const video = payload.video as Record<string, unknown> | undefined;
+      const referenceId = scene?.styleReferenceAssetId;
+      if ((typeof referenceId === 'string') !== Boolean(owner.referenceContentHash)) throw new Error('[blocked] Style reference submission mismatch');
+      if (typeof referenceId === 'string') {
+        const reference = await requireStyleReferenceImage(tx, { researchObjectId: String(payload.researchObjectId), versionId: String(payload.versionId), styleReferenceAssetId: referenceId });
+        if (reference?.contentHash !== owner.referenceContentHash) throw new Error('[blocked] Style reference changed before external submission');
+      }
       const parents = [scene?.storyboardAssetId, video?.storyboardAssetId,
         ...(Array.isArray(video?.sceneImageAssetIds) ? video.sceneImageAssetIds : [])].filter((id): id is string => typeof id === 'string');
       if (parents.length && await tx.presentationAsset.count({ where: { id: { in: parents }, deletedAt: null, researchObjectId: task.session.researchObjectId ?? undefined } }) !== new Set(parents).size) {

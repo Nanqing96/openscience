@@ -12,6 +12,7 @@ import { requirePresentationMediaGenerator, type PresentationMediaGenerator } fr
 import { HostVideoSpool } from './host-video-spool';
 import { Prisma } from '@prisma/client';
 import { loadInstalledMediaSkills, type DesignSkillUsage } from '../skills/installed-media-skills';
+import { requireStyleReferenceImage } from '@openscience/domain';
 
 function presentationClaimContent(claims: readonly PresentationClaim[]): string {
   return JSON.stringify(canonicalPresentationClaims(claims).map(({ id, kind, statement, assessment, conditions, limitations, extractionStatus }) => ({
@@ -143,6 +144,12 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
     };
     const base = await requireStoryboardBase(deps.prisma, payload);
     const sceneParent = await requireSceneImageParent(deps.prisma, payload);
+    const styleReference = await requireStyleReferenceImage(deps.prisma, { ...payload, styleReferenceAssetId: payload.sceneImage?.styleReferenceAssetId });
+    const requireUnchangedStyleReference = async (prisma: Pick<Prisma.TransactionClient, 'presentationAsset'>) => {
+      if (!styleReference) return;
+      const current = await requireStyleReferenceImage(prisma, { ...payload, styleReferenceAssetId: payload.sceneImage?.styleReferenceAssetId });
+      if (current?.id !== styleReference.id || current.contentHash !== styleReference.contentHash || current.objectKey !== styleReference.objectKey) throw new Error('[blocked] Style reference changed during image generation');
+    };
     if (sceneParent && ((sceneParent.view.output === 'image' && !sceneParent.sourceEvidenceIdentity)
       || (sceneParent.sourceEvidenceIdentity && sceneParent.sourceEvidenceIdentity !== sourceEvidenceIdentity))) {
       throw new Error('[blocked] Storyboard evidence has changed; revise the illustration plan before generating images');
@@ -201,11 +208,14 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       const user = await deps.prisma.user.findUnique({ where: { id: scope.userId }, select: { platformRole: true } });
       if (user?.platformRole !== 'platform_admin' && !await requireHermesAuthority(deps.prisma)) throw new Error('[blocked] presentation media generation requires a platform administrator');
       if (!options.gateway?.generateImage) throw new Error('[blocked] scene image gateway unavailable');
-      const installedSkills = completedProviderRecovery ? undefined
-        : loadInstalledMediaSkills(sceneParent.view.style, sceneParent.view.document.scenes[payload.sceneImage.sceneIndex]!.visualAction);
+      const installedSkills = completedProviderRecovery || sceneParent.view.document.scenes[payload.sceneImage.sceneIndex]!.illustration ? undefined
+        : loadInstalledMediaSkills(sceneParent.view.style, sceneParent.view.document.scenes[payload.sceneImage.sceneIndex]!.visualAction, 'render');
       const prompt = completedProviderRecovery ? null
         : await planSceneImagePrompt(options.gateway, claims, sceneParent.view, payload.sceneImage.sceneIndex, installedSkills);
       designSkills = installedSkills?.usage;
+      const referenceImage = !completedProviderRecovery && styleReference
+        ? { bytes: await readPresentationInput(deps.storage, styleReference.objectKey, styleReference.contentHash), contentHash: styleReference.contentHash }
+        : undefined;
       await requirePresentationWriteScope(deps.prisma, scope);
       const currentUser = await deps.prisma.user.findUnique({ where: { id: scope.userId }, select: { platformRole: true } });
       if (currentUser?.platformRole !== 'platform_admin' && !await requireHermesAuthority(deps.prisma)) throw new Error('[blocked] presentation media authority changed');
@@ -213,9 +223,10 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       const currentClaims = await deps.prisma.claimNode.findMany({ where: { id: { in: payload.sourceClaimIds }, researchObjectId: payload.researchObjectId, versionId: payload.versionId } });
       if (presentationClaimContent(currentClaims as PresentationClaim[]) !== presentationClaimContent(claims)) throw new Error('[blocked] source Claims changed before image generation');
       await requireUnchangedEvidence(deps.prisma);
+      await requireUnchangedStyleReference(deps.prisma);
       const result = completedProviderRecovery
         ? await options.gateway.resumeImageFromCompletedResult!(task.id)
-        : await options.gateway.generateImage({ prompt: prompt!, requestId: task.id });
+        : await options.gateway.generateImage({ prompt: prompt!, requestId: task.id, ...(referenceImage ? { referenceImage } : {}) });
       bytes = result.bytes; contentType = result.contentType; extension = imageExtension(contentType);
       imageProvider = result.provider;
       generator = `OpenScience Hermes scene image / ${result.provider}`; generatorVersion = result.model; promptHash = result.promptHash;
@@ -264,13 +275,14 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       if (sceneParent && (await requireSceneImageParent(tx, payload))?.identity !== sceneParent.identity) throw new Error('[blocked] approved storyboard changed before scene image completion');
       if (videoParents && (await requireVideoGenerationParents(tx, payload))?.identity !== videoParents.identity) throw new Error('[blocked] approved video inputs changed before completion');
       await requireUnchangedEvidence(tx);
+      await requireUnchangedStyleReference(tx);
       // withPresentationAssetWrite holds the shared storage-reference lock through upload and row creation.
       await tx.trashObjectCleanup.updateMany({ where: { objectKey }, data: { state: 'retained', lastError: null } });
       await deps.storage!.putObject(objectKey, videoOutput ? createReadStream(videoOutput.filePath) : bytes, { contentType, sha256: contentHash });
       const created = await tx.presentationAsset.create({ data: {
         id: task.id, researchObjectId: payload.researchObjectId, versionId: payload.versionId, kind: payload.kind,
         objectKey, contentHash, generator, generatorVersion, promptHash, label: PRESENTATION_ASSET_LABEL,
-        provenance: { ...(scientificMedia ? { sourceEvidenceIdentity, sourceEvidenceIds: sourceEvidence.map((row) => row.id) } : {}), source: payload.sceneImage ? 'approved_storyboard_scene' : payload.video ? 'approved_storyboard_video' : 'verified_claims', ...(payload.sceneImage && sceneParent ? { subtype: 'storyboard_scene_image', sceneImage: { ...payload.sceneImage }, parentIdentity: sceneParent.identity, storyboardContentHash: sceneParent.contentHash } : {}), ...(videoProvenance ?? {}), ...(designSkills ? { designSkills } : {}), taskId: task.id, sourceClaimIds: payload.sourceClaimIds, contentType, ...(storyboardDocument && payload.storyboard ? { subtype: 'sourced_storyboard', storyboardDocument: JSON.parse(JSON.stringify(storyboardDocument)), storyboardSettings: JSON.parse(JSON.stringify(payload.storyboard)) } : {}) },
+        provenance: { ...(scientificMedia ? { sourceEvidenceIdentity, sourceEvidenceIds: sourceEvidence.map((row) => row.id) } : {}), source: payload.sceneImage ? 'approved_storyboard_scene' : payload.video ? 'approved_storyboard_video' : 'verified_claims', ...(payload.sceneImage && sceneParent ? { subtype: 'storyboard_scene_image', sceneImage: { ...payload.sceneImage }, parentIdentity: sceneParent.identity, storyboardContentHash: sceneParent.contentHash } : {}), ...(videoProvenance ?? {}), ...(designSkills ? { designSkills } : {}), ...(styleReference ? { styleReference: { assetId: styleReference.id, contentHash: styleReference.contentHash, role: 'style' } } : {}), ...(sceneParent?.view.document.scenes[payload.sceneImage!.sceneIndex]?.illustration ? { illustrationCompilation: { skill: 'openscience-research-illustration', version: '1', mode: 'structured_brief' } } : {}), taskId: task.id, sourceClaimIds: payload.sourceClaimIds, contentType, ...(storyboardDocument && payload.storyboard ? { subtype: 'sourced_storyboard', storyboardDocument: JSON.parse(JSON.stringify(storyboardDocument)), storyboardSettings: JSON.parse(JSON.stringify(payload.storyboard)) } : {}) },
       } });
       await tx.presentationAssetClaim.createMany({ data: payload.sourceClaimIds.map((claimId) => ({ presentationAssetId: created.id, claimId, researchObjectId: payload.researchObjectId, versionId: payload.versionId })) });
       if (storyboardDocument) await deps.audit?.record({ actorId: scope.userId, action: 'presentation_asset.generated', workspaceId: researchObject.workspaceId, targetType: 'presentation_asset', targetId: created.id, metadata: { taskId: task.id, researchObjectId: payload.researchObjectId, versionId: payload.versionId, subtype: 'sourced_storyboard', baseAssetId: payload.storyboard?.baseAssetId ?? null } }, tx);

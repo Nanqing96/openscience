@@ -1,0 +1,50 @@
+---
+name: openscience-research-illustration
+description: Plan and refine evidence-grounded research illustrations for OpenScience through Hermes and Chat image generation, using structured briefs, source-scoped visual references and reusable art directions. Use for paper illustrations, scientific concept images and research covers; quantitative plots require a data renderer.
+metadata:
+  version: "1"
+---
+
+# OpenScience research illustration
+
+Create a readable scientific image with a deliberate composition. The source supplies the science; the user's accepted images and feedback guide the art. Chat image generation is the current primary execution path. Keep Codex CLI available as a reserve; never select it automatically or consume its quota as a fallback.
+
+## Planning
+
+Derive the visual intent from the upstream literature analysis and its reviewed original passages: what was studied, what was established, how it works, and under which conditions. Choose what benefits from a visual explanation. This may be a physical arrangement, mechanism, comparison, classification or another relationship; do not assume every paper needs the same kind or number of pictures. A generated conceptual illustration cannot replace a quantitative data renderer.
+
+Identify what must remain invariant before considering style: the scientific domain, source-supported subjects, relationships, quantities and essential conditions. A reference image is visual guidance, not evidence for the new paper. A changed upstream analysis invalidates the old visual intent; derive a new one rather than preserving a stale picture.
+
+Produce a structured illustration brief, not a long drawing monologue:
+
+- `message`: one concise scientific takeaway.
+- `domain`: the single domain depicted in this image: real-space, wavevector-space, time, frequency, parameter-space or conceptual.
+- `subjects`: the scientific elements and relationships needed for the takeaway, each linked to the supplied Claim and original passage. A description can establish a relationship or condition, not just name an object. Select supplied passage identifiers; the server resolves them to exact evidence, never manufacture a quotation.
+- `composition`: focal subject, relative scale, reading path, placement of labels and meaning of visual encodings.
+- `treatment`: concrete material, palette, line/edge treatment and type hierarchy; select a relevant direction from [art-directions.md](references/art-directions.md).
+- `labels`: the exact short visible text. Essential symbols and conditions must survive intact. Put titles, long equations and derivations in the article unless indispensable to this picture.
+- `constraints`: the few source conditions and visual exclusions needed to prevent a wrong reading.
+
+Every scientific relationship, variable, formula and condition in `message`, `composition`, `labels` or `constraints` must be established in at least one subject description and supported by that subject's original basis. The remaining composition and treatment decisions concern visual design only. An object existing in the source does not establish an invented relationship between objects.
+
+Keep independent scientific domains distinct. Coordinate dimensionality, units and variables must agree with their stated domain. When an explanation needs several domains, use separate scenes/images with explicit relationships, rather than blending axes and gradients. Every mark that looks like data needs source support. Texture belongs to the artistic treatment and must not imply a measured field.
+
+Choose composition from the relationship, not the style name. A process may use a sequence; classification may use a domain partition; a cover may use one expressive subject. Do not turn every paper into a process diagram, a decorated circle or a grid of summary cards. A small label budget is a reason to simplify the explanation, not to shrink text or drop an essential condition.
+
+For a revision, distinguish a local correction from a rejected overall design. Retain accepted aspects and unaffected science. Change the hierarchy and composition when the user rejected them; changing a background or recoloring a motif is insufficient. Preserve useful reference qualities without copying unrelated scientific content. Watercolor is one supported direction, not a default for every paper.
+
+Before submitting a brief, read its subjects, labels and constraints together: they must use consistent variables, domains and assumptions. Remove a formula if the image does not need it; never invent or approximate one. The brief should fit the actual image transport's prompt budget without a second model having to reinterpret it.
+
+## Execution
+
+Use the existing Hermes task, source, permission and approval workflow. Generate from the saved structured brief; compile its fields into the drawing request without another free-form scientific rewrite. Do not claim that JSON validity proves scientific or artistic quality.
+
+When the user specifies an existing image as a reference, pass its actual bytes through the authorized Chat reference-image path. Restrict it to the allowed research object/version. Record the reference asset and its existing content identity; state whether it is style guidance or scientific source material. This skill's default reference role is style only. If the transport cannot attach it, report that limitation rather than claiming a text description is reference-image generation.
+
+Generate one selected candidate through Chat, inspect the actual returned image at its product display size, and assess science, labels, visual hierarchy and fidelity to the selected reference separately. Retain the original and candidates. A failed or ambiguous send must use the existing recovery rules; do not regenerate just because the reply was slow. Stop a scientifically misleading candidate from entering publication.
+
+If a correction is needed, change the relevant structured field or select a different reference. Do not append another round of universal prohibitions. Keep case-specific preferences in the task/brief, not in this skill. Update reusable guidance only for demonstrated general failure modes.
+
+## References and reuse
+
+Use [art-directions.md](references/art-directions.md) for concrete art direction. The installed MIT-licensed `baoyu-article-illustrator`, `baoyu-cover-image` and `baoyu-infographic` provide original composition and style references; Hermes loads relevant design sections only. Scientific constraints and the user's current request take precedence over template defaults. `baoyu-image-gen` informed reference-image and execution separation; it does not itself provide our Chat webpage transport. Do not install or switch providers merely because an upstream example uses one.

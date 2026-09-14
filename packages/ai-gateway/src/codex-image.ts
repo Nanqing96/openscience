@@ -3,11 +3,10 @@ import { lstat, open, link, unlink } from 'node:fs/promises';
 import { isAbsolute, join, dirname, parse } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { validateImageRequest, validateImageBytes, type CompletedImageProviderResult, type ImageProvider, type ImageRecoveryState, type ImageRequest, type ImageProviderResult } from './image';
-import { sha256Text } from './ocr';
-import { CODEX_IMAGE_ID_PATTERN, CODEX_IMAGE_MAX_DEADLINE_MS, CODEX_IMAGE_MAX_JSON_BYTES, CODEX_IMAGE_MAX_PNG_BYTES, CODEX_IMAGE_READY_MAX_AGE_MS, validateCodexImageRequest, validateCodexImageResult, type ImageSpoolProvider } from './codex-image-protocol';
+import { CODEX_IMAGE_ID_PATTERN, CODEX_IMAGE_MAX_DEADLINE_MS, CODEX_IMAGE_MAX_JSON_BYTES, CODEX_IMAGE_MAX_PNG_BYTES, CODEX_IMAGE_READY_MAX_AGE_MS, imagePromptHash, validateCodexImageRequest, validateCodexImageResult, type ImageSpoolProvider } from './codex-image-protocol';
 export interface CodexSpoolImageConfig {
   inboxDir: string; resultsDir: string; timeoutMs?: number; pollIntervalMs?: number; now?: () => number; sleep?: (ms: number) => Promise<void>;
-  withSubmission?: <T>(owner: { taskId: string; executionAttempt?: number; artifactId?: string }, publish: () => Promise<T>) => Promise<T>;
+  withSubmission?: <T>(owner: { taskId: string; executionAttempt?: number; artifactId?: string; referenceContentHash?: string }, publish: () => Promise<T>) => Promise<T>;
 }
 const fail = (): never => { throw new Error('INVALID_OUTPUT'); };
 async function directory(path: string): Promise<void> {
@@ -29,7 +28,7 @@ const missing = (error: unknown) => (error as NodeJS.ErrnoException)?.code === '
 async function absent(path: string): Promise<boolean> {
   try { await lstat(path); return false; } catch (error) { return missing(error); }
 }
-async function publish(path: string, data: string): Promise<boolean> {
+async function publish(path: string, data: string | Buffer): Promise<boolean> {
   const temp = path + '.' + randomUUID() + '.tmp';
   const file = await open(temp, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | (constants.O_NOFOLLOW ?? 0), 0o600);
   try { await file.writeFile(data); await file.sync(); } finally { await file.close(); }
@@ -38,6 +37,7 @@ async function publish(path: string, data: string): Promise<boolean> {
 abstract class SpoolImageProvider implements ImageProvider {
   abstract readonly name: string;
   abstract readonly model: string;
+  readonly supportsReferenceImage: boolean = false;
   protected abstract readonly spoolProvider: ImageSpoolProvider;
   private readonly now: () => number;
   private readonly sleep: (ms: number) => Promise<void>;
@@ -115,12 +115,15 @@ abstract class SpoolImageProvider implements ImageProvider {
   async generate(input: ImageRequest): Promise<ImageProviderResult> {
     const prompt = validateImageRequest(input); const id = input.requestId;
     if (!id || !CODEX_IMAGE_ID_PATTERN.test(id)) return fail();
+    if (input.referenceImage && !this.supportsReferenceImage) return fail();
+    const referenceImage = input.referenceImage ? { bytes: Buffer.from(input.referenceImage.bytes), contentHash: input.referenceImage.contentHash } : undefined;
+    const reference = referenceImage ? { contentHash: referenceImage.contentHash, role: 'style' as const } : undefined;
     await directory(this.config.inboxDir); await directory(this.config.resultsDir);
     await boundedRead(join(this.config.resultsDir, '.ready'), CODEX_IMAGE_MAX_JSON_BYTES);
     const ready = await lstat(join(this.config.resultsDir, '.ready'));
     if (this.now() - ready.mtimeMs > CODEX_IMAGE_READY_MAX_AGE_MS || ready.mtimeMs > this.now() + 5000) fail();
     const output = join(this.config.resultsDir, id);
-    const expectedPromptHash = sha256Text(prompt);
+    const expectedPromptHash = imagePromptHash(prompt, reference);
     try {
       await directory(output);
       const existingResult = validateCodexImageResult(JSON.parse((await boundedRead(join(output, 'result.json'), CODEX_IMAGE_MAX_JSON_BYTES)).toString('utf8')), this.spoolProvider);
@@ -134,13 +137,20 @@ abstract class SpoolImageProvider implements ImageProvider {
       if (!missing(error)) throw error;
     }
     const createdAt = this.now();
-    let request = validateCodexImageRequest({ schemaVersion: 1, ...(this.spoolProvider === 'chatgpt-web' ? { provider: this.spoolProvider } : {}), id, prompt, promptHash: expectedPromptHash, createdAt, deadlineAt: createdAt + this.timeout }, undefined, this.spoolProvider);
+    let request = validateCodexImageRequest({ schemaVersion: 1, ...(this.spoolProvider === 'chatgpt-web' ? { provider: this.spoolProvider } : {}), id, prompt, promptHash: expectedPromptHash, ...(reference ? { reference } : {}), createdAt, deadlineAt: createdAt + this.timeout }, undefined, this.spoolProvider);
     const submit = async () => {
+      if (referenceImage) {
+        // Publish immutable reference bytes before either durable request marker.
+        // A retry may reuse this fixed sidecar only when its bytes match exactly.
+        const sidecar = join(this.config.inboxDir, id + '.reference.png');
+        await publish(sidecar, referenceImage.bytes);
+        validateImageRequest({ prompt, referenceImage: { bytes: await boundedRead(sidecar, CODEX_IMAGE_MAX_PNG_BYTES), contentHash: referenceImage.contentHash } });
+      }
       // This immutable reservation remains after the runner claims the active request.
       const reservation = join(this.config.inboxDir, id + '.submitted.json');
       if (!await publish(reservation, JSON.stringify(request))) {
         request = validateCodexImageRequest(JSON.parse((await boundedRead(reservation, CODEX_IMAGE_MAX_JSON_BYTES)).toString('utf8')), undefined, this.spoolProvider);
-        if (request.id !== id || request.promptHash !== sha256Text(prompt)) fail();
+        if (request.id !== id || request.promptHash !== expectedPromptHash) fail();
       }
       validateCodexImageRequest(request, this.now(), this.spoolProvider);
       // Repair a crash between reservation and publication. The runner's private
@@ -151,7 +161,7 @@ abstract class SpoolImageProvider implements ImageProvider {
         if (existing.id !== id || existing.promptHash !== request.promptHash) fail();
       }
     };
-    if (this.config.withSubmission) await this.config.withSubmission({ taskId: id }, submit);
+    if (this.config.withSubmission) await this.config.withSubmission({ taskId: id, ...(referenceImage ? { referenceContentHash: referenceImage.contentHash } : {}) }, submit);
     else await submit();
     while (this.now() < request.deadlineAt) {
       let bytes: Buffer | undefined;
@@ -179,5 +189,6 @@ export class CodexSpoolImageProvider extends SpoolImageProvider {
 export class ChatGptWebSpoolImageProvider extends SpoolImageProvider {
   readonly name = 'chatgpt-web';
   readonly model = 'chatgpt-web/6-pro-image-generation-tool';
+  readonly supportsReferenceImage = true;
   protected readonly spoolProvider = 'chatgpt-web' as const;
 }

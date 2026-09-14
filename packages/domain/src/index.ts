@@ -425,6 +425,7 @@ export { parseSceneAnimation, requireAnimationSourceSupport, type SceneAnimation
 
 export { requireStoryboardBase } from './assets/presentation-asset';
 
-export { parseSceneImageRequest, presentationSceneImageView, requireSceneImageParent, type SceneImageRequest } from './assets/scene-image';
+export { parseSceneImageRequest, presentationSceneImageView, requireSceneImageParent, requireStyleReferenceImage, type SceneImageRequest } from './assets/scene-image';
+export { parseIllustrationBrief, describeIllustrationBrief, requireIllustrationSourceSupport, type IllustrationBrief } from './assets/illustration-brief';
 
 export { getResearchRecord, getResearchRecordSource, ResearchRecordSourceError } from './commit/research-record';

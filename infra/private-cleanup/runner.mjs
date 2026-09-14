@@ -107,7 +107,7 @@ function group(name, kind) {
 function flatFile(name, id) {
   if (!name.startsWith(`${id}.`)) return false;
   const suffix = name.slice(37).replace(/\.[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.tmp$/i, '');
-  return /^(?:json|submitted\.json|source\.pdf|page-[1-9][0-9]*\.png)$/u.test(suffix);
+  return /^(?:json|submitted\.json|source\.pdf|reference\.png|page-[1-9][0-9]*\.png)$/u.test(suffix);
 }
 async function catalog(provider) {
   const groups = [];

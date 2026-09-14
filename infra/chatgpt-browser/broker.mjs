@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 import { chmod, chown, lstat, mkdir, readdir, realpath, rename } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { runOne, safeRead, atomicWrite, exists } from '../codex-image-runner/core.mjs';
 import { validateCodexImageRequest, validateCodexImageResult, validateImageBytes } from '../../packages/ai-gateway/dist/index.js';
 
@@ -29,6 +30,7 @@ function exactInnerRequest(request) {
     provider: 'chatgpt-web',
     prompt: request.prompt,
     promptHash: request.promptHash,
+    ...(request.reference ? { reference: request.reference } : {}),
     deadlineAt: request.deadlineAt,
     source: { kind: 'hermes-scene-image', requestId: request.id, promptHash: request.promptHash },
   };
@@ -54,11 +56,23 @@ function isUsageLimit(error) {
 }
 export async function executeWebImage(config, request, privateDir) {
   validateCodexImageRequest(request, Date.now(), 'chatgpt-web');
+  let referenceBytes;
+  if (request.reference) {
+    // The validated UUID selects one fixed inbox sidecar; requests never supply paths or URLs.
+    const image = validateImageBytes(await safeRead(join(config.inbox, request.id + '.reference.png'), 10 * 1024 * 1024));
+    if (image.contentType !== 'image/png' || createHash('sha256').update(image.bytes).digest('hex') !== request.reference.contentHash) throw Error('INVALID_REFERENCE');
+    referenceBytes = image.bytes;
+  }
   // Each explicit product request has its own ledger. An uncertain prior request
   // must not prevent a different request from using the browser.
   const jobDir = join(config.jobs, request.id);
   if (await exists(jobDir)) throw uncertain();
   await prepareDirectory(jobDir, 11040);
+  if (referenceBytes) {
+    const referencePath = join(jobDir, 'reference.png');
+    await atomicWrite(referencePath, referenceBytes, 0o600);
+    await chown(referencePath, 11040, 11040);
+  }
   const innerRequest = exactInnerRequest(request);
   const innerRequestPath = join(jobDir, 'request.json');
   await atomicWrite(innerRequestPath, JSON.stringify(innerRequest), 0o600);

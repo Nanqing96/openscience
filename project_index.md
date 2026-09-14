@@ -17,7 +17,7 @@
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：ECS ea43696d/rollback dd4c935a，branch codex/onchip-video-release。Chat生图为主，Codex CLI因额度有限仅保留备用，不主动调用或自动回退；后续优先加强Chat参考图/风格控制。三套原版baoyu设计包已装Codex与Hermes，实际方案141f42d3的provenance证明消费；方案科学域/公式问题已拒绝出图并标rejected。用户否定cdce/1a1d，仍只认可淡彩aa41。Figma两配置disabled，仅调查；无新图片/发布/测试/迁移。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> CURRENT 2026-09-14：ECS ea43696d/rollback dd4c935a；新自有科研配图skill+带来源的结构化brief+Chat参考图传递已实现待High/部署。上游文献分析决定每篇科学关系与表达，不固定模板；Chat主用/Codex备用。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
@@ -649,3 +649,5 @@
 | apps/web/components/content/ScientificMarkdown.tsx / public/evidence-display.ts / public/{ClaimNarrative,EvidenceDisclosure,EvidenceRail}.tsx / public/PublicReadingProduct.module.css | 共用Hermes已有Markdown与公式保护；长主张分层、证据按文件页码组织、阅读隐藏机器信息 | DEPLOYED6af9c984；主张57式原文保持、40证据/10页组，最终来源按钮200与桌面/窄屏截图已看；CURRENT |
 
 | .agents/skills/baoyu-article-illustrator/、baoyu-cover-image/、baoyu-infographic/；apps/agent-worker/src/skills/installed-media-skills.ts | 三个原版MIT设计技能及Hermes只读原文章节加载；消费写入既有资产provenance | 2026-09-14已部署ea43696d；上游commit1567581c；真实方案141f42d3消费三包，但方案质量不合格已rejected，见CURRENT |
+
+| .agents/skills/openscience-research-illustration/；packages/domain/src/assets/illustration-brief.ts；apps/agent-worker/src/presentation/{storyboard,scene-image,handler}.ts；packages/ai-gateway/src/{image,codex-image-protocol,codex-image,gateway}.ts；infra/chatgpt-browser/{broker.mjs,runner.cjs} | 自有科学分析驱动配图skill、带原文basis的brief与Chat真实参考图传递 | 本轮候选待部署/实际出图；精确状态见CURRENT handoff |

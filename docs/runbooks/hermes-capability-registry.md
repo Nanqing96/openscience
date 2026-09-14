@@ -1,5 +1,7 @@
 # Hermes Capability Registry
 
+- 2026-09-14当前候选（尚未部署）：自有 `openscience-research-illustration` v1 已装项目与本机 Codex，Hermes 按阶段读取。上游已核对分析/原文派生科学关系与画面意图，独立版本 IllustrationBrief 保存来源关联、构图、材质、标签及条件；直接编译现代 brief，旧方案兼容。Chat 新增同 RO/version 的实际 style PNG 输入，原子 sidecar、输入身份、上传就绪及保存前权限检查；不回退 Codex。参考图不充当科学证据。High 静态复核后补足所有关系/公式须有 subject 原文依据；服务器实际生图尚待观察，不能由安装推断跨文献质量。当前 release/rollback 与下一步见 CURRENT handoff。
+
 - 2026-09-14历史应用f8e44815/rollback9a36c1e0：整块证据默认关闭，个人空间仅显示正在排队/上传/解析任务；核对建议、失败详情与历史集中Hermes，未伪造确认。回收站4项原请求已完成清除，共享对象保留，两篇公开v1科研字段/证据/图不变。Node符号链接身份、正常排空退出与清理安装等锁已修复；独立Codex runner090文件补丁/base1ad54c72，原运行环境/认证复用；受限清理bundle f8，浏览器runner未改。空回收站/Dashboard/公共/工作台/窄屏已实看，必要build/start exit0，无测试/新模型/迁移；完整收据与限制见CURRENT。
 - 2026-09-14应用6af9c984/rollback59c8cebf：证据主张/原文统一科学Markdown，40来源按文件页码分组，原记录不变；API文档复用公开视觉，线上原文curl/Python已执行成功。原Python默认UA被Cloudflare1010拒绝，示例显式应用User-Agent修复；无防护/权限/模型/依赖变更。主张57式源码全等、来源按钮200及桌面/窄屏已实际查看。服务器必要build/start完成，无测试/预检/迁移/科研写入；详细证据见CURRENT。
 - 2026-09-14历史应用a7214fc9/rollbacke7f95180：外部AI可按公开文章ID读取最新完整JSON或固定公开版；/developers提供中英文档/导航，统一OpenAPI3.1描述8个GET，HTML JSON alternate及API Link/Content-Location完成发现。复用原权限/冻结记录/限流，无新模型/服务/依赖/迁移/科研写入；High静态PASS及必要服务器build/start exit0。匿名文档/规范/23最新与v1/22v10/来源均200，内容保留；web工具域名安全拒绝未作网络根因结论，客户端兼容边界见CURRENT。

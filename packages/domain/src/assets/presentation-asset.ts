@@ -1,3 +1,4 @@
+import { requireStyleReferenceImage } from './scene-image';
 import { parseSceneImageRequest, presentationSceneImageView, requireSceneImageParent, hasSceneImageProvenance, type SceneImageRequest } from './scene-image';
 import { isDeepStrictEqual } from 'node:util';
 import { lockLiveResearchObject, lockTrashReferences } from '../trash/trash';
@@ -171,7 +172,10 @@ export async function submitPresentationGeneration(deps: AgentDeps, input: {
   }
   if (payload.storyboard?.baseAssetId) await requireStoryboardBase(deps.prisma, payload);
   if (input.kind === 'image' || input.kind === 'video') await requirePlatformAdmin(deps, input.userId);
-  if (payload.sceneImage) await requireSceneImageParent(deps.prisma, payload);
+  if (payload.sceneImage) {
+    await requireSceneImageParent(deps.prisma, payload);
+    await requireStyleReferenceImage(deps.prisma, { ...payload, styleReferenceAssetId: payload.sceneImage.styleReferenceAssetId });
+  }
   if (payload.video) await requireVideoGenerationParents(deps.prisma, payload);
   const session = await createAgentSession(deps, { userId: input.userId, researchObjectId: input.researchObjectId, kind: 'visualization', title: 'Presentation asset generation', idempotencyKey: `presentation-session:${input.userId}:${input.researchObjectId}:${input.versionId}` }, ctx);
   const taskInput = { sessionId: session.id, userId: input.userId, kind: 'presentation.generate' as const, payload: payload as unknown as Record<string, unknown>, idempotencyKey: input.idempotencyKey };

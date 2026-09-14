@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 
 const UPSTREAM_COMMIT = '1567581c26ec29f4216c6e6835415bf30343b0e3';
 const SKILLS_ROOT = resolve(__dirname, '../../../../.agents/skills');
-type SkillId = 'baoyu-article-illustrator' | 'baoyu-cover-image' | 'baoyu-infographic';
-export type DesignSkillUsage = { id: SkillId; upstreamCommit: string; resources: string[] };
+type SkillId = 'openscience-research-illustration' | 'baoyu-article-illustrator' | 'baoyu-cover-image' | 'baoyu-infographic';
+export type DesignSkillUsage = { id: SkillId; upstreamCommit?: string; version?: string; resources: string[] };
 export type InstalledMediaSkills = { instructions: string; usage: DesignSkillUsage[] };
 const files = new Map<string, string>();
 
@@ -23,7 +23,7 @@ const layouts = [
   'jigsaw', 'venn-diagram', 'winding-roadmap', 'circular-flow', 'dense-modules',
 ] as const;
 
-export function loadInstalledMediaSkills(style: string, instruction: string): InstalledMediaSkills {
+export function loadInstalledMediaSkills(style: string, instruction: string, stage: 'plan' | 'render' = 'plan'): InstalledMediaSkills {
   const usage: DesignSkillUsage[] = [];
   const excerpts: string[] = [];
   function include(id: SkillId, relativePath: string, headings?: readonly string[]) {
@@ -44,10 +44,12 @@ export function loadInstalledMediaSkills(style: string, instruction: string): In
     }).join('\n\n') : text;
     excerpts.push(`SOURCE: ${resource}${headings ? ` — sections: ${headings.join('; ')}` : ''}\n${selected}`);
     let entry = usage.find((item) => item.id === id);
-    if (!entry) { entry = { id, upstreamCommit: UPSTREAM_COMMIT, resources: [] }; usage.push(entry); }
+    if (!entry) { entry = { id, ...(id === 'openscience-research-illustration' ? { version: '1' } : { upstreamCommit: UPSTREAM_COMMIT }), resources: [] }; usage.push(entry); }
     entry.resources.push(...(headings ? headings.map((heading) => `${relativePath}#${heading}`) : [relativePath]));
   }
 
+  include('openscience-research-illustration', 'SKILL.md', [stage === 'plan' ? 'Planning' : 'Execution']);
+  include('openscience-research-illustration', 'references/art-directions.md');
   include('baoyu-article-illustrator', 'SKILL.md', ['Three Dimensions', 'Types']);
   include('baoyu-article-illustrator', 'references/prompt-construction.md', ['Default Composition Requirements', 'Text in Illustrations', 'Principles']);
   include('baoyu-cover-image', 'SKILL.md', ['Five Dimensions', 'Composition Principles']);
