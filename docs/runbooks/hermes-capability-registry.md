@@ -19,7 +19,7 @@
 
 实际安装三个原版技能包：[article-illustrator](https://github.com/JimLiu/baoyu-skills/tree/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-article-illustrator)、[cover-image](https://github.com/JimLiu/baoyu-skills/tree/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-cover-image)、[infographic](https://github.com/JimLiu/baoyu-skills/tree/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-infographic)，共122个原始Markdown文件。上游commit1567581c26ec29f4216c6e6835415bf30343b0e3，MIT/2026 Jim Liu，原LICENSE随每包保留。项目路径.agents/skills/<id>/；本机Codex路径C:/Users/Mac/.codex/skills/<id>/，新技能下一轮可自动发现。未执行上游脚本或安装新provider/二进制。
 
-Hermes通过installed-media-skills.ts读取release只读目录中的原始设计章节及白名单风格/布局文件；image storyboard和scene-image两处消费，资产既有provenance.designSkills保存实际ID、上游commit、文件与章节。不是把整个第三方操作流程拼进system：科学事实/已批方案/用户要求/现有Gateway和审核权限优先，忽略模板强制默认及上游工具、确认、批次、重试、删除操作。文件缺失明确失败；已有生成结果恢复不伪报新技能消费。视频规划未扩展。部署与一次真实私有方案收据见CURRENT handoff。
+Hermes通过installed-media-skills.ts读取release只读目录中的原始设计章节及白名单风格/布局文件；image storyboard和scene-image两处消费，资产既有provenance.designSkills保存实际ID、上游commit、文件与章节。不是把整个第三方操作流程拼进system：科学事实/已批方案/用户要求/现有Gateway和审核权限优先，忽略模板强制默认及上游工具、确认、批次、重试、删除操作。文件缺失明确失败；已有生成结果恢复不伪报新技能消费。视频规划未扩展。已部署ea43696d/rollback dd4c935a，必要build/start exit0。实际私有方案141f42d3一次成功，原版章节/commit在provenance中；方案本身混合科学域和公式错误，独立High与根agent拒绝出图，API200标rejected，未生成图片。收据tmp/design-skills-*及CURRENT handoff。
 
 能力范围：文内插图的结构/风格拆分，封面的主视觉/字体/配色/材质组合，信息图的21种结构与22种风格参考。目录是可选择的设计知识，不是每种风格已获用户验收，也不是确定性科研绘图执行器。K-Dense scientific-visualization/schematics仍只调研，未安装或接通执行器。
 

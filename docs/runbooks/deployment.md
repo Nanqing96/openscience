@@ -1,6 +1,6 @@
 # Runbook: 部署（Deployment）
 
-2026-09-14当前审美反馈修订：`dd4c935aca25c37b95a3295e05cce1ce1ecebffb`已部署，rollback `a1a5f30d81e52bd88784160edbc8bd8287e60ade`。前提为实读a1a5及应用容器正常，仅艺术指导两条规则改动，独立High修正局部修订范围后GO；复用clean发布树`.worktrees/art-direction-release-41ae8902`（目录名历史，现HEAD dd4）。执行`deploy.sh --confirm --no-tests --skip-migrate --reuse-unchanged-capability-images --rollback-ref a1a5f30d81e52bd88784160edbc8bd8287e60ade dd4c935aca25c37b95a3295e05cce1ce1ecebffb`，必要build/start完成exit0，日志`tmp/art-feedback-v4-deploy.log`；页面fetch release等于dd4，真实新两图生成/画廊/工作台已看，淡彩与公开v1保持，`tmp/art-feedback-final-reading.json`。应用回滚使用同脚本切回a1a5、rollback-ref指定活动dd4；不删除本轮私有候选或变更公开数据。image runner11494323等独立runtime未改动，应用回滚亦不撤既有runner补丁。无测试/新迁移/新依赖；新图的用户审美认可尚未取得。
+2026-09-14当前设计技能安装：release `ea43696dd6b115415712fe87fd8ff4d2a4cbdc37` / rollback `dd4c935aca25c37b95a3295e05cce1ce1ecebffb`。固定源三包Markdown随release根只读挂载，无新镜像能力或迁移；独立High收紧引用数量后GO。干净树`.worktrees/art-direction-release-41ae8902`切至ea43696d，执行 `deploy.sh --confirm --no-tests --skip-migrate --reuse-unchanged-capability-images --rollback-ref dd4c935aca25c37b95a3295e05cce1ce1ecebffb ea43696dd6b115415712fe87fd8ff4d2a4cbdc37`，必要build/start exit0，实际页面/__release一致。收据tmp/design-skills-deploy.log。实际私有文字方案消费了三包原章节，但科学布局不合格已标rejected，不生成/公开图片；未运行测试/预检/CI，无数据库迁移，独立runner/认证保持。
 
 2026-09-14历史图片批次：a1a5f30d/rollback41ae8902，v3必要build/start exit0及release实读；收据tmp/art-direction-v3-deploy.log与style-batch-release-read.log。首批三图先于v3完成，其科学候选评估不能覆盖用户后来仅认可淡彩的反馈，最新状态见上方和CURRENT。
 

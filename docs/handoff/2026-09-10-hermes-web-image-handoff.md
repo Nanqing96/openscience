@@ -3,8 +3,8 @@
 - 2026-09-14最新：用户否定新学术cdce6087与编辑1a1d716b，仍只认可淡彩aa41。此前仅检索/借鉴外部方法，未安装完整上游技能；本轮用户明确授权给Codex和Hermes安装相关设计技能。暂停重复出图，先接通实际技能读取。Figma只回答可用性，不更改配置。
 - 根因范围：此前Hermes仅读media-direction.ts自写规则；局部换色/纸纹与锁定圆形构图没有解决审美问题。上轮High评价不代表用户接受；不再称新图好看或已达标。
 ## Version tuple
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；本轮起始HEAD/origin b0d5056a7ad5820e260cfdf5bccbbe444e652b00。
-- 本轮开始实读ECS release dd4c935aca25c37b95a3295e05cce1ce1ecebffb，rollback a1a5f30d81e52bd88784160edbc8bd8287e60ade。下面新代码尚待部署；不得以候选或docs提交覆盖服务器事实。
+- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；功能提交ea43696dd6b115415712fe87fd8ff4d2a4cbdc37已推送origin；最终docs-only HEAD从Git读取，不等于release。
+- 当前ECS release ea43696dd6b115415712fe87fd8ff4d2a4cbdc37，rollback dd4c935aca25c37b95a3295e05cce1ce1ecebffb；部署必要build/start exit0，真实产品页面fetch /__release一致。
 - 根目录dirty main不是交付基线。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。
 ## Installed and implemented this turn
 - 原版JimLiu/baoyu-skills commit1567581c26ec29f4216c6e6835415bf30343b0e3，MIT：baoyu-article-illustrator、baoyu-cover-image、baoyu-infographic，完整122个Markdown参考/技能文件及LICENSE，安装在项目.agents/skills和C:/Users/Mac/.codex/skills；无上游脚本执行/新后端/新二进制。
@@ -16,9 +16,10 @@
 - 公开OSR-2026-000023/v1/version72c315af保持；淡彩aa41a018-b2ff-4ffb-9557-19ecabe104bc保持。所有旧图/文件保留。本轮不生成/批准/发布新图片，不重复restore/旧生成脚本。
 - 私有画廊：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/presentation?version=e77dc3c7-95cb-4269-ac3c-24276fea74e7 。
 ## Delivery and next action
-- 当前安装/接线代码待独立High只读审查、服务器必要build/start部署；不跑测试、预检、CI、本机构建。
-- 部署后通过既有API创建一次真实私有文字方案，使用已审研究与用户审美反馈；读取其designSkills来源证明实际消费。只规划，不自动生成图片；完整收据放tmp/和服务器/jobs。
-- 新技能可用于其他RO，但安装和调用成功不代表图片质量通过；下一步依据真实方案做明确构图选择，再按用户授权推进图像。
+- 独立High发现多风格请求可膨胀参考输入，已按文本顺序最多2风格/1布局收紧后GO；既有deploy.sh --confirm --no-tests --skip-migrate --reuse-unchanged-capability-images完成，tmp/design-skills-deploy.log。不跑测试、预检、CI、本机构建。
+- 实际私有方案141f42d3-18eb-4f5d-be63-212ddc51e9ea，API202，32秒内attempt1/retry0 succeeded；数据库provenance记录三包原文章节及watercolor/editorial参考和准确上游commit。tmp/design-skills-{plan,read}.log及design-skills-provenance.json。原版章节消费已观察，不代表图像质量。
+- 该方案仍混淆一维径向k⊥/二维(kx,ky)、k空间/z空间，并有k²/k⊥²、形状因子写法及长公式/短标签矛盾；根agent和独立High一致拒绝出图。通过带expectedUpdatedAt的既有API将本轮方案标rejected，200/canGenerateSceneImage=false，tmp/design-skills-plan-rejected.log；无新图片生成/批准/发布。
+- 下一步先解决方案把不同科学域混排和标签超载的问题，以单个清楚关系及用户认可的视觉参考做构图取舍；不反复加提示词后盲目出图。安装是通用接线，实际审美仍未通过；Figma不在本轮处理范围。
 ## Open operational limits
 - 独立image runner11494323/science501da7a3/helperd369ccc2/brokerb78fb94d/base d163保持，Codex runner09058847/base1ad54c72保持。
 - 旧8aea8fcc/8ee965ae未提交失败间歇根因未定；两张新图单次成功不证明永久稳定。普通retry复用task.id与terminal failed spool的合同不一致仍未修复。本轮不碰runner/清spool。
