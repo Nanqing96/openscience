@@ -37,14 +37,15 @@ cd -- "$source_release"
 scope_pattern=$(IFS='|'; printf '%s' "${scopes[*]}")
 export XGS_GRAPH_SCOPE_PATTERN="^($scope_pattern)(/|$)"
 export XGS_GRAPH_TSCONFIG="$output.tsconfig.json"
-node - "$source_release" "$XGS_GRAPH_TSCONFIG" <<'NODE'
+node - "$source_release" "$XGS_GRAPH_TSCONFIG" "${scopes[@]}" <<'NODE'
 const fs = require('node:fs');
 const path = require('node:path');
-const [sourceDirectory, configPath] = process.argv.slice(2);
+const [sourceDirectory, configPath, ...scopes] = process.argv.slice(2);
 // dependency-cruiser supports TypeScript paths through tsConfig; its own
 // enhancedResolveOptions schema intentionally does not accept an alias map.
 const config = {
   extends: path.join(sourceDirectory, 'tsconfig.base.json'),
+  include: scopes.map(scope => path.join(sourceDirectory, scope, '**/*')),
   compilerOptions: {
     baseUrl: sourceDirectory,
     paths: {
