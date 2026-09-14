@@ -22,7 +22,9 @@ OpenScience 采用多 agent、多 session 协作，且用户明确要求：后�
 
 2026-09-14修订：此前的线性阅读顺序会把历史阶段当作当前任务。实际状态先由Git工作树/分支、唯一CURRENT handoff和授权范围内的真实release/任务结果定锚；需求按最新用户纠正及基线相关章节。只在有明确关联时读取task-master或历史计划，不默认载入全部记忆。
 
-能力复用采用现有[Hermes能力台账](../runbooks/hermes-capability-registry.md)当前索引：产品目的 → 实现/调用方 → 实际任务效果 → 缺口。借鉴Backstage的组件/API/资源关系，但不新增Backstage或另一套规格/任务库。Skill市场只管理包，Portainer管理运行资源，调用日志/产物记录说明实际效果；三个层次互不代替。新增实现前遵循项目architecture-guard中的复用步骤。本次不新增依赖、MCP、全局配置或自动化，不增加哈希/冻结合同/门禁。
+能力复用采用现有[Hermes能力台账](../runbooks/hermes-capability-registry.md)当前索引：产品目的 → 实现/调用方 → 实际任务效果 → 缺口。2026-09-14用户随后明确要求实际完成底层工具，取代此前“仅借鉴、不安装”的阶段决定：独立 Backstage 标准目录 API、Serena 只读 MCP、Langfuse Gateway 元数据观测及 Vercel Skills CLI 位于 `infra/development-platform/`；模块图复用已有 dependency-cruiser，资源运维复用 Portainer/Netdata。它们不替代需求基线、CURRENT 或任务/资产原始记录，不增加另一套规格/任务库。
+
+Skill市场管理包，源码工具定位实现和调用，运行日志说明已发生的执行；科学与审美效果由产物及审阅说明。按 architecture-guard 的具体问题选择工具，不强制每次全跑。独立服务有独立 lock、版本化安装和私有状态，复用已有基础镜像；不把其依赖塞入业务应用或全局安装。Codex 项目入口用 `.codex/config.toml` 和现有 SSH 私有转发，运行时没有写代码/部署权限。不把开发工具自动暴露给面向科研用户的 Hermes。
 
 以下原阅读清单保留为历史背景，现行操作顺序以以上修订、AGENTS和docs-sync为准。
 
@@ -40,9 +42,9 @@ OpenScience 采用多 agent、多 session 协作，且用户明确要求：后�
 ### 2. 工具安装与迁移原则
 
 - 能 `npx` / `pnpm exec` / `uvx` 一次性运行的工具，不全局安装。
-- 必须长期使用的 Node 工具，放入 root `package.json` 的 `devDependencies`，通过 npm scripts 调用，并提交 lockfile。
+- 仓库内 Node 分析工具放 root `devDependencies`；独立服务器管理服务放 `infra/development-platform/<tool>/` 的独立 manifest/lock，避免业务依赖耦合。两者都提交锁文件。
 - Python 工具优先 `uvx` 或项目 `.venv`；不使用用户级 `uv tool install` 作为项目依赖入口。
-- MCP 工具优先项目级 `.mcp.json`；密钥只允许来自本机 `.env` 或服务器 Secret，仓库只提交 `.env.example` / 配置模板。
+- MCP 工具采用对应客户端的项目配置（Codex 为 `.codex/config.toml`，其他客户端沿用 `.mcp.json`）；密钥只来自本机配置或服务器 Secret，仓库不含真实值。
 - 工具生成物、规则、任务、记忆、文档默认入库；无法入库的本地状态必须写入 `.gitignore` 并在 `infra/README.md` 或 runbook 说明。
 - 新增/移除工具能力必须更新 `project_index.md`；影响开发流程的必须更新 `AGENTS.md` 或新增 ADR。
 
@@ -54,7 +56,7 @@ OpenScience 采用多 agent、多 session 协作，且用户明确要求：后�
 
 按阶段引入，不在 `src/` 为空时提前安装：
 
-- 语义级 agent 工具：Serena（符号级检索/编辑/重构；有真实代码后评估项目内配置）。
+- 语义级 agent 工具：Serena 已作为本次只读符号/引用 MCP 交付；只开放三个读取工具，不开放编辑/执行。具体版本与真实查询见 CURRENT。GitNexus 当前 Noncommercial 许可未采用。
 - 结构搜索/重写：ast-grep（TS/JS AST pattern、YAML 规则、JSON/SARIF 输出）。
 - 安全/规则扫描：Semgrep CE（本地规则扫描，规则入库；优先 `uvx`/CI，可选 MCP）。
 - 架构边界：dependency-cruiser（循环依赖、跨层依赖、依赖图；配合 architecture-guard）。

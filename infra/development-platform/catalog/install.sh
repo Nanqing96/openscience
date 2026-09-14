@@ -48,4 +48,4 @@ with-proxy docker build --pull=false --network host \
   "$CATALOG_SOURCE_DIR"
 docker compose --env-file /dev/null --project-directory "$CATALOG_SOURCE_DIR" \
   --file "$CATALOG_SOURCE_DIR/compose.yaml" up --detach --no-build
-printf '%s\n' 'Catalog start requested at http://127.0.0.1:3131/api/catalog; no runtime-read or quality claim made.'
+printf '%s\n' 'Catalog start requested on its internal network; use ssh-run.sh --development-tunnel for localhost:3131. No runtime-read or quality claim made.'

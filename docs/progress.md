@@ -1,19 +1,15 @@
 # CURRENT Progress Window
 
-## 2026-09-14 — 实际交付底层开发能力（进行中）
-- 最新用户要求优先完成已调研的工具，已授权项目级安装与独立服务；旧“本轮不新增工具”已失效。科研应用及生图继续暂停，唯一版本/进度锚点见[CURRENT](handoff/2026-09-10-hermes-web-image-handoff.md)。
-- 实现了私有Backstage目录API、Langfuse与Gateway元数据适配、只读Serena MCP、标准Vercel Skills CLI；复用Portainer、dependency-cruiser及已有skill消费记录。隔离包在 `infra/development-platform/`，Codex项目配置与私有SSH转发已写入。
-- 独立High已复核隔离、只读权限、依赖lock、源版本、凭据与未知成本边界。Catalog/Serena/代理兼容包正在服务器安装/构建，尚未宣称运行调用成功；无测试/预检/CI/新模型请求。
-- 真实安装阻断已定位：legacy Docker builder无BuildKit，已适配并复用现有Node full编译层；Squid7.2官方Bug5520拒绝数字起始CONNECT，阻断Langfuse镜像R2下载。官方ALinux仓库暂无修复包，使用原SRPM及上游单文件修复隔离打包，保留原RPM/config回退，未替换运行代理。
+## 2026-09-14 — 底层开发能力实际交付
+- 用户要求先完成已调研基础能力，再恢复科研配图。精确 branch/HEAD/source/image/应用release/rollback 与续作入口见 [CURRENT handoff](handoff/2026-09-10-hermes-web-image-handoff.md)。
+- 独立Backstage、Serena、Langfuse/Gateway元数据和Vercel Skills已安装并实际使用；复用Portainer、Netdata、dependency-cruiser及已有skill消费记录。科研应用保持89d05、rollback b2f3，未部署未完成候选。
+- 真实结果：目录返回owner/deps；Serena三read工具定位reviewScientific两处调用；依赖图19模块/4跨包边；Skills list31项与find结果；Langfuse50回执，API抽读10成功+2生图失败，未知费用保持unknown。无新模型/图片/模拟数据。
+- 访问经已有SSH私有隧道到localhost3130/3131/3132；项目Codex MCP配置及按问题选工具的architecture-guard已接好。容器重建后重开隧道；UI仅登录页可达，未代用户登录。
+- 真实故障已修：legacy builder、Backstage rateLimit、Serena空目录、depcruise官方配置与source scope、Docker internal端口映射和Squid7.2数字起始CONNECT。原RPM/config/unit与接入初始checkpoint备份保留。
+- 独立High审查覆盖新权限/凭据、源快照/报告边界、原生RPM操作、GET查询和SSH；已修阻断项。按用户要求无测试/预检/CI，本机无构建/运行检查；服务器完成必要构建、启动和真实查询。
+- 能力变化同步原[能力台账](runbooks/hermes-capability-registry.md)、[服务器清单](runbooks/server-capabilities.md)、ADR-002、项目索引和工具README；不新建规格/任务库或质量评分门禁。
 
-## 此前已完成的静态治理（非当前安装边界）
-
-## 2026-09-14 — 优先修能力复用与状态漂移
-- 用户先要求解决“已有能力被遗忘、重复实现、效果不明”，再code-review。配图仍是后续目标；现在暂停部署/模型调用/生成，公开版本与数据保持。
-- 唯一版本事实与下一步见[CURRENT handoff](handoff/2026-09-10-hermes-web-image-handoff.md)。应用保持89d05；receiver8e4已装，应用8e4构建失败。当前工作树基于8e4做静态修正，无测试/预检/CI。
-- 已定向High审查：原科学skill确有调用，配图没复用；长Claim/整证据二次分析、Chat全稿重写仍有风险。BGE不能替代科学判断。
-- 候选bf8db1ad接回同一个critical-thinking runtime skill并删重复原则，修decision未收窄导致的Prisma JSON类型原因；最终High静态复核完成，未再构建/部署，效果未知。
-- 复用现有AGENTS、architecture-guard、docs-sync、ADR-002和能力台账，补产品目的/代码调用/实际效果索引；根main入口仅链接交付树CURRENT，不复制release。
-- 官方工具调研和定向review问题/处置在[能力台账](runbooks/hermes-capability-registry.md)当前部分。没有新管理平台、依赖、MCP、自动化或重复门禁。
-- 审查发现并修正BGE台账虚假调用箭头：worker建索引已接，hybrid query实现本轮未见app调用方。根main导航和跨session决策Memory已同步；既有其他dirty内容保留。
-- 真实d31及旧错误方案已rejected，没有新图片。后续先修已审上游到窄视觉焦点的传递，收敛审阅再恢复交付；不执行旧tmp脚本。
+## 未恢复的科研主线
+- 已有科学critical-thinking确在extractor使用；配图science/review重复规则的问题已静态修正，未随本轮部署科研应用。
+- 仍需收敛长Claim/全部证据二次分析与Chat全稿重写，先传递上游已审窄关系，再处理艺术表达。BGE检索不能代替科学蕴含判断。
+- 公开v1、真实论文/图/笔记保持；用户认可的淡彩图保留。下一步按CURRENT继续，不执行旧tmp生图或应用部署脚本。

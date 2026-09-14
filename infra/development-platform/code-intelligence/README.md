@@ -3,7 +3,8 @@
 This package runs upstream Serena's TypeScript language-server tools against a
 selected-source snapshot of one exact OpenScience Git commit. It exposes only
 `find_symbol`, `get_symbols_overview` and `find_referencing_symbols` through the
-standard streamable HTTP MCP endpoint `http://127.0.0.1:3132/mcp` on the server.
+standard streamable HTTP MCP endpoint `http://127.0.0.1:3132/mcp` on the client
+through `ssh-run.sh --development-tunnel`, or inside the Serena container.
 No shell, editing, memory, project-switching or dashboard tool is exposed.
 
 ## Upstream and dependency choices

@@ -1,6 +1,6 @@
 # Gateway 审计 → Langfuse
 
-此目录是独立基础设施适配器；不修改或部署 OpenScience 应用，不调用模型、不重放任务、不生成内容。当前仅静态实现；尚未安装依赖、构建、启动或发送实际审计。应用 release 仍以 CURRENT handoff 为准，不能用本工作树候选替换它。
+此目录是独立基础设施适配器；不修改或部署 OpenScience 应用，不调用模型、不重放任务、不生成内容。2026-09-14已在服务器安装、构建、启动：50条已有审计获接收回执，官方API实际抽读10成功与2生图失败；源tokens对应，未知成本保持unknown。应用与工具image版本以CURRENT为准，不能用本工作树科研候选替换生产应用。
 
 ## 复用来源与数据范围
 
@@ -34,9 +34,9 @@ state 必须跨容器重建保留，不能复制给不同项目或删除后“�
 
 ## 服务器安装接线（由主任务集中执行）
 
-以下是部署步骤说明，不是本轮已执行证据。安装与应用发布分开；仅构建这个目录，不运行 root workspace 的安装/构建/测试/CI。不能运行应用 deploy.sh。
+以下是复用部署步骤。先启动Langfuse并完成其初始化，再启动connector；安装与应用发布分开，只构建此独立目录，不运行root workspace测试/CI或应用deploy.sh。服务器入口为`python3 install.py --confirm --release <完整基础设施提交>`，已有凭据/state保留；仅更新镜像时复用已provisioned的view/网络，不需要再次授予DB权限。
 
-1. 经项目 SSH 入口，将本目录传输到 `/opt/openscience-development/telemetry/releases/<infra-release>/`。复用已有 `node:22-bookworm`，仅当包缓存缺少时补 `postgres@3.4.7` 和 pnpm 9.15.0 所需包。postgres 无传递依赖；独立 lockfile integrity 来自 npm 官方 registry，锁文件静态整理，尚未经安装执行。
+1. 经项目SSH入口物化完整提交到`/opt/openscience-releases/<infra-release>/infra/development-platform/telemetry/`。复用已有`node:22-bookworm`，仅补缓存缺少的`postgres@3.4.7`及pnpm9.15.0；独立锁文件已由服务器安装生成并提交，postgres无传递依赖。
 2. 管理员在既有生产 PostgreSQL 容器内执行 `provision-view.sql`，只建立专用 schema/view/NOLOGIN role，不做应用迁移或写审计数据。此脚本遇到同名对象会停止，重复安装保留已审核 view。角色 `xgs_gateway_telemetry` 不加入任何角色，之后由服务器凭据 provisioning 赋予当前数据库 CONNECT、随机密码和 LOGIN。凭据只能在服务器进程内构造并注入，不能把真实值放命令行、终端输出或仓库；不要从本机读取 `.env`。不授予原表、其他 schema 或 `pg_read_all_data`。
 3. 由主任务创建两个 **internal** Docker network：`openscience-development-telemetry-db`（只接既有 production PostgreSQL 和 connector；数据库 alias `development-gateway-audit-db`）和 `openscience-development-telemetry-ingest`（只接 Langfuse web 和 connector；web alias `development-langfuse-web`）。不接生产 app/data 网络，不重建生产 PostgreSQL，不挂 Docker socket；保留 Langfuse web 原网络及 localhost:3130 映射。生产数据库容器在未来应用重建后需由同一部署管理恢复该专用网络连接，否则 connector 停止读取而不影响应用。
 4. 主任务在服务器创建 `/etc/openscience-development/telemetry/runtime.env`，root:root `0600`，仅包含 `GATEWAY_AUDIT_DATABASE_URL`（专用角色、host `development-gateway-audit-db`、5432、database `openscience`，URL 编码密码）、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`。API keys 来自此管理目的专用 Langfuse 项目；不连接公共 Cloud，不配置模型 provider/evaluator。Docker Compose env_file 注入这些值；connector 仅消费环境变量，既不读配置文件也不打印值。
@@ -47,6 +47,10 @@ state 必须跨容器重建保留，不能复制给不同项目或删除后“�
 停止/回滚：停止独立 connector 容器，保留 state 与凭据，应用继续运行。切回上一基础设施 image 再启动时复用同一 state/项目。若要撤销 DB 授权，可在管理员容器会话 `ALTER ROLE xgs_gateway_telemetry NOLOGIN` 与 `REVOKE SELECT ON xgs_telemetry.gateway_calls FROM xgs_gateway_telemetry`；不要 DROP 对象/删文件/清数据。没有应用 rollback、DB 数据迁移或论文发布操作。
 
 ## 官方依据
+
+已安装查询入口：`docker exec openscience-development-gateway-audit node /app/query.mjs`；`--errors`仅加固定ERROR过滤。它使用官方GET、24h最多10条，重新白名单化输出并校验audit/trace/span身份；不请求正文。实际50回执与API抽读12条是不同证据，不声称逐条检查全部记录。
+
+首次部署时connector早于目的服务创建留下单条pending，已停进程、保留原checkpoint备份，以容器创建时间确认不可能接受后仅清除此pending。正常网络不确定情况下沿用上面的保守reconciliation；不能把空查询结果当成安全重发依据。
 
 - [v4.35.0 发布](https://github.com/langfuse/langfuse/releases/tag/v4.35.0)
 - [v4 自定义 ingestion 迁移与重复 span 限制](https://langfuse.com/integrations/native/opentelemetry/migration-to-v4)

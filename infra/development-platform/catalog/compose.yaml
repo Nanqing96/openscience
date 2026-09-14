@@ -16,8 +16,6 @@ services:
     environment:
       NODE_ENV: production
       NODE_OPTIONS: --no-node-snapshot --max-old-space-size=1024
-    ports:
-      - "127.0.0.1:3131:3131"
     volumes:
       - type: bind
         source: ${CATALOG_SOURCE_DIR:?Set the repository catalog directory}/catalog-info.yaml

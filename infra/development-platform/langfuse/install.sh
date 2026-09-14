@@ -109,4 +109,4 @@ ln -s -- "$target" "$root/.current-$release-$$"
 mv -Tf -- "$root/.current-$release-$$" "$root/current"
 "${docker_cmd[@]}" compose --project-name openscience-development-langfuse --project-directory "$target" \
   --env-file "$config/runtime.env" -f "$target/compose.yaml" images --format json > "$target/images.json"
-printf 'Langfuse started at server loopback port 3130. Credentials remain under %s (0600); no secret values printed.\n' "$config"
+printf 'Langfuse started on its private network; use ssh-run.sh --development-tunnel for localhost:3130. Credentials remain under %s (0600); no secret values printed.\n' "$config"

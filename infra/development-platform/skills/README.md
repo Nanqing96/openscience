@@ -2,11 +2,11 @@
 
 独立容器包装官方 `vercel-labs/skills` npm 包 `skills@1.5.26`，对应上游源码 `d667282815248da03a08a18272b5d2eef9caf77c`。只暴露项目范围的 `list` 与带关键词的 `find`；不创建 marketplace，不执行 add/use/update/remove/init/sync，不修改全局技能或安装第三方 skill。
 
-当前仅静态文件：尚未在本机或服务器安装依赖、生成锁文件、构建或执行 CLI。主任务负责服务器安装并取回 `pnpm-lock.yaml` 入库；在此之前不能称为已构建或可运行。
+2026-09-14已在服务器生成并提交锁文件、构建及实际使用：list返回31个项目技能，find返回科学插画候选。`Source: local / Agents: not linked` 是官方CLI登记状态，不代表Codex原生发现或Hermes加载失败；实际消费另查产品代码与provenance。当前镜像/源版本见CURRENT。
 
 ## 服务器安装
 
-将本目录复制进主任务独立基础设施安装目录后，服务器 root 执行 `bash install.sh`。脚本复用已存在的 `node:22-bookworm-slim`、`/root/.npm`（可由 `SKILLS_NPM_CACHE_DIR` 指向既有共享 cache）和 Docker BuildKit 缓存。
+将本目录复制进版本化基础设施目录后，服务器 root 设置 `SKILLS_RELEASE=<完整基础设施提交>` 并执行 `bash install.sh`。脚本复用已有 Node 基础镜像及 Docker 构建层；适配现有 legacy builder，不要求 BuildKit/buildx。
 
 第一次只在服务器生成独立 pnpm 9.15.0 lock，随后 Docker build 使用 frozen lock 与 `--ignore-scripts`；不会执行官方仓库的 husky、build、test、prepublish 等开发脚本。npm 发布包已包含 CLI 构建产物；保留其 `tar^7.5.20`、`yaml^2.8.3` 运行依赖并让 pnpm 锁定整个依赖树。以后复用取回的 lock，不每次重新解析版本。
 
@@ -19,8 +19,8 @@
 由主任务设置 `SKILLS_PROJECT_DIR` 为已准备的 OpenScience 只读源码快照绝对路径；该快照应包含现有 `.agents/skills` 与项目 skill lock（若已有），不包含 Secret、`.env`、用户 home、生产运行数据或论文附件。CLI工作目录为快照根目录。项目目录以只读 bind 挂载；不挂 Docker socket、主机 home 或凭据。
 
 ```sh
-SKILLS_PROJECT_DIR=/path/to/existing/project-snapshot bash run.sh list
-SKILLS_PROJECT_DIR=/path/to/existing/project-snapshot bash run.sh find "scientific illustration"
+SKILLS_RELEASE=FULL_INSTALLED_IMAGE_COMMIT SKILLS_PROJECT_DIR=/path/to/existing/project-snapshot bash run.sh list
+SKILLS_RELEASE=FULL_INSTALLED_IMAGE_COMMIT bash run.sh find "scientific illustration"
 ```
 
 `list` 在 `--network none` 下直接运行官方默认项目列表，输出官方终端文本，不承诺 JSON。它不会列本机 Codex 全局 skill，除非该技能本来就在这个项目快照中。已有三个 Baoyu 包与自有 skill 原样保留；快照中缺失的技能不从其他目录猜测补装。

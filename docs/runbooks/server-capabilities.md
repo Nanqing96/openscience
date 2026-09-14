@@ -1,6 +1,28 @@
 # 服务器能力与复用清单
 
-当前版本与暂停状态统一见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)；产品目的、调用关系、真实效果查[能力索引](hermes-capability-registry.md#当前能力索引目的调用效果)。2026-09-14本次只读docker列表确认应用、解析/BGE/ScanSci、Portainer和Netdata运行；未检查凭据、未调用模型，健康不代表内容质量。以下日期段是历史操作收据，不作为当前release或下一步指令。
+当前版本与暂停状态统一见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)；产品目的、调用关系、真实效果查[能力索引](hermes-capability-registry.md#当前能力索引目的调用效果)。本轮新工具实际交付见紧接的表；更早日期段是历史操作收据，不作为当前release或下一步指令。健康不代表内容质量。
+
+## 2026-09-14 底层开发能力（实际运行）
+
+源码/安装脚本位于`infra/development-platform/`，独立于科研应用部署；精确image/source/release见CURRENT，不从本页历史猜版本。
+
+| 入口 | 现有运行方式与实际证据 |
+|---|---|
+| Backstage目录API | `openscience-development-catalog-catalog-1`；标准实体实际返回Hermes owner/deps，匿名401；SQLite独立state，只读Token身份，无Docker socket/生产DB |
+| Serena只读MCP | `openscience-development-serena-serena-1`；实际三工具列表、Gateway符号及extractor调用返回；只读89d05源码快照，缓存独立，不加载仓库脚本/Secret/测试/依赖目录 |
+| Langfuse | `openscience-development-langfuse-*`六个独立服务，官方v4.35.0；独立PG/Redis/ClickHouse/MinIO，登录页200，实际API读回已有调用；无provider keys、外部AI任务或论文正文 |
+| Gateway元数据 | `openscience-development-gateway-audit`；专用只读`xgs_telemetry.gateway_calls`视图/角色，无原表SELECT，50条接收回执，抽读12条；checkpoint和凭据持久保存 |
+| 模块依赖 / 技能CLI | 复用现有dependency-cruiser18.1.0，真实19模块/4跨包边；Vercel Skills1.5.26 list/find已实际使用，不安装搜索结果 |
+| 访问 | `ssh-run.sh --development-tunnel`在SSH中解析固定容器内部IP，本机127.0.0.1:3130/3131/3132；不增加服务器listener或外网network。容器重建后重开隧道。Docker24纯internal网络的ports声明不会生成映射，不能据compose配置声称可访问 |
+| 代理兼容 | 原ALinux Squid7.2加官方Bug5520单文件补丁，现包`7:7.2-1.alnx4.openscience.1.x86_64`；原RPM/配置/unit备份在`/opt/openscience-development/squid-compat/ce02ee5273aa7fb9de2a7e9679b480485ae46939/`，`native-rpm.sh rollback`可恢复；数字起始R2 CONNECT修复后真实镜像下载完成，ACL/路由不改 |
+
+复用已有Node full/slim、Python3.12、PG/Redis、代理与共享缓存。仅补独立工具依赖、Langfuse必要镜像和ALinux原生RPM构建镜像；编译器仅在隔离builder中。没有安装BuildKit、第二个代理或新模型供应商。
+
+初次接入顺序错误已纠正：connector13:42的首个pending早于Langfuse首次创建13:47；停connector后完整备份checkpoint，仅清除此确定未到达的pending，目标就绪后恢复，随后50回执、无pending。不是通用自动盲重试；今后先启动Langfuse再启动connector。
+
+元数据适配器只有两个internal network，生产DB重建后须经同一installer恢复专用网络连接，不重放数据；state保留。Langfuse自动保留期限、定时备份、SSO/SMTP未配置；复用既有磁盘监控，备份脚本手动可用但未演练。不将这些能力当作模型/论文质量保证。
+
+## 历史操作收据
 
 - 2026-09-14历史应用及 Chat bundle e2cccb4d/rollback ea43696d：自有通用科研配图 skill v1、上游原文支撑的结构化画面意图、直接编译与真实 Chat style PNG 输入已部署；复用原镜像/浏览器/代理，必要 build/start 与 provider 安装 exit0。清理器同源安装只扩展精确 reference.png，无新清除请求。产品页面/__release 实读一致，首个真实结构化方案 f3c75142 已由 API202 排队，图片上传与质量尚待观察；无测试/预检/CI/迁移/Codex调用。以 CURRENT 后续结果为准。
 

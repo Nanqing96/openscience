@@ -41,11 +41,23 @@
 
 | 需求 | 已有方案与本次取舍 |
 |---|---|
-| 组件/API/资源关联 | [Backstage Software Catalog](https://backstage.io/docs/features/software-catalog/system-model/)：借用其组件、API、资源关系组织本索引；未部署Backstage，现阶段不增加门户服务 |
+| 组件/API/资源关联 | [Backstage Software Catalog](https://backstage.io/docs/features/software-catalog/system-model/)：独立私有标准目录API已运行；真实查询agent-worker返回owner、Gateway/parser/skills和资源依赖，匿名401。维护实体见`infra/development-platform/catalog/catalog-info.yaml`，不把维护目录当运行/质量事实；本轮未搭完整门户 |
 | 容器运维 | [Portainer](https://docs.portainer.io/)：服务器已在用；复用现有面板和受控部署入口，不能由它判断论文质量 |
-| 调用链、成本、效果观察 | [Langfuse](https://langfuse.com/docs/observability/overview)：支持调用trace和质量/成本观察。本次复用已有Gateway日志及产物记录；跨任务分析成为实需时再评估集成，未安装/外传数据 |
-| 代码语义/影响范围 | [GitNexus](https://github.com/abhigyanpatwari/GitNexus)：提供调用图、执行流、影响分析与MCP/skills；可解决大仓库定位成本，不能提供产品意图或线上质量。本次仅调研，未索引/安装，其自动配置不直接套入项目 |
-| Skill发现/安装管理 | [Vercel Skills](https://github.com/vercel-labs/skills)：find/list/update管理技能包；[Agent Skills](https://agentskills.io/home)规定按需加载。两者均不证明Hermes实际调用或效果；现有安装目录/加载器继续复用，无新增安装 |
+| 调用链、成本、效果观察 | [Langfuse](https://langfuse.com/docs/observability/overview) v4.35.0独立自托管已运行，专用只读DB view导入Gateway白名单元数据；已有50条回执，API实际抽读10成功+2生图失败。未知成本保持unknown；不发送论文/提示词/回答，不自动评价科学质量 |
+| 代码语义/影响范围 | [Serena](https://github.com/oraios/serena)固定MIT提交的只读MCP已运行：overview/find/references三工具；实际定位`AiGateway/reviewScientific`在extractor的两处调用。已有[dependency-cruiser](https://github.com/sverweij/dependency-cruiser)产出标准JSON，选定两模块19文件、4条跨包边。GitNexus当前Noncommercial许可未采用；源版本与覆盖边界见CURRENT |
+| Skill发现/安装管理 | [Vercel Skills](https://github.com/vercel-labs/skills)1.5.26已隔离安装，list实际发现31项目技能，find返回科学插画候选；只暴露list/find。既有技能和Hermes加载器保持，官方CLI登记状态不等于实际消费。新包仍须授权与审阅；不自动update/add |
+
+### 已安装入口（按需使用）
+
+服务器统一经过`infra/scripts/ssh-run.sh`。具体命令与限制在各工具README；不用另找市场、搭索引或创建任务库。
+
+- 能力目录：`docker exec openscience-development-catalog-catalog-1 node /app/query.mjs codex entity component:default/agent-worker`；`hermes`身份亦为只读服务身份，不代表科研用户代理已获开发管理工具权限。
+- 源码：`docker exec openscience-development-serena-serena-1 python /opt/serena/query.py references packages/ai-gateway/src/gateway.ts AiGateway/reviewScientific`；Codex原生入口`.codex/config.toml`，先开`--development-tunnel`，新session/刷新MCP后使用。索引当前生产源码，候选差异仍按Git定向读取。
+- 调用：`docker exec openscience-development-gateway-audit node /app/query.mjs`，或加`--errors`；固定API/24h/最多10条、无正文。更多详情在SSH隧道下Langfuse `http://localhost:3130`；登录信息仅在服务器私有文件，勿贴入会话。
+- 依赖图：`infra/development-platform/code-intelligence/module-graph.sh`接受明确`--revision/--scope/--output`。实际报告保留在服务器`/opt/openscience-development/reports/presentation-gateway-89d05-v3.json`，不是全仓完整调用图。
+- 技能发现：`infra/development-platform/skills/run.sh list|find`，先设已安装`SKILLS_RELEASE`，list另设无Secret源码目录。版本只从CURRENT读取，不猜latest。
+
+已知边界：目录需随能力变更更新；Serena源快照需随所查版本切换；Docker容器重建/IP变化后重开隧道；生产DB容器重建后需恢复专用telemetry网络。Langfuse未知费用不是0、接收成功不是科学正确；没有新增自动全产品质量评分。
 
 ## 历史证据（按需检索，不作当前状态）
 

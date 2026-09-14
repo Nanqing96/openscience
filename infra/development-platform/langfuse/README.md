@@ -23,8 +23,17 @@ The 8 GiB total is a **development-management resource ceiling**, with reduced i
 
 ## Access and isolation
 
-- Only `127.0.0.1:3130` is published. The database, cache, S3 API/console and worker have no host ports. All containers use a dedicated Docker `internal` network, with no production network attachment or container Internet egress. Only Web also joins the separate internal network `openscience-development-telemetry-ingest`, under alias `development-langfuse-web`, so the independently reviewed telemetry connector can call its API without joining Langfuse's data network. The installer creates that shared internal network if absent; it refuses an existing non-internal network instead of replacing it.
-- A local SSH forward to server `127.0.0.1:3130` provides the first UI/API entry at `http://localhost:3130`. Use the project's approved SSH transport/key; no new SSH configuration is installed here.
+Access uses the existing `infra/scripts/ssh-run.sh --development-tunnel`.
+The client URL is `http://localhost:3130`. On this server, Docker 24 does not
+publish ports for containers attached only to internal networks: the initial
+port declarations were accepted but produced no mappings. The tunnel now resolves
+the fixed containers' private IPs over authenticated SSH and connects directly;
+no public/egress network is added. Restart the tunnel after container recreation.
+The same tunnel carries Catalog 3131 and Serena MCP 3132. No host service listens
+on those ports. The logged-in Langfuse UI uses its normal account authentication.
+
+- All containers remain on Docker `internal` networks without published host ports or Internet egress. Only Web also joins `openscience-development-telemetry-ingest`, under alias `development-langfuse-web`, allowing the reviewed connector to call its API without joining Langfuse's data network. The installer refuses an existing non-internal ingestion network instead of replacing it.
+- Use the project's `--development-tunnel` entry above; it resolves the target address at connection time instead of hard-coding a changing container IP.
 - Telemetry, Langfuse Assistant, experiment creation and automatic evaluation consumers are disabled. No LLM provider key, code-evaluator dispatcher or Docker socket is supplied. Existing trace ingestion and human scores remain available; the integration must not create evaluator jobs.
 - This initial deployment accepts text/structured event data. Media-upload storage and externally downloadable S3 exports are deliberately not configured. The private MinIO is used for Langfuse event persistence.
 - The standard web image requires a domain root. [A custom base path needs a source build](https://langfuse.com/self-hosting/configuration/custom-base-path), so adding `/langfuse` under Portainer's hostname is not a runtime setting. A later unified entry should link to a dedicated hostname or the SSH entry; it must not silently introduce a source build.
@@ -87,4 +96,4 @@ For a later upgrade, take a completed stopped-stack backup first. Langfuse autom
 
 ## Remaining integration work
 
-The root delivery task still owns independent review, server execution, actual startup/UI observation, secure account handoff, the unified access link, metadata import, and any scheduled backup/storage policy. Neither a running container nor an empty project proves Hermes tracing coverage. This package does not alter the production application's release or connect its audit database automatically.
+Installation and real metadata readback completed on 2026-09-14; current source/image identifiers and the separate connector are recorded in CURRENT. The API read back ten existing successful calls and two existing image failures; this does not establish scientific quality or complete historical coverage. Scheduled backups/retention, SSO and SMTP are not installed. Keep the existing private owner credential file for administrator access; do not paste its contents into chat.

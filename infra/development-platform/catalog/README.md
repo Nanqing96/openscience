@@ -1,7 +1,8 @@
 # OpenScience Backstage Catalog
 
-This is the standard Backstage catalog backend, exposed as a private read API on
-host loopback `127.0.0.1:3131`. It is not a complete Backstage browser portal.
+This is the standard Backstage catalog backend, available as a private read API
+at client `127.0.0.1:3131` through `ssh-run.sh --development-tunnel`.
+It is not a complete Backstage browser portal.
 `createBackend`, the upstream catalog plugin, the upstream permission plugin and
 their standard entity processing produce the catalog and its ownership/dependency
 relations. There is no scaffolder, deployment action, publication action or custom

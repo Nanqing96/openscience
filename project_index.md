@@ -6,6 +6,8 @@
 |---|---|
 | `infra/development-platform/catalog/` / `infra/development-platform/langfuse/` / `infra/development-platform/telemetry/` / `infra/development-platform/code-intelligence/` / `infra/development-platform/skills/` | 用户授权的底层能力交付：私有Backstage目录、Langfuse Gateway元数据、Serena只读符号与引用、标准技能CLI；独立于科研应用release，具体安装/使用证据见CURRENT |
 | `infra/scripts/ssh-run.sh` | 既有SSH入口增加development私有3130/3131/3132端口转发，不公开管理服务 |
+| `.codex/config.toml` | Codex 项目 Serena HTTP MCP，仅允许 overview/find/references；须建立私有转发，索引源版本见 CURRENT |
+| `infra/development-platform/squid-compat/` | ALinux 原版 Squid SRPM 加上游 Bug5520 修复；隔离编译、原生包替换及保留原 RPM/配置回退，修复数字开头镜像域名 CONNECT |
 | `AGENTS.md` / `.agents/skills/architecture-guard/SKILL.md` / `.agents/skills/docs-sync/SKILL.md` / `docs/decisions/ADR-002-agent-tooling-portability.md` | 复用前定位产品意图、实际调用与已有结果；能力索引按需读取、唯一版本锚点，禁止安装/格式检查冒充运行效果 |
 | `apps/agent-worker/src/skills/installed-media-skills.ts` / `apps/agent-worker/src/presentation/illustration-review.ts` / `.agents/skills/openscience-research-illustration/SKILL.md` | 未部署候选：引用既有critical-thinking共享规则，删除审阅重复原则；修decision收窄。全文重写与上游传递问题仍待收敛，见CURRENT |
 | `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | dd4c935a/v4已部署；区分科学批准与审美认可、定向修改保持/否定构图重排。新学术cdce/封面1a1d均被用户否定，仍只认可淡彩aa41；实际结果/局限见CURRENT |
