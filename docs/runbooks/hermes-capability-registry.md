@@ -15,6 +15,8 @@
 
 ## 图片风格批次与技能选择（2026-09-14）
 
+当前生成优先级：用户明确要求Chat生图为主、Codex CLI仅备用，因额度有限不主动调用或自动回退。baoyu-image-gen已读取原说明及codex-cli实现作比较，尚未安装/接入；后续优先把参考图与适用输出参数接到现有Chat执行链，不直接切换到该skill的Codex路径。此次约束同步不改变已部署后端。
+
 用户已否定新学术cdce6087与编辑1a1d716b，认可淡彩aa41；前一轮“改善明显”是内部评价，不能写成用户认可。此前只吸收方法到media-direction.ts，没有安装完整上游技能。本轮明确授权安装，停止重复出图。
 
 实际安装三个原版技能包：[article-illustrator](https://github.com/JimLiu/baoyu-skills/tree/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-article-illustrator)、[cover-image](https://github.com/JimLiu/baoyu-skills/tree/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-cover-image)、[infographic](https://github.com/JimLiu/baoyu-skills/tree/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-infographic)，共122个原始Markdown文件。上游commit1567581c26ec29f4216c6e6835415bf30343b0e3，MIT/2026 Jim Liu，原LICENSE随每包保留。项目路径.agents/skills/<id>/；本机Codex路径C:/Users/Mac/.codex/skills/<id>/，新技能下一轮可自动发现。未执行上游脚本或安装新provider/二进制。

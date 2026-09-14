@@ -17,7 +17,7 @@
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：ECS ea43696d/rollback dd4c935a，branch codex/onchip-video-release。三套原版baoyu设计包已装Codex与Hermes，实际方案141f42d3的provenance证明消费；方案科学域/公式问题已拒绝出图并标rejected。用户否定cdce/1a1d，仍只认可淡彩aa41。Figma两配置disabled，仅调查；无新图片/发布/测试/迁移。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> CURRENT 2026-09-14：ECS ea43696d/rollback dd4c935a，branch codex/onchip-video-release。Chat生图为主，Codex CLI因额度有限仅保留备用，不主动调用或自动回退；后续优先加强Chat参考图/风格控制。三套原版baoyu设计包已装Codex与Hermes，实际方案141f42d3的provenance证明消费；方案科学域/公式问题已拒绝出图并标rejected。用户否定cdce/1a1d，仍只认可淡彩aa41。Figma两配置disabled，仅调查；无新图片/发布/测试/迁移。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |

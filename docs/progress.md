@@ -1,5 +1,7 @@
 # CURRENT Progress Window
 
+- 最新用户纠正：Chat生图为主；Codex CLI因额度有限仅保留备用，不主动调用或自动回退。后续优先加强Chat参考图和风格控制。本次仅同步约束，未调用生图或变更服务器后端。
+
 ## 2026-09-14 — 三套原版设计技能已安装、部署、实际消费
 - Codex与Hermes：JimLiu/baoyu-skills commit1567581c，article-illustrator/cover-image/infographic完整122个Markdown和MIT许可；Hermes按需读取原设计章节及最多2风格/1布局，写既有provenance。无新生成后端或二进制。
 - branch codex/onchip-video-release；功能提交/origin ea43696d；ECS实读ea43696d，rollback dd4c935a；之后docs-only HEAD从Git取。独立High只读审查收紧参考数量后GO，服务器必要build/start exit0，未运行测试/预检/CI/本机构建。
