@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { SCIENTIFIC_CRITICAL_THINKING_SKILL } from './scientific-critical-thinking';
 
 const UPSTREAM_COMMIT = '1567581c26ec29f4216c6e6835415bf30343b0e3';
 const SKILLS_ROOT = resolve(__dirname, '../../../../.agents/skills');
 type SkillId = 'openscience-research-illustration' | 'baoyu-article-illustrator' | 'baoyu-cover-image' | 'baoyu-infographic';
-export type DesignSkillUsage = { id: SkillId; upstreamCommit?: string; version?: string; resources: string[] };
+export type DesignSkillUsage = { id: SkillId | typeof SCIENTIFIC_CRITICAL_THINKING_SKILL.id; upstreamCommit?: string; version?: string; resources: string[] };
 export type InstalledMediaSkills = { instructions: string; usage: DesignSkillUsage[] };
 const files = new Map<string, string>();
 
@@ -49,6 +50,11 @@ export function loadInstalledMediaSkills(style: string, instruction: string, sta
   }
 
   if (stage === 'science' || stage === 'review') {
+    // Reuse the same scientific reasoning used by literature synthesis. Loading
+    // design references alone does not activate this runtime skill.
+    usage.push({ id: SCIENTIFIC_CRITICAL_THINKING_SKILL.id, version: SCIENTIFIC_CRITICAL_THINKING_SKILL.version,
+      resources: ['apps/agent-worker/src/skills/scientific-critical-thinking.ts'] });
+    excerpts.push('Apply this shared skill as scientific reasoning only. Use the caller\'s illustration JSON schema and supplied sourceIds instead of its literature-note six-field/observation output conventions. Keep review notes out of visible picture text.', SCIENTIFIC_CRITICAL_THINKING_SKILL.instructions);
     include('openscience-research-illustration', 'SKILL.md', [stage === 'science' ? 'Scientific intent' : 'Scientific review']);
     return { usage, instructions: excerpts.join('\n\n') };
   }

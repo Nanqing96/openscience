@@ -20,6 +20,12 @@ OpenScience 采用多 agent、多 session 协作，且用户明确要求：后�
 
 ### 1. 统一事实源优先级
 
+2026-09-14修订：此前的线性阅读顺序会把历史阶段当作当前任务。实际状态先由Git工作树/分支、唯一CURRENT handoff和授权范围内的真实release/任务结果定锚；需求按最新用户纠正及基线相关章节。只在有明确关联时读取task-master或历史计划，不默认载入全部记忆。
+
+能力复用采用现有[Hermes能力台账](../runbooks/hermes-capability-registry.md)当前索引：产品目的 → 实现/调用方 → 实际任务效果 → 缺口。借鉴Backstage的组件/API/资源关系，但不新增Backstage或另一套规格/任务库。Skill市场只管理包，Portainer管理运行资源，调用日志/产物记录说明实际效果；三个层次互不代替。新增实现前遵循项目architecture-guard中的复用步骤。本次不新增依赖、MCP、全局配置或自动化，不增加哈希/冻结合同/门禁。
+
+以下原阅读清单保留为历史背景，现行操作顺序以以上修订、AGENTS和docs-sync为准。
+
 任何 agent 进入项目后，按以下顺序对齐认识：
 
 1. `AGENTS.md`

@@ -47,6 +47,12 @@ OpenScience：AI 时代科研基础设施平台（Research Object / SDF / 预印
 - 生产栈 `docker-compose.prod.yml`（P1A-9 + ADR-007）：postgres/redis/object-storage 无端口映射（仅 data_net），SeaweedFS S3 数据落 `seaweed-data` 命名卷，api 暴露 127.0.0.1:3001；env 走 `/opt/openscience/.env.prod`（云上生成不入库）。**invite/migrate/seed 需在 ECS 容器内通过 canonical deploy/runbook 执行**，继承受控 env，禁止把 `DATABASE_URL` 或 `SEARCH_DATABASE_URL` 展开到 CLI 参数或日志；core 与 search 分别迁移和核验。
 - CI：`.github/workflows/ci.yml`（GitHub Actions，build/typecheck/lint/test，push+PR main）。每日备份 cron `0 3 * * * /usr/local/bin/backup.sh --confirm --db`（pg_dump 保留 7 轮）。
 
+## 能力复用与实际效果
+
+- 新增/修改能力前，按目的定向查 `docs/runbooks/hermes-capability-registry.md` 当前索引，再读实际实现与调用方；服务器资源复用 `docs/runbooks/server-capabilities.md`，版本只在 CURRENT handoff 定锚。
+- 先确认上游已产出什么，再决定补接或新增。共享科学规则引用已有 runtime skill；开发代理读过、本机装过、Hermes注入过、真实结果合格四者不得混写。
+- 用既有任务/产物/审阅记录说明效果和具体缺口；未知就标未知，不为管理台账重跑模型、测试、预检或部署，也不另造能力库/门禁。方法见 `.agents/skills/architecture-guard/SKILL.md`。
+
 ## 第一优先级：需求基线
 - **`docs/OpenScience_Kimi_Development_Spec.md` 是当前单一需求基线（Baseline v1.0, source of truth）**。任何实现工作必须先读它，不得根据零散聊天、旧方案（如已废弃的方案0723）或文件名猜测需求。
 - 该文件路径是分类规范的**登记例外**（见下），不得移动或改名，其他 session 在引用它。

@@ -31,6 +31,9 @@ git status --short
 
 ## 3. 去重与清理
 
+- 能力变化更新现有 `docs/runbooks/hermes-capability-registry.md` 当前行：产品目的、实现/调用方、安装与启用范围、最近真实结果和已知缺口。部署版本只在 CURRENT handoff 定锚，其他文档链接它；旧表格标历史，不能把 `PRODUCTION` 解释为当前质量合格。
+- Skill是否安装、是否注入模型、是否有真实成功产物分别记录。检索仅加载匹配行与代码；无新证据就保留“未观察”，不靠扩大测试或新模型运行补齐状态。
+
 - **Do not delete historical files**；通过降级状态、Git history/archive、移出 read-first 和压缩 CURRENT 文档清理活跃记忆。archive 不得成为启动入口。
 - Do not copy full test matrices across progress/index/handoff。完整输出留在测试报告或日志；活文档只写命令、总数、关键指标和证据路径。
 - 新决策与旧 CURRENT 冲突时，同一轮完成：更新 CURRENT → 降级旧入口 → 修索引 → 修 handoff → 加最新 progress。
@@ -38,6 +41,8 @@ git status --short
 - `AGENTS.md` ≤100 lines、CURRENT handoff ≤80 lines、`docs/progress.md` ≤120 lines；超限必须先压缩/轮转再完成任务。
 
 ## 4. 完成门禁
+
+以下命令仅在当前用户与项目规则允许检查时适用；明确禁止测试/预检时不运行（其中 `audit:docs-sync` 包含测试），只静态核对本次改动与既有证据。文档整理不触发部署或模型任务。
 
 运行：
 

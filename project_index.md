@@ -1,9 +1,11 @@
 # OpenScience (XGS) 项目文件索引
 
-> 当前任务2026-09-14完成：production6504c004/rollback f8e44815。个人空间首行双卡等高、后续整行、导入紧凑分栏，桌面/窄屏已实看；原右侧大块空白消除。之前四项清除和公开v1阅读修复保留；仅改页面样式，无科研或生成操作。唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> CURRENT：能力复用与状态治理优先，配图部署/生成暂停。唯一版本事实及续作入口：[Hermes CURRENT handoff](docs/handoff/2026-09-10-hermes-web-image-handoff.md)。能力按[当前能力索引](docs/runbooks/hermes-capability-registry.md)定向查实现、调用和真实结果；下表日期/版本均为对应改动的历史记录，不作为当前release或自动next action。
 
 | 本轮文件 | 用途 |
 |---|---|
+| `AGENTS.md` / `.agents/skills/architecture-guard/SKILL.md` / `.agents/skills/docs-sync/SKILL.md` / `docs/decisions/ADR-002-agent-tooling-portability.md` | 复用前定位产品意图、实际调用与已有结果；能力索引按需读取、唯一版本锚点，禁止安装/格式检查冒充运行效果 |
+| `apps/agent-worker/src/skills/installed-media-skills.ts` / `apps/agent-worker/src/presentation/illustration-review.ts` / `.agents/skills/openscience-research-illustration/SKILL.md` | 未部署候选：引用既有critical-thinking共享规则，删除审阅重复原则；修decision收窄。全文重写与上游传递问题仍待收敛，见CURRENT |
 | `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | dd4c935a/v4已部署；区分科学批准与审美认可、定向修改保持/否定构图重排。新学术cdce/封面1a1d均被用户否定，仍只认可淡彩aa41；实际结果/局限见CURRENT |
 | `apps/web/app/dashboard/dashboard.module.css` | 6504c004已部署实看：收回Hermes遗留跨三行布局，首行等高、后续整行及紧凑导入；桌面/手机无横溢出 |
 | `infra/private-cleanup/{runner.mjs,install.sh}` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 已交付f8：Node符号链接精确身份、正常排空退出、安装等锁、回收站自动刷新；原4项已实际清除。独立Codex仅090文件补丁、base1ad运行环境保留 |
@@ -486,7 +488,7 @@
 | `docs/specs/2026-08-16-edge-cache-asset-versioning-design.md` / `docs/plans/2026-08-16-edge-cache-asset-versioning-plan.md` / `docs/handoff/2026-08-16-edge-cache-asset-versioning-handoff.md` | Landing 大型光学资产内容寻址缓存的设计、实施与部署证据 | 已完成历史主题；release `b93fa9d`，不作为当前 Hermes 入口 |
 | `docs/runbooks/deployment.md` | 部署 runbook（cloud-sync/迁移/seed/nginx/验证、Parser/BGE/ScanSci 隔离、Windows Git Bash）；§5.49–5.66 为历史/发布 evidence，现行 Docker cache 维护见 §5.67 | **CURRENT运维手册**；2026-09-06缓存清理753.4MB、cache1.005GB、应用f144eb7/rollback b23102b；历史版本证据不作当前部署锚点 |
 | `infra/scripts/evaluate-scansci-upstream-mcp.{sh,test.mjs}` | 上游 `v1.13.1` 官方 MCP 有界 ECS 正向试点：wheel hash、17 tools、真实 OA PDF、exact trap cleanup | **TASK 1 ECS ACCEPTED**；24,671,920 bytes / `d57dc94c…f484a`，临时容器/卷 `0/0` |
-| `docs/runbooks/hermes-capability-registry.md` | Hermes实际技能/工具加载、科学文档/公式、写作引用、精美笔记和媒体能力顺序 | **CURRENT 2026-09-13**；来源写作/字段审校/媒体风格已部署，实际质量与未完成范围见CURRENT；历史评测不是新测试门禁 |
+| `docs/runbooks/hermes-capability-registry.md` | 当前产品目的→代码调用→实际产物→已知缺口；工具选型与定向High审查 | **CURRENT能力定位入口**；版本见handoff，旧PRODUCTION/评测表为历史，不证明当前调用或质量 |
 | `docs/runbooks/backup-restore.md` | core/search 原子备份集合、权限/release 校验、双临时库恢复与 schema/data 指纹比对；含 remote stdin guard | **CURRENT / ECS RESTORE GREEN**；验证后临时库按用户授权精确清理 |
 | `docs/runbooks/incident.md` | 故障响应 runbook（四节骨架，Phase 1A 填充） | 骨架 |
 | `docs/runbooks/monitoring.md` | 监控面板 runbook（Netdata + vnStat，同域 /monitor/ /traffic/ 路径，2026-08-01） | 已上线 |
@@ -650,4 +652,4 @@
 
 | .agents/skills/baoyu-article-illustrator/、baoyu-cover-image/、baoyu-infographic/；apps/agent-worker/src/skills/installed-media-skills.ts | 三个原版MIT设计技能及Hermes只读原文章节加载；消费写入既有资产provenance | 2026-09-14已部署ea43696d；上游commit1567581c；真实方案141f42d3消费三包，但方案质量不合格已rejected，见CURRENT |
 
-| .agents/skills/openscience-research-illustration/；packages/domain/src/assets/illustration-brief.ts；apps/agent-worker/src/presentation/{illustration-planner,illustration-review,storyboard,scene-image,handler}.ts；packages/ai-gateway/src/{image,codex-image-protocol,codex-image,gateway}.ts；infra/chatgpt-browser/{broker.mjs,runner.cjs} | 自有科学分析驱动配图skill、带原文basis的brief与Chat真实参考图传递 | 89d05两阶段已部署；Chat语义审阅v2候选待部署/实际出图，精确状态见CURRENT handoff |
+| .agents/skills/openscience-research-illustration/；packages/domain/src/assets/illustration-brief.ts；apps/agent-worker/src/presentation/{illustration-planner,illustration-review,storyboard,scene-image,handler}.ts；packages/ai-gateway/src/{image,codex-image-protocol,codex-image,gateway}.ts；infra/chatgpt-browser/{broker.mjs,runner.cjs} | 自有科学分析驱动配图skill、带原文basis的brief与Chat真实参考图传递 | 两阶段实际质量失败；新审阅应用构建失败，已暂停；修正/版本/真实任务见CURRENT handoff |

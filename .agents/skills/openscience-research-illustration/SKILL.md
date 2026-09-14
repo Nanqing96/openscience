@@ -11,6 +11,8 @@ Create a readable scientific image with a deliberate composition. The source sup
 
 ## Scientific intent
 
+Use the upstream reviewed scientific result and its bound original passages before selecting a visual explanation. In Hermes, the existing `scientific-critical-thinking` runtime skill supplies shared scientific reasoning to this stage and scientific review; this skill adds visual meaning and art direction. Read the actual loader/call path to distinguish installed guidance from consumed guidance. Do not repeat the full paper analysis when a supported upstream focus already exists; unresolved upstream conclusions must not become image facts.
+
 First select one useful scientific explanation from the upstream reviewed analysis and its complete original passages. This stage chooses what the reader should understand, not an artistic style. A whole-paper conclusion often contains several independent ideas; select one coherent relationship instead of compressing all of them into one picture. Follow an explicitly requested number of pictures, otherwise prefer one. Preserve complete source context: do not split equations from definitions or qualifiers to fit a short quotation field.
 
 For each selected explanation, establish the domain, the minimum subjects and relationships, exact short labels, essential conditions and the meaning of every intended visual mark. Use complete original passage identifiers; the server supplies their actual text. The passage must support the full statement, including qualifiers. Reviewed summaries supply context but do not override a conflicting or narrower original passage. Unsupported details should be left out or reported as missing, not repaired from general knowledge.

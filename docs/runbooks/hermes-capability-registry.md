@@ -1,6 +1,55 @@
 # Hermes Capability Registry
 
-2026-09-14当前：自有配图skill、完整原文两阶段及Chat参考图transport在89d05/e2已部署；实际d31仍科学NO-GO并API200 rejected，无新图片/实际附件记录。新候选补Chat最终语义审阅与Scientific review skill消费；这是已有能力的受权接入，尚未部署/观察，不称通用质量通过。CURRENT handoff记录精确版本及下一步。
+## 当前能力索引：目的、调用、效果
+
+本页是定位入口，不是自动能力注册器。仅阅读与任务匹配的行，再读取调用代码与已有任务记录。**当前版本/暂停状态唯一锚点：[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)**；资源/缓存/安装入口见[服务器清单](server-capabilities.md)。需求来源是最新用户纠正及[需求基线](../OpenScience_Kimi_Development_Spec.md)。没有任何工具保证对整个产品的绝对掌控；未知状态要可见、可定位。
+
+这些文件/符号于2026-09-14按候选8e4c62a1及本轮修正静态核对；本轮未重跑模型。产品域行只证明实现入口存在，不把历史交付当作当前全面验收。AI效果行标明已有实际任务与局限。表内 `skills/`、`presentation/` 和worker文件名相对于 `apps/agent-worker/src/`，其余完整目录从仓库根定位。
+
+| 产品目的 / 能力 | 实现与实际调用入口（仓库相对路径） | 结果依据与边界 |
+|---|---|---|
+| 上传、全文取得、解析 | `apps/api/src/routes/ingestion.ts` → `apps/agent-worker/src/ingestion-parser.ts`；全文发现走 `apps/agent-worker/src/retrieval/handler.ts`，解析选择走 `apps/agent-worker/src/parsers/cascade-orchestrator.ts` | 既有SourceMap/页码与原始文件是下游来源；解析可读不代表公式正确。复用ScanSci、Docling、Tesseract，资源见服务器清单 |
+| 文献语义理解 | `apps/agent-worker/src/extractor.ts` 的 `semanticReductionGuard`/综合链；引用 `skills/paper-analysis.ts`、`scientific-critical-thinking.ts`；经Gateway | 已有semanticStage、条件/算例/操作/来源关系；后续应沿用经审核结果，不能将先前有错候选当成权威。历史d5c6整稿未通过，当前不重跑 |
+| 共享科学推理规则 | `skills/scientific-critical-thinking.ts` → `extractor.ts` 的reduce/bridge及科学审校 | K-Dense方法的项目runtime v2，确有调用；并非安装整个K-Dense包。新候选的 `skills/installed-media-skills.ts` science/review直接引用同一常量并记录id/version；尚未部署/观察 |
+| 原文科学审阅 | `extractor.ts` 的 `scientificReviewPrompt` → `packages/ai-gateway/src/gateway.ts` 的 `reviewScientific` → `infra/chatgpt-browser/review-broker.mjs`/`review-runner.cjs` | 既有Chat网页审阅能力已用过；不是缺一个新供应商。六字段审阅与画面语义审阅的输出不同，不能冒用ingestion身份 |
+| 来源约束写作 | `apps/agent-worker/src/workspace-guide.ts` → `scientific-writing-source.ts`、`skills/scientific-writing.ts` | 写作有原始来源恢复和引用回填；本轮未重观其效果。它写稿，不负责验证坐标/色块的物理意义 |
+| 语义检索 | `apps/agent-worker/src/index.ts` 已接searchIndexer建索引；`packages/search/src/service.ts` 定义 `createHybridSearchService` 查询实现 | BGE容器本次只读观察运行。定向扫描未见应用调用该hybrid service，实际查询效果本轮未观察；配图没有调用它。相似度召回不证明科学蕴含，不能为“用上模型”强行串入 |
+| 画面规划 / 设计skill | `presentation/storyboard.ts` → `illustration-planner.ts` → `skills/installed-media-skills.ts` | 自有skill与3套原版Baoyu实际消费记录见d31e7ccc的designSkills；长Claim/整批证据二次分析仍产生错误曲线，已rejected。安装/Schema成功均不等于科学或审美合格 |
+| 候选画面审阅 | `presentation/handler.ts` → `illustration-review.ts` → 已有 `reviewScientific` | 新v2接收端已安装；应用编译失败，尚未实际调用。审查要求先收敛全稿重写和过大证据池，暂停继续部署/生图 |
+| Chat参考图生成 | `presentation/scene-image.ts` → `gateway.generateImage` → `infra/chatgpt-browser/` | 既有Chat生图曾返回图片；新参考图bytes路径已部署但尚无真实新图片请求。保留喜欢的aa41参考、旧图和公开v1；Codex CLI仅备用且不自动切换 |
+| Hermes对话与执行授权 | `apps/api/src/routes/agent.ts`、`research-runs.ts` → `packages/domain/src/agent/research-run.ts`、worker `index.ts` | 对话承接修改、核对、执行；当前能力参数/权限以这些入口为准。开发用MCP与skill目录不自动成为Hermes工具 |
+| 私有编辑 / 回收站 | `apps/api/src/routes/research-objects.ts`、`trash.ts` → Domain；`infra/private-cleanup/` | 草稿编辑与公开发行分开；公开资料保留。最近清除证据见历史f8e44815，本轮未删除任何数据 |
+| 公开发布 / 标准API | `apps/api/src/routes/publications.ts`、`research.ts`、`research-record.ts`；`packages/domain/src/research-intelligence/publication-snapshot.ts` | 发布快照和署名/许可进入公开成果；公开API不应曝光内部生产信息。本轮未改两篇公开v1；页面与API入口以代码为准 |
+| 服务器与调用观察 | `infra/scripts/deploy.sh`、`infra/compose/`；`packages/ai-gateway/src/gateway.ts` 的record；AgentTask/资产provenance | 本次只读确认Portainer、Netdata和应用运行；日志、任务结果、审阅/拒绝记录已存在。服务健康不能作为内容质量证据 |
+
+### 复用与效果查询
+
+- 开发代理：按产品目的选行 → 查实现符号及调用方 → 查同任务的现有输入/输出与审阅 → 决定直接复用、补接断点或替换。任务说明写清具体缺口即可，不另造审批表、哈希、门禁或第二套任务库。
+- 效果证据沿用 `AgentTask.result`、资产 `provenance.designSkills`/`illustrationReview`、Gateway调用日志及现有批准/拒绝记录。`designSkills` 沿用既有JSON槽位，也记录共享科学skill，查询按id区分，不能全部解释成视觉风格。生产读取只限授权任务/工作区，不将全文或秘密搬到管理台账。观察不到用量就写未知；不能从任务成功率推断科学正确率。
+- 确认“用过skill”需看到执行注入点及当前产物记录；本机安装、Hermes安装、请求实际消费、结果质量是四个不同事实。修订后只更新受影响行；没变化的能力复用旧证据，不重跑整条流程。
+- `scripts/research-intelligence/verify-capability-registry.mjs` 只查下方历史表格格式/状态，不检查调用关系或结果。通过该脚本不能声称能力可用；当前禁止测试，不运行它或新增管理平台验证工程。
+
+### 2026-09-14 定向High审查及处置
+
+1. **构建阻断**：`illustration-review.ts` 将未收窄的decision写入Prisma JSON，实际服务器构建失败。候选已改为字面量判别；未重新构建，不能称编译已通过。
+2. **共享skill断接**：配图science/review未使用既有critical-thinking。候选接同一runtime常量，并用它替换审阅提示词重叠原则；部署与真实效果仍待观察。
+3. **过重审阅**：完整证据池再让Chat重写全稿，重复分析且引入艺术改写风险。暂停该候选交付；下一步应审一个上游支持的视觉焦点，不靠再次重写全文修质量。
+4. **上游结果未充分沿用**：当前从长Claim+所有证据重新选题，没有传递已审字段/semanticStage的窄关系。优先改这个交接点；未审旧stage不能直接提升为事实，也不固化本文图形。
+5. **BGE的边界**：检索适合在有明确问题时召回来源，不能替代语义审阅；不因安装了模型就增加无必要的调用。保留已兼容v1/v2的Chat接收端，不整体回退或另装供应商。
+
+### 成熟工具选型（官方资料，2026-09-14）
+
+| 需求 | 已有方案与本次取舍 |
+|---|---|
+| 组件/API/资源关联 | [Backstage Software Catalog](https://backstage.io/docs/features/software-catalog/system-model/)：借用其组件、API、资源关系组织本索引；未部署Backstage，现阶段不增加门户服务 |
+| 容器运维 | [Portainer](https://docs.portainer.io/)：服务器已在用；复用现有面板和受控部署入口，不能由它判断论文质量 |
+| 调用链、成本、效果观察 | [Langfuse](https://langfuse.com/docs/observability/overview)：支持调用trace和质量/成本观察。本次复用已有Gateway日志及产物记录；跨任务分析成为实需时再评估集成，未安装/外传数据 |
+| 代码语义/影响范围 | [GitNexus](https://github.com/abhigyanpatwari/GitNexus)：提供调用图、执行流、影响分析与MCP/skills；可解决大仓库定位成本，不能提供产品意图或线上质量。本次仅调研，未索引/安装，其自动配置不直接套入项目 |
+| Skill发现/安装管理 | [Vercel Skills](https://github.com/vercel-labs/skills)：find/list/update管理技能包；[Agent Skills](https://agentskills.io/home)规定按需加载。两者均不证明Hermes实际调用或效果；现有安装目录/加载器继续复用，无新增安装 |
+
+## 历史证据（按需检索，不作当前状态）
+
+以下旧记录原文保留。其中“当前”“PRODUCTION”“GREEN”和旧next action均只指记录当时；最新版本、未完成任务以上方索引和CURRENT handoff为准。
 
 - 2026-09-14当前应用b88b0fe2/rollback e2cccb4d，Chat bundle e2：两个真实结构化方案f3c75142/393f050d均因科学错误API200 rejected，未出图。实际输入确认整篇Claim及40Evidence被混合艺术规划，400字符切割拆散源上下文；新候选改科学意图→艺术设计两阶段，前者选完整上游证据/关系，后者只排布与视觉处理，科学字段由代码保留。可复用方案经High架构认可，当前diff待最终审查/部署；不用更多模板或手编论文图代替能力。
 

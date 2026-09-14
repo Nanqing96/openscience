@@ -1,6 +1,6 @@
 # 服务器能力与复用清单
 
-2026-09-14当前：应用89d05d6d/rollback b2f3cf37，Chat bundle e2；两阶段MiniMax实际d31科学失败已拒绝，未产生新图片。现新增候选复用既有Chat6-pro科学审阅，一次审最终brief与完整上游，来源/任务使用独立v2授权，旧PDF/OCR保持；无新服务/供应商/依赖。候选尚未部署，真实质量见CURRENT handoff。
+当前版本与暂停状态统一见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)；产品目的、调用关系、真实效果查[能力索引](hermes-capability-registry.md#当前能力索引目的调用效果)。2026-09-14本次只读docker列表确认应用、解析/BGE/ScanSci、Portainer和Netdata运行；未检查凭据、未调用模型，健康不代表内容质量。以下日期段是历史操作收据，不作为当前release或下一步指令。
 
 - 2026-09-14历史应用及 Chat bundle e2cccb4d/rollback ea43696d：自有通用科研配图 skill v1、上游原文支撑的结构化画面意图、直接编译与真实 Chat style PNG 输入已部署；复用原镜像/浏览器/代理，必要 build/start 与 provider 安装 exit0。清理器同源安装只扩展精确 reference.png，无新清除请求。产品页面/__release 实读一致，首个真实结构化方案 f3c75142 已由 API202 排队，图片上传与质量尚待观察；无测试/预检/CI/迁移/Codex调用。以 CURRENT 后续结果为准。
 
