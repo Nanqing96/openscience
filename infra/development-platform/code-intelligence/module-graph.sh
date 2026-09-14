@@ -41,6 +41,15 @@ node - "$source_release" "$XGS_GRAPH_TSCONFIG" "${scopes[@]}" <<'NODE'
 const fs = require('node:fs');
 const path = require('node:path');
 const [sourceDirectory, configPath, ...scopes] = process.argv.slice(2);
+const parent = path.dirname(configPath);
+const parentStat = fs.lstatSync(parent);
+const realParent = fs.realpathSync(parent);
+const protectedRoots = [sourceDirectory, '/opt/openscience', '/opt/openscience-releases'];
+if (!parentStat.isDirectory() || realParent !== path.resolve(parent) ||
+    parentStat.uid !== 0 || (parentStat.mode & 0o022) !== 0 ||
+    protectedRoots.some(root => realParent === root || realParent.startsWith(root + '/'))) {
+  throw new Error('Report parent must be a root-owned non-writable real directory outside application releases');
+}
 // dependency-cruiser supports TypeScript paths through tsConfig; its own
 // enhancedResolveOptions schema intentionally does not accept an alias map.
 const config = {
