@@ -514,3 +514,20 @@ spec:
   dependsOn:
     - component:default/langfuse
     - resource:candidate/onchip-video-release
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: serena-code-intelligence
+  title: Read-only Serena symbol intelligence
+  description: MIT Serena with pinned TypeScript language-server dependencies and three read tools against a selected release snapshot. Source references are distinct from deployment or a complete knowledge graph.
+  annotations:
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/infra/development-platform/code-intelligence/
+  tags: [serena, mcp, source-navigation]
+spec:
+  type: service
+  lifecycle: experimental
+  owner: group:default/openscience-maintainers
+  system: development-platform
+  dependsOn:
+    - resource:candidate/onchip-video-release
