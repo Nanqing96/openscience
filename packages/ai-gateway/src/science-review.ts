@@ -141,7 +141,7 @@ export class ChatGptWebScienceReviewProvider implements ScienceReviewProvider {
         || (input.illustrationContext.baseIdentity !== null && typeof input.illustrationContext.baseIdentity !== 'string')) fail();
       input = Object.freeze({ ...input, source: Object.freeze({ ...input.source }),
         authorizationContext: Object.freeze({ ...input.authorizationContext }),
-        illustrationContext: Object.freeze({ ...input.illustrationContext }) });
+        illustrationContext: Object.freeze({ ...input.illustrationContext! }) });
     }
     await directory(this.config.inboxDir);
     await directory(this.config.resultsDir);
