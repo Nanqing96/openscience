@@ -26,6 +26,7 @@ export interface ChatGptWebScienceReviewConfig {
   now?: () => number;
   sleep?: (ms: number) => Promise<void>;
   withSubmission?: <T>(owner: { taskId: string; executionAttempt?: number; artifactId?: string }, publish: () => Promise<T>) => Promise<T>;
+  withIllustrationSubmission?: <T>(input: ScienceReviewInput, publish: () => Promise<T>) => Promise<T>;
 }
 
 const fail = (): never => { throw new Error('INVALID_OUTPUT'); };
@@ -83,6 +84,14 @@ function validPdf(bytes: Uint8Array): boolean {
     && value.subarray(Math.max(0, value.length - 2048)).includes(Buffer.from('%%EOF'));
 }
 
+function sameIllustrationRequest(left: ScienceReviewRequest, right: ScienceReviewRequest): boolean {
+  return left.schemaVersion === 2 && right.schemaVersion === 2
+    && left.id === right.id && left.prompt === right.prompt && left.promptHash === right.promptHash
+    && left.source.kind === right.source.kind && left.source.researchObjectId === right.source.researchObjectId
+    && left.source.versionId === right.source.versionId && left.source.sourceEvidenceIdentity === right.source.sourceEvidenceIdentity
+    && left.source.candidateHash === right.source.candidateHash;
+}
+
 async function successfulOutput(resultsDir: string, request: ScienceReviewRequest): Promise<ScienceReviewProviderResult | null> {
   const output = join(resultsDir, request.id);
   try { await directory(output); } catch (error) { if (missing(error)) return null; throw error; }
@@ -123,6 +132,17 @@ export class ChatGptWebScienceReviewProvider implements ScienceReviewProvider {
   }
 
   async review(input: ScienceReviewInput): Promise<ScienceReviewProviderResult> {
+    const illustration = 'kind' in input.source && input.source.kind === 'illustration-plan';
+    if (illustration) {
+      if (!this.config.withIllustrationSubmission || input.attachments !== undefined
+        || input.requestId !== input.authorizationContext.taskId || !input.illustrationContext
+        || !Number.isSafeInteger(input.illustrationContext.executionAttempt) || input.illustrationContext.executionAttempt < 1
+        || typeof input.illustrationContext.claimContent !== 'string' || !input.illustrationContext.claimContent.trim()
+        || (input.illustrationContext.baseIdentity !== null && typeof input.illustrationContext.baseIdentity !== 'string')) fail();
+      input = Object.freeze({ ...input, source: Object.freeze({ ...input.source }),
+        authorizationContext: Object.freeze({ ...input.authorizationContext }),
+        illustrationContext: Object.freeze({ ...input.illustrationContext }) });
+    }
     await directory(this.config.inboxDir);
     await directory(this.config.resultsDir);
     await boundedRead(join(this.config.resultsDir, '.ready'), SCIENCE_REVIEW_MAX_JSON_BYTES);
@@ -140,7 +160,7 @@ export class ChatGptWebScienceReviewProvider implements ScienceReviewProvider {
     });
     if ((attachments?.reduce((total, attachment) => total + attachment.bytes.byteLength, 0) ?? 0) > SCIENCE_REVIEW_MAX_TOTAL_ATTACHMENT_BYTES) fail();
     let request = validateScienceReviewRequest({
-      schemaVersion: 1,
+      schemaVersion: illustration ? 2 : 1,
       provider: this.name,
       id: input.requestId,
       prompt: input.prompt,
@@ -150,6 +170,7 @@ export class ChatGptWebScienceReviewProvider implements ScienceReviewProvider {
       source: input.source,
       ...(attachments?.length ? { attachments: attachments.map(({ record }) => record) } : {}),
     });
+    const intendedRequest = request;
     const submit = async (): Promise<ScienceReviewProviderResult | null> => {
       for (const attachment of attachments ?? []) {
         const path = join(this.config.inboxDir, `${request.id}.${attachment.record.fileName}`);
@@ -162,8 +183,9 @@ export class ChatGptWebScienceReviewProvider implements ScienceReviewProvider {
       const reservation = join(this.config.inboxDir, `${input.requestId}.submitted.json`);
       if (!await publish(reservation, JSON.stringify(request))) {
         request = validateScienceReviewRequest(JSON.parse((await boundedRead(reservation, SCIENCE_REVIEW_MAX_JSON_BYTES)).toString('utf8')));
-        if (request.promptHash !== sha256Text(input.prompt) || request.source.candidateHash !== input.source.candidateHash
-          || JSON.stringify(request.attachments ?? []) !== JSON.stringify(attachments?.map(({ record }) => record) ?? [])) fail();
+        if (illustration ? !sameIllustrationRequest(request, intendedRequest)
+          : request.schemaVersion !== 1 || request.promptHash !== sha256Text(input.prompt) || request.source.candidateHash !== input.source.candidateHash
+            || JSON.stringify(request.attachments ?? []) !== JSON.stringify(attachments?.map(({ record }) => record) ?? [])) fail();
       }
       const existingOutput = await successfulOutput(this.config.resultsDir, request);
       if (existingOutput) return existingOutput;
@@ -171,13 +193,16 @@ export class ChatGptWebScienceReviewProvider implements ScienceReviewProvider {
       const queued = join(this.config.inboxDir, `${input.requestId}.json`);
       if (!await publish(queued, JSON.stringify(request))) {
         const existing = validateScienceReviewRequest(JSON.parse((await boundedRead(queued, SCIENCE_REVIEW_MAX_JSON_BYTES)).toString('utf8')));
-        if (existing.promptHash !== request.promptHash) fail();
+        if (illustration ? !sameIllustrationRequest(existing, request) : existing.promptHash !== request.promptHash) fail();
       }
       return null;
     };
-    const existingOutput = this.config.withSubmission
-      ? await this.config.withSubmission({ taskId: input.authorizationContext.taskId, artifactId: input.source.artifactId }, submit)
-      : await submit();
+    const existingOutput = illustration
+      ? await this.config.withIllustrationSubmission!(input, submit)
+      : this.config.withSubmission
+        ? await this.config.withSubmission({ taskId: input.authorizationContext.taskId,
+          artifactId: 'artifactId' in input.source ? input.source.artifactId : undefined }, submit)
+        : await submit();
     if (existingOutput) return existingOutput;
     while (this.now() < request.deadlineAt) {
       try {

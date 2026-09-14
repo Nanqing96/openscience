@@ -73,6 +73,8 @@ export interface AiGatewayOptions {
   killSwitch?: ProviderCapabilityPolicy;
   /** Trusted server-side authorization; missing/false/error fails closed before any bytes leave the Worker. */
   externalProcessingPolicy?: ExternalProcessingPolicy;
+  /** Independent presentation-task authorization; never authorizes OCR or ingestion review. */
+  illustrationReviewPolicy?: ExternalProcessingPolicy;
   ocrLimits?: Partial<OcrLimits>;
 }
 
@@ -116,6 +118,7 @@ export class AiGateway {
   private readonly logger?: Pick<Console, 'info' | 'warn' | 'error'>;
   private readonly killSwitch?: ProviderCapabilityPolicy;
   private readonly externalProcessingPolicy?: ExternalProcessingPolicy;
+  private readonly illustrationReviewPolicy?: ExternalProcessingPolicy;
   private readonly ocrLimits: Partial<OcrLimits>;
 
   constructor(opts: AiGatewayOptions) {
@@ -135,6 +138,7 @@ export class AiGateway {
     this.logger = opts.logger;
     this.killSwitch = opts.killSwitch;
     this.externalProcessingPolicy = opts.externalProcessingPolicy;
+    this.illustrationReviewPolicy = opts.illustrationReviewPolicy;
     this.ocrLimits = { ...(opts.ocrLimits ?? {}) };
   }
 
@@ -145,7 +149,9 @@ export class AiGateway {
       throw new AiGatewayError('ALL_PROVIDERS_FAILED', 'scientific review provider unavailable');
     }
     let allowed: unknown = false;
-    try { allowed = await this.externalProcessingPolicy?.(Object.freeze({ ...input.authorizationContext })) ?? false; }
+    const illustration = 'kind' in input.source && input.source.kind === 'illustration-plan';
+    const policy = illustration ? this.illustrationReviewPolicy : this.externalProcessingPolicy;
+    try { allowed = await policy?.(Object.freeze({ ...input.authorizationContext })) ?? false; }
     catch { allowed = false; }
     if (allowed !== true) throw new AiGatewayError('OCR_EXTERNAL_PROCESSING_DENIED', 'external processing denied');
     const start = Date.now();
@@ -165,7 +171,7 @@ export class AiGateway {
           estimatedOutputTokens: null, estimatedCostUsdMicros: 0, actualCostUsdMicros: 0, currency: 'USD',
           pricingVersion: 'chatgpt-subscription', pricingEffectiveDate: null, serviceTier: 'subscription',
           latencyMs: elapsed, totalLatencyMs: elapsed, promptHash: sha256Text(input.prompt),
-          inputContentHash: input.source.documentSha256,
+          inputContentHash: 'kind' in input.source ? input.source.sourceEvidenceIdentity : input.source.documentSha256,
           pageNumbers: input.attachments?.filter((attachment) => attachment.mediaType === 'image/png')
             .map(({ pageNumber }) => pageNumber) ?? [], pageCount: input.attachments?.length ?? 0,
           selectionReason: 'high_risk_scientific_review', outcome,

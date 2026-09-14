@@ -17,6 +17,14 @@ export interface ScienceReviewSource extends OcrSourceIdentity {
   sourceMapHash: string;
 }
 
+export interface IllustrationReviewSource {
+  kind: 'illustration-plan';
+  researchObjectId: string;
+  versionId: string;
+  sourceEvidenceIdentity: string;
+  candidateHash: string;
+}
+
 export interface ScienceReviewImageAttachmentRecord {
   fileName: string;
   mediaType: 'image/png';
@@ -38,22 +46,30 @@ export type ScienceReviewAttachment = ScienceReviewAttachmentRecord & { bytes: U
 export interface ScienceReviewInput {
   requestId: string;
   authorizationContext: OcrAuthorizationContext;
-  source: ScienceReviewSource;
+  source: ScienceReviewSource | IllustrationReviewSource;
   prompt: string;
   attachments?: readonly ScienceReviewAttachment[];
+  /** Worker-only authorization snapshot; never serialized into the review job. */
+  illustrationContext?: {
+    executionAttempt: number;
+    claimContent: string;
+    baseIdentity: string | null;
+  };
 }
 
-export interface ScienceReviewRequest {
-  schemaVersion: 1;
+interface ScienceReviewRequestBase {
   provider: 'chatgpt-web-science-review';
   id: string;
   prompt: string;
   promptHash: string;
   createdAt: number;
   deadlineAt: number;
-  source: ScienceReviewSource;
-  attachments?: ScienceReviewAttachmentRecord[];
 }
+
+export type ScienceReviewRequest = ScienceReviewRequestBase & (
+  | { schemaVersion: 1; source: ScienceReviewSource; attachments?: ScienceReviewAttachmentRecord[] }
+  | { schemaVersion: 2; source: IllustrationReviewSource; attachments?: never }
+);
 
 export type ScienceReviewErrorCode = 'EXECUTION_FAILED' | 'UNCERTAIN' | 'EXPIRED' | 'INVALID_OUTPUT';
 export interface ScienceReviewResultRecord {
@@ -93,6 +109,15 @@ function validSource(value: unknown): value is ScienceReviewSource {
     && hash(source.documentSha256) && hash(source.candidateHash) && hash(source.sourceMapHash);
 }
 
+function validIllustrationSource(value: unknown): value is IllustrationReviewSource {
+  const source = record(value);
+  return Object.keys(source).sort().join(',') === 'candidateHash,kind,researchObjectId,sourceEvidenceIdentity,versionId'
+    && source.kind === 'illustration-plan'
+    && typeof source.researchObjectId === 'string' && SCIENCE_REVIEW_ID_PATTERN.test(source.researchObjectId)
+    && typeof source.versionId === 'string' && SCIENCE_REVIEW_ID_PATTERN.test(source.versionId)
+    && hash(source.sourceEvidenceIdentity) && hash(source.candidateHash);
+}
+
 function validAttachment(value: unknown): value is ScienceReviewAttachmentRecord {
   const attachment = record(value);
   if (attachment.mediaType === 'application/pdf') {
@@ -112,14 +137,14 @@ export function validateScienceReviewRequest(value: unknown, now?: number): Scie
   const keys = Object.keys(v).sort().join(',');
   const attachments = v.attachments === undefined ? undefined : v.attachments;
   if (!['createdAt,deadlineAt,id,prompt,promptHash,provider,schemaVersion,source', 'attachments,createdAt,deadlineAt,id,prompt,promptHash,provider,schemaVersion,source'].includes(keys)
-    || v.schemaVersion !== 1 || v.provider !== 'chatgpt-web-science-review'
+    || ![1, 2].includes(v.schemaVersion as number) || v.provider !== 'chatgpt-web-science-review'
     || typeof v.id !== 'string' || !SCIENCE_REVIEW_ID_PATTERN.test(v.id)
     || typeof v.prompt !== 'string' || !v.prompt.trim() || v.prompt.length > SCIENCE_REVIEW_MAX_PROMPT_CHARS
     || !hash(v.promptHash) || sha256Text(v.prompt) !== v.promptHash
     || !Number.isSafeInteger(v.createdAt) || (v.createdAt as number) < 0
     || !Number.isSafeInteger(v.deadlineAt) || (v.deadlineAt as number) <= (v.createdAt as number)
     || (v.deadlineAt as number) - (v.createdAt as number) > SCIENCE_REVIEW_MAX_DEADLINE_MS
-    || !validSource(v.source)
+    || (v.schemaVersion === 1 ? !validSource(v.source) : !validIllustrationSource(v.source) || Object.hasOwn(v, 'attachments'))
     || (attachments !== undefined && (!Array.isArray(attachments) || attachments.length < 1
       || attachments.length > SCIENCE_REVIEW_MAX_ATTACHMENTS || !attachments.every(validAttachment)
       || new Set(attachments.map((attachment) => attachment.fileName)).size !== attachments.length

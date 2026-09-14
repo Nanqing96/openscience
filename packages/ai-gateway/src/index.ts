@@ -44,6 +44,7 @@ export {
   type ScienceReviewRequest,
   type ScienceReviewResultRecord,
   type ScienceReviewSource,
+  type IllustrationReviewSource,
 } from './science-review-protocol';
 export {
   DEFAULT_OCR_LIMITS,

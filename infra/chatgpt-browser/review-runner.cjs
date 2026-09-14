@@ -25,6 +25,14 @@ function once(name, data) {
 function validateRequest(request, recover = false) {
   const source = request?.source;
   const attachments = request?.attachments;
+  const validSource = source && typeof source === 'object' && !Array.isArray(source) && (request?.schemaVersion === 1
+    ? Object.keys(source).sort().join(',') === 'artifactId,candidateHash,documentSha256,sourceMapHash'
+      && typeof source.artifactId === 'string' && source.artifactId.length > 0 && source.artifactId.length <= 256
+      && SHA256.test(source.documentSha256 || '') && SHA256.test(source.candidateHash || '') && SHA256.test(source.sourceMapHash || '')
+    : request?.schemaVersion === 2 && Object.keys(source).sort().join(',') === 'candidateHash,kind,researchObjectId,sourceEvidenceIdentity,versionId'
+      && source.kind === 'illustration-plan' && UUID.test(source.researchObjectId || '') && UUID.test(source.versionId || '')
+      && SHA256.test(source.sourceEvidenceIdentity || '') && SHA256.test(source.candidateHash || '')
+      && !Object.hasOwn(request, 'attachments'));
   const validAttachments = attachments === undefined || (Array.isArray(attachments) && attachments.length >= 1 && attachments.length <= 8
     && new Set(attachments.map(value => value?.fileName)).size === attachments.length
     && attachments.every(value => value && SHA256.test(value.sha256 || '') && (
@@ -36,12 +44,14 @@ function validateRequest(request, recover = false) {
         && Number.isSafeInteger(value.height) && value.height > 0 && value.height <= 8192
         && value.width * value.height <= 40000000)
     )));
-  if (request?.schemaVersion !== 1 || request?.provider !== 'chatgpt-web-science-review' || request?.id !== id
+  if (![1, 2].includes(request?.schemaVersion) || request?.provider !== 'chatgpt-web-science-review' || request?.id !== id
+    || !['deadlineAt,id,prompt,promptHash,provider,schemaVersion,source', 'attachments,deadlineAt,id,prompt,promptHash,provider,schemaVersion,source']
+      .includes(Object.keys(request).sort().join(','))
     || typeof request.prompt !== 'string' || !request.prompt.trim() || request.prompt.length > 64 * 1024
-    || !SHA256.test(request.promptHash || '') || !Number.isSafeInteger(request.deadlineAt)
+    || !SHA256.test(request.promptHash || '') || crypto.createHash('sha256').update(request.prompt).digest('hex') !== request.promptHash
+    || !Number.isSafeInteger(request.deadlineAt)
     || (recover ? request.deadlineAt + RECOVERY_GRACE_MS <= Date.now() : request.deadlineAt <= Date.now())
-    || request.deadlineAt - Date.now() > 1800000 || !source || typeof source.artifactId !== 'string' || !validAttachments
-    || !SHA256.test(source.documentSha256 || '') || !SHA256.test(source.candidateHash || '') || !SHA256.test(source.sourceMapHash || '')) throw Error('INVALID_REQUEST');
+    || request.deadlineAt - Date.now() > 1800000 || !validSource || !validAttachments) throw Error('INVALID_REQUEST');
   return request;
 }
 function reviewAttachments(request) {

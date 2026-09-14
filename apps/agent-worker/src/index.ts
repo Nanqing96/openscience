@@ -59,10 +59,11 @@ import { createTavilyAdapter } from './retrieval/tavily';
 import { createScanSciAdapter } from './retrieval/scansci';
 import { createSourceRetrieveHandler } from './retrieval/handler';
 import { collectExpiredTemporaryDocuments } from './retrieval/garbage-collector';
-import { createPresentationGenerationHandler } from './presentation/handler';
+import { createPresentationGenerationHandler, requireIllustrationReviewAuthority, requireIllustrationReviewSubmission } from './presentation/handler';
 
 const spoolTaskExecution = new AsyncLocalStorage<{ taskId: string; executionAttempt: number }>();
 type SpoolSubmission = NonNullable<ConstructorParameters<typeof CodexSpoolImageProvider>[0]['withSubmission']>;
+type IllustrationSubmission = NonNullable<ConstructorParameters<typeof ChatGptWebScienceReviewProvider>[0]['withIllustrationSubmission']>;
 
 /** Fence only local producer writes; provider waiting and model execution never hold this transaction. */
 function createSpoolSubmission(prisma: AgentDeps['prisma'], kind: 'sdf.extract' | 'presentation.generate'): SpoolSubmission {
@@ -734,13 +735,34 @@ async function main(): Promise<void> {
   const externalProcessingPolicy = buildIngestionExternalProcessingPolicy(prisma);
   const imageSubmission = createSpoolSubmission(prisma, 'presentation.generate');
   const reviewSubmission = createSpoolSubmission(prisma, 'sdf.extract');
+  const illustrationReviewPolicy: ExternalProcessingPolicy = async context => {
+    const execution = spoolTaskExecution.getStore();
+    if (!execution || execution.taskId !== context.taskId) return false;
+    try {
+      const { owner } = await requireIllustrationReviewAuthority(prisma, context);
+      return owner.executionAttempt === execution.executionAttempt;
+    } catch { return false; }
+  };
+  const illustrationSubmission: IllustrationSubmission = async (input, publish) => {
+    const execution = spoolTaskExecution.getStore();
+    if (!execution || execution.taskId !== input.authorizationContext.taskId
+      || execution.executionAttempt !== input.illustrationContext?.executionAttempt) {
+      throw new Error('[blocked] Illustration review lacks its worker execution');
+    }
+    return prisma.$transaction(async tx => {
+      await lockTrashReferences(tx);
+      await requireIllustrationReviewSubmission(tx, input);
+      return publish();
+    }, { timeout: 30_000 });
+  };
   const gateway = buildGateway(
     process.env,
     globalThis.fetch,
     createPrismaAuditSink(prisma),
     externalProcessingPolicy,
     undefined,
-    { image: imageSubmission, review: reviewSubmission },
+    { image: imageSubmission, review: reviewSubmission, illustration: illustrationSubmission },
+    illustrationReviewPolicy,
   );
   const parserJobAdapter = createParserStageJobClient(parserJobDir, expectedSidecarParserMetadata, 16 * 60_000);
   const rasterJobAdapter = createParserRasterJobClient(parserJobDir, expectedSidecarParserMetadata);
@@ -809,7 +831,8 @@ export function buildGateway(
   audit?: ConstructorParameters<typeof AiGateway>[0]['audit'],
   externalProcessingPolicy: ExternalProcessingPolicy = async () => false,
   runtimeCapabilityPolicy: ProviderCapabilityPolicy = new MutableProviderKillSwitch(),
-  spoolSubmissions?: { image: SpoolSubmission; review: SpoolSubmission },
+  spoolSubmissions?: { image: SpoolSubmission; review: SpoolSubmission; illustration?: IllustrationSubmission },
+  illustrationReviewPolicy?: ExternalProcessingPolicy,
 ): AiGateway {
   const primaryModel = env.MINIMAX_MODEL ?? 'MiniMax-M3';
   const fallbackModels = (env.AI_FALLBACK_MODELS ?? '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -861,6 +884,7 @@ export function buildGateway(
         inboxDir: env.CHATGPT_WEB_REVIEW_INBOX_DIR.trim(),
         resultsDir: env.CHATGPT_WEB_REVIEW_RESULTS_DIR.trim(),
         withSubmission: spoolSubmissions?.review,
+        withIllustrationSubmission: spoolSubmissions?.illustration,
       })
     : undefined;
   const staticallyDisabled = new Set((env.AI_DISABLED_PROVIDERS ?? '').split(',').map((value) => value.trim()).filter(Boolean));
@@ -884,6 +908,7 @@ export function buildGateway(
     logger: console,
     killSwitch,
     externalProcessingPolicy,
+    illustrationReviewPolicy,
     ocrLimits,
   });
 }

@@ -47,9 +47,15 @@ For a revision, distinguish a local correction from a rejected overall design. R
 
 Before submitting a brief, read its subjects, labels and constraints together: they must use consistent variables, domains and assumptions. Remove a formula if the image does not need it; never invent or approximate one. The brief should fit the actual image transport's prompt budget without a second model having to reinterpret it.
 
+## Scientific review
+
+Review the final proposed image against the complete upstream analysis and original passages, including meanings introduced by composition and treatment. Citation identity establishes where text came from; it does not establish that a description follows from it. Check each subject, relationship, condition, formula and visible label, then the meaning of axes, distances, regions, arrows, curves and semantic colors. A layout must not turn a logical relationship into a physical trajectory or invent data from an equation.
+
+Use the existing Chat scientific review capability once for the final candidate. It may accept the candidate, return a complete corrected brief, or report the missing support. A correction can narrow the visual explanation and remove unsupported marks while preserving the user's accepted art qualities. Resolve the corrected sources against current evidence and compile the corrected brief directly; do not send it through another creative rewrite. Keep the review attached to the actual task, version, source evidence and candidate in internal provenance. A missing, ambiguous or unusable review does not authorize image generation. Scientific review is separate from the user's aesthetic approval.
+
 ## Execution
 
-Use the existing Hermes task, source, permission and approval workflow. Generate from the saved structured brief; compile its fields into the drawing request without another free-form scientific rewrite. Do not claim that JSON validity proves scientific or artistic quality.
+Use the existing Hermes task, source, permission and approval workflow. MiniMax's science and art planning stages produce a candidate; Chat reviews its complete scientific meaning before the final brief is saved. Generate from that saved structured brief; compile its fields into the drawing request without another free-form scientific rewrite. Do not claim that JSON validity or a model's acceptance proves scientific or artistic quality.
 
 When the user specifies an existing image as a reference, pass its actual bytes through the authorized Chat reference-image path. Restrict it to the allowed research object/version. Record the reference asset and its existing content identity; state whether it is style guidance or scientific source material. This skill's default reference role is style only. If the transport cannot attach it, report that limitation rather than claiming a text description is reference-image generation.
 

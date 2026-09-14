@@ -87,7 +87,7 @@ async function jobResponse(job, request) {
   if (!await exists(join(job, resultName))) throw await exists(join(job, 'submitted.json')) ? uncertain() : Error('EXECUTION_FAILED');
   const persisted = JSON.parse((await safeRead(join(job, 'request.json'), SCIENCE_REVIEW_MAX_JSON_BYTES)).toString('utf8'));
   const result = JSON.parse((await safeRead(join(job, resultName), SCIENCE_REVIEW_MAX_JSON_BYTES)).toString('utf8'));
-  const expected = { schemaVersion: 1, provider: request.provider, id: request.id, prompt: request.prompt,
+  const expected = { schemaVersion: request.schemaVersion, provider: request.provider, id: request.id, prompt: request.prompt,
     promptHash: request.promptHash, deadlineAt: request.deadlineAt, source: request.source,
     ...(request.attachments?.length ? { attachments: request.attachments } : {}) };
   if (!same(persisted, expected) || result?.schemaVersion !== 1 || result.state !== 'received' || result.provider !== request.provider
@@ -104,7 +104,7 @@ async function execute(config, request) {
   if (await exists(job)) throw uncertain();
   await prepare(job, 11040);
   await copyAttachments(config, job, request);
-  const inner = { schemaVersion: 1, provider: request.provider, id: request.id, prompt: request.prompt,
+  const inner = { schemaVersion: request.schemaVersion, provider: request.provider, id: request.id, prompt: request.prompt,
     promptHash: request.promptHash, deadlineAt: request.deadlineAt, source: request.source,
     ...(request.attachments?.length ? { attachments: request.attachments } : {}) };
   const requestPath = join(job, 'request.json');

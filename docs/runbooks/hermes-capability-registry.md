@@ -1,5 +1,7 @@
 # Hermes Capability Registry
 
+2026-09-14当前：自有配图skill、完整原文两阶段及Chat参考图transport在89d05/e2已部署；实际d31仍科学NO-GO并API200 rejected，无新图片/实际附件记录。新候选补Chat最终语义审阅与Scientific review skill消费；这是已有能力的受权接入，尚未部署/观察，不称通用质量通过。CURRENT handoff记录精确版本及下一步。
+
 - 2026-09-14当前应用b88b0fe2/rollback e2cccb4d，Chat bundle e2：两个真实结构化方案f3c75142/393f050d均因科学错误API200 rejected，未出图。实际输入确认整篇Claim及40Evidence被混合艺术规划，400字符切割拆散源上下文；新候选改科学意图→艺术设计两阶段，前者选完整上游证据/关系，后者只排布与视觉处理，科学字段由代码保留。可复用方案经High架构认可，当前diff待最终审查/部署；不用更多模板或手编论文图代替能力。
 
 - 2026-09-14当前候选（尚未部署）：自有 `openscience-research-illustration` v1 已装项目与本机 Codex，Hermes 按阶段读取。上游已核对分析/原文派生科学关系与画面意图，独立版本 IllustrationBrief 保存来源关联、构图、材质、标签及条件；直接编译现代 brief，旧方案兼容。Chat 新增同 RO/version 的实际 style PNG 输入，原子 sidecar、输入身份、上传就绪及保存前权限检查；不回退 Codex。参考图不充当科学证据。High 静态复核后补足所有关系/公式须有 subject 原文依据；服务器实际生图尚待观察，不能由安装推断跨文献质量。当前 release/rollback 与下一步见 CURRENT handoff。
