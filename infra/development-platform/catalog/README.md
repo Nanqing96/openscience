@@ -61,6 +61,13 @@ Backstage creates its own SQLite schema there during normal startup; this never
 runs OpenScience business migrations. Do not scale this SQLite deployment to
 multiple replicas sharing the directory.
 
+Keep `backend.rateLimit` in object form (`global: true`). With the pinned
+`backend-defaults`, the root router accepts the boolean shorthand, but plugin
+routers traverse `backend.rateLimit.plugin.<pluginId>` and reject that boolean.
+The resulting startup error leaves the root listener responding with 404 while
+the catalog routes are unavailable. The object form retains upstream global
+limiter defaults and allows the catalog and permission plugins to initialize.
+
 `spec.owner` derives standard `ownedBy` relations. `spec.dependsOn` and API
 declarations derive dependency and consumption relations. Source annotations link
 real repository directories. `resource:production/application` points to the

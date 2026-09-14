@@ -68,6 +68,9 @@ The global/project/context tool sets are fixed to the three read tools, with
 Global and project memory patterns exclude all memories, and the empty memory
 directories are read-only. Project metadata lives at `/opt/serena-project`, so
 there is no fallback to a source checkout's `.serena` directory.
+The image also precreates the empty `prompt_templates` directory: the upstream
+prompt factory calls `makedirs(exist_ok=True)` during startup even without custom
+templates. Its directory remains read-only in the running container.
 
 The process runs as uid/gid `1000:1000`, with read-only root/config/source, no
 capabilities, `no-new-privileges`, 3 GiB RAM, 2 CPU, 160 PIDs and 128 MiB temporary

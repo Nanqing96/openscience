@@ -35,6 +35,9 @@ COPY --from=typescript /opt/typescript-runtime /opt/serena-home/language_servers
 COPY readonly-context.yml /opt/serena/readonly-context.yml
 COPY query.py /opt/serena/query.py
 COPY serve.py /opt/serena/serve.py
+# SerenaPromptFactory calls makedirs(exist_ok=True) at every startup. Keep the
+# empty override directory in the image so a read-only runtime can start.
+RUN mkdir -p /opt/serena-home/prompt_templates
 LABEL org.opencontainers.image.source=https://github.com/oraios/serena \
       org.opencontainers.image.revision=403ad0a562bbc86ff5a0e26c23544dbd99235c15
 USER 1000:1000

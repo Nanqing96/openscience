@@ -54,6 +54,7 @@ docker run --rm --pull never --init --network none --read-only --user 1000:1000 
   --cap-drop ALL --security-opt no-new-privileges \
   --cpus 2 --memory 4g --memory-swap 4g --pids-limit 256 \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=1770 \
+  --tmpfs /var/tmp:rw,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=1770 \
   --mount "type=bind,source=$compat_root/work,target=/build" \
   "$builder_image" > "$compat_root/rpm-build.log" 2>&1
 printf 'RPM build finished: %s/work/rpmbuild/RPMS/x86_64/squid-7.2-1.alnx4.openscience.1.x86_64.rpm\n' "$compat_root"

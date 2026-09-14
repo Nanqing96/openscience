@@ -14,7 +14,8 @@ backend:
     origin: http://127.0.0.1:3131
     methods: [GET, HEAD]
     credentials: false
-  rateLimit: true
+  rateLimit:
+    global: true
   auth:
     externalAccess:
       - type: static
