@@ -1,6 +1,8 @@
 # Runbook: 部署（Deployment）
 
-2026-09-14图片批次：a1a5f30d已部署，rollback41ae8902；复用clean发布树.worktrees/art-direction-release-41ae8902（现HEAD a1a5），deploy.sh --confirm --no-tests --skip-migrate --reuse-unchanged-capability-images。High GO、必要build/start exit0、公网release200精确一致，收据tmp/art-direction-v3-deploy.log与style-batch-release-read.log。独立image runner11494323先前按三锁/cmp/备份/原子替换安装，应用回滚不撤此补丁。三张私有图已真实生成/审看和工作台切换，公开v1保持；v3新通用规则未重跑生成，不能称跨论文验证。
+2026-09-14当前审美反馈修订：`dd4c935aca25c37b95a3295e05cce1ce1ecebffb`已部署，rollback `a1a5f30d81e52bd88784160edbc8bd8287e60ade`。前提为实读a1a5及应用容器正常，仅艺术指导两条规则改动，独立High修正局部修订范围后GO；复用clean发布树`.worktrees/art-direction-release-41ae8902`（目录名历史，现HEAD dd4）。执行`deploy.sh --confirm --no-tests --skip-migrate --reuse-unchanged-capability-images --rollback-ref a1a5f30d81e52bd88784160edbc8bd8287e60ade dd4c935aca25c37b95a3295e05cce1ce1ecebffb`，必要build/start完成exit0，日志`tmp/art-feedback-v4-deploy.log`；页面fetch release等于dd4，真实新两图生成/画廊/工作台已看，淡彩与公开v1保持，`tmp/art-feedback-final-reading.json`。应用回滚使用同脚本切回a1a5、rollback-ref指定活动dd4；不删除本轮私有候选或变更公开数据。image runner11494323等独立runtime未改动，应用回滚亦不撤既有runner补丁。无测试/新迁移/新依赖；新图的用户审美认可尚未取得。
+
+2026-09-14历史图片批次：a1a5f30d/rollback41ae8902，v3必要build/start exit0及release实读；收据tmp/art-direction-v3-deploy.log与style-batch-release-read.log。首批三图先于v3完成，其科学候选评估不能覆盖用户后来仅认可淡彩的反馈，最新状态见上方和CURRENT。
 
 ## 2026-09-14 个人空间布局补修6504c004
 

@@ -1,34 +1,29 @@
 # Hermes / Workbench CURRENT Handoff
-## Current task and result
-- 最新用户反馈：仅淡彩aa41审美认可，学术dc216和封面d4ff被评价平庸。旧“独立接受”只代表当时候选评估，不能覆盖用户审美判断。正在以同一私有草稿重做两图；科学内容/淡彩图/公开v1保留。art-direction v4候选区分科学批准与审美认可，拒绝仅换色，允许被否定的构图重排；实际部署/成图尚待本轮完成。
-- 用户顺序：先同一已审论文的学术图、封面、淡彩三张私有候选；落实后检索现有生图/绘图/构图skill。三张已实际生成、独立看图接受、画廊与工作台轮播均可达；尚未公开或在产品审批为approved。水墨指导已配置但本批不生第四张。
-- 学术图dc216a9f-2683-47d5-8aec-eef55b88aa2a；封面d4ffa9d0-2ad6-417e-9593-6b437a91f269；淡彩aa41a018-b2ff-4ffb-9557-19ecabe104bc。均1280×720/draft，来源同一reviewed Claim93416292/40Evidence。旧误导光晕封面249a5536标rejected并保留文件；旧成功资产未删除。
-- 研究RO9067a2d5-42ad-4c06-b234-753728b71064；本轮通过restore API从已审72c315af恢复私有草稿e77dc3c7-95cb-4269-ac3c-24276fea74e7，内部versionNo8/RO revision9。正文core全等、40证据继承。不能再次运行tmp/style-batch-restore.sh。
-- 工作台：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?stage=media&version=e77dc3c7-95cb-4269-ac3c-24276fea74e7 。独立画廊同RO/presentation?version=e77dc3c7-95cb-4269-ac3c-24276fea74e7。
-- 公开23/v1完整JSON与本轮修改前深度全等，发行信息/原图/正文/来源未变；工作台轮播含原继承approved图557c3db6和新3图，4张均实际点击可达；1140CSS无横溢出，三画廊截图已看。收据tmp/style-batch-final-reading.json/final-read.log及gallery-{academic,editorial,watercolor}.png。
-## Versions and deployment
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release。应用a1a5f30d81e52bd88784160edbc8bd8287e60ade / rollback41ae8902c245e191e34e09969d6d57d81a64fdd6，/__release实读200一致；HEAD后续仅文档提交，从Git读取，不能等同于应用release。
-- 应用a1a5f30d：art-direction v3信息结构/坐标域/可见标签计数与冗余编码规则，High GO、必要服务器build/start exit0；复用clean发布树.worktrees/art-direction-release-41ae8902（目录名为历史，现HEAD a1a5），tmp/art-direction-v3-deploy.log与style-batch-release-read.log。三图实际在41ae/v2及具体修订指导下生成，不冒称v3跨论文已验证；无需重生成。
-- ChatGPT image runner当前11494323文件补丁（完整SHA从Git读取），science review仍501da7a3、helperd369ccc2、brokerb78fb94d/base d163。安装记录tmp/style-mode-{install,diagnostic-install}.log exit0；按image→science→shared三锁、cmp完整基线、备份、同目录root:11040/0440原子替换；无浏览器/服务重启。
-- runner备份及source-id：/opt/openscience-chatgpt-browser/mode-ready-<source SHA>/。最初3dc98140从41ae原runner安装，最终11494323从3dc安装；ddb054b0未安装。回退同三锁原子恢复before.cjs，不覆盖漂移、不重发旧任务。
-- 独立Codex仍runner09058847/base1ad54c72，受限清理代码f8，未因本批更改。根目录dirty main非生产基线；交付树无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
-## Scientific and transport limits
-- 初次三份方案科学复核未过（实空间与波矢域混合、固定偶极方向、互斥z区等），通过服务器来源指导修订为058d/4528/854a后才生成；封面4528实际图有光晕，再修订4be676be并重新生成。不能把人工指导后的结果称为自动首稿正确。
-- 学术前两任务8aea8fcc与8ee965ae均在发送前失败，无submitted/conversation/output；前者IMAGE_MODE_NOT_READY，后者约6秒即error=Error。30秒等待不足以解释第二次故障。相同prompt的最小控件观察可用，未发送模型请求；间歇根因未定。114增加安全子阶段/异常类别，后续dc/d4真实生成与下载成功，仅证明这两次链路可用。
-- 原普通agent retry API对presentation图像显示canRetry=true但复用task.id；handler禁止无completed-result的第二次image执行，既有terminal failed spool也不可作为pre-submission重置。静态确认契约不一致，未为验证点击；本批用既有generation API的新task/幂等key续作，旧失败保留。下一稳定性修复应区分保存结果恢复与显式新生成，不能清spool或盲重发。
-- 三图可作私有候选，非期刊发表审核；学术/封面有限画幅色块仍有被过读为谱截止的小风险，未标第二阈值，核心分类正确；淡彩底部次要字较淡。v3部署后的跨论文首稿效果未观察。
-## Skill research after this batch
-- 已通过GitHub原仓库读取baoyu-article-illustrator/cover-image、K-Dense scientific-schematics/scientific-visualization，及Anthropic canvas-design和许可；选择与链接记录在docs/runbooks/hermes-capability-registry.md“图片风格批次与技能选择”。未安装任何第三方skill、插件、依赖或新后端。
-- 优先吸收信息结构×风格×配色、内容焦点、可见标签/坐标语义和冗余编码；科学数值图应走有数据与可编辑图元的确定性绘图，现有生图PNG不能承诺矢量/精确字体。原生图方案保留服务器ChatGPT路径，不能以本机imagegen替代。
-- 不照搬上游自动评分分数作为科学验收、默认批量重试/新OpenRouter依赖；本地旧Gemini skill示例λ<100fs量纲错误，不能作科学可信来源。现有generateClaimChartSvg仅用SVG/text手工排Claim卡片，没有坐标/数据图或数学排版；不能误报现有成熟科学绘图能力。后续先核对服务器已有库/缓存，复用成熟绘图库补精确图元，不为本篇写专用圆形模板；新绘图后端与第三方安装未实施。
-## Protected previous delivery
-- 两篇真实公开研究：22/v1 deep-sub-cycle（ROc896802c，Versionf4e2dc71）与23/v1 Quantization（RO9067，Version72c315af），均DHL署名、原PDF允许下载；22数据CC0/23数据CC-BY4、文字CC-BY4、代码MIT保持。
-- 22旧v10已按用户指定行政勘误为首次v1，audit6c93436f；不能恢复误号/重跑correct-deep-sub-cycle-publication或旧publish脚本。公开API支持固定及最新版本，/developers原文curl/Python已实跑；特定web工具域名安全拒绝未证明解决。
-- 已完成正文/卡片公式、S内部引用与制作信息隐藏、同版本结构化证据整块折叠、作者/公开号、个人空间布局。6504首行双卡等高/后续整行，桌面与窄屏实际看过；本轮复用不重做。
-- 用户此前4项purge已完成：旧RO66、两会话、笔记；共享对象保留。不得重跑tmp/install-trash-runner-fix.sh或旧purge脚本，不新增删除样本。无当前待清理任务。
-## Execution constraints and next action
-- 无测试、预检、CI、本机构建/Docker/迁移。仅本机静态编辑/Git/传输；服务器必要build/start及当前具体故障最小诊断/实际产品阅读。禁止无授权安装、删除、读取打印.env/Secret。
-- SSH只用Git Bash显式C:/Program Files/Git/bin/bash.exe调用项目ssh-run.sh及id_ed25519_xgs；页面fetch继承服务器浏览器认证/代理，context.request曾绕代理EAI_AGAIN，不当作登录失效。
-- 浏览器截图：Chrome125%zoom，使用CDP Page.captureScreenshot(fromSurface:false)，等待fonts后居中。关闭自建page，不动其它用户页面。导出结果仅自身研究scope，不导出Cookie。
-- 本批及随后skill检索/通用规则部署已完成。下一步按用户实际反馈提升构图/精确绘图，优先修复上述重试契约与观测到的具体故障。视频、第三篇与批量冷启动仍暂停，不自动公开。
-- Read-first：本handoff → docs/OpenScience_Kimi_Development_Spec.md §18.2 → 精确目标代码；服务器先读server-capabilities和deployment相关条目。历史完整证据在Git history及tmp/style-batch-*与服务器/jobs同名；不要扫描旧档案恢复过期next action。
+## Latest user feedback and result
+- 用户仅认可淡彩aa41好看，否定旧学术dc216和封面d4ff。已重做两张私有候选：学术cdce6087-7dbe-4930-aa5d-993d31c6a8ba，编辑插画1a1d716b-7a67-479e-abbe-d0c8f750a7c5；均1280×720/draft，服务器实际生成后原图与画廊截图已看。用户尚未评价新图，不能写审美已获用户认可。
+- 原淡彩aa41a018-b2ff-4ffb-9557-19ecabe104bc字节未变（既有contentHash565fa04e保持），仍private/draft。旧dc216/d4ff已通过带expectedUpdatedAt的API标rejected，各200；文件/历史保留，无删除。旧误导光晕249a也维持rejected。
+- 独立High：新封面非对称标题/主体、纸纹/矿物蓝暖金构图比旧图有实质改善；学术新图去除方框/散点/引线，科学表达正确，但右下留白偏大，仍比淡彩克制，只作比较候选，不追加付费重生成。二者轴跨圆界、传播/倏逝/阈值正确，无第二外圈或孔洞光晕。
+- 私有画廊：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/presentation?version=e77dc3c7-95cb-4269-ac3c-24276fea74e7 。工作台同RO/edit?stage=media&version=e77dc3c7-95cb-4269-ac3c-24276fea74e7。
+- 两图已实际加载，1140CSS/scrollWidth1140；工作台4张（继承原图557c、淡彩aa41、新封面1a1d、新学术cdce）已实际切换可达。公开23/v1完整JSON与原先全等。收据tmp/art-feedback-final-reading.json、final-read.log、gallery-{academic,editorial}.png；服务器/jobs同名。
+## Code and deployed versions
+- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release。应用dd4c935aca25c37b95a3295e05cce1ce1ecebffb / rollback a1a5f30d81e52bd88784160edbc8bd8287e60ade；HEAD从Git读取，后续docs-only提交不等于release。根目录dirty main不是生产基线。
+- art-direction v4仅替换media-direction.ts两条规则：相同科学内容的风格变体须有目的地改变构图/字体/材质，不能仅换色；区分科学批准与审美认可，局部修改保留不受影响/已认可元素，明确否定设计时允许重构，不恢复已拒绝特征。共享视频规划也读取该skill，视频未生成。无API/schema/供应商/新依赖变化。
+- 独立High指出最初v4会把局部修改扩大为整体重排，已采用精确限定后GO。正常deploy.sh --confirm --no-tests --skip-migrate --reuse-unchanged-capability-images及既有回滚机制，必要build/start exit0，tmp/art-feedback-v4-deploy.log；公网release由实际页面fetch读到dd4。复用发布树.worktrees/art-direction-release-41ae8902（目录名历史，HEAD现dd4）。
+- 本批首轮v4方案d9d212b5/f3db6166经服务器局部修订为a99fad89/2500a8c1后批准生成：只纠正重复标签、浅色字、未定义副标题与轴停在圆界。生成cdce/1a1d各单次成功，无失败重试。tmp/art-feedback-{plans,revised-plans,images,status}.json记录实际请求与结果；不重复运行生成脚本。
+- 私有草稿e77dc3c7内部versionNo8/RO revision9，源自公开72c315af恢复；Claim93416292-0dbb-42b1-8810-6bdf77804c1f/40Evidence保持。不能重跑tmp/style-batch-restore.sh或旧发布脚本。
+- 交付树唯一无关dirty docs/specs/2026-09-05-integrated-research-product-design.md，不得提交/覆盖。本轮仅代码及同步文档提交，不改该spec。
+## Transport and generalization limits
+- ChatGPT image runner11494323补丁，science501da7a3/helperd369ccc2/brokerb78fb94d/base d163保持；本轮未改runner、浏览器、服务配置或登录。独立Codex runner09058847/base1ad54c72与受限清理f8保持。
+- 历史学术8aea8fcc/8ee965ae均未提交失败，前者IMAGE_MODE_NOT_READY，后者约6秒error=Error；30秒等待不能解释后者。runner114已有安全子阶段/异常类别，具体间歇根因未定；本轮两图单次成功不证明长期稳定修复。
+- 普通agent retry对presentation图像canRetry=true但复用task.id；handler只容许已保存结果恢复或受控Hermes授权重启，terminal failed spool不能重置。该合同不一致尚未修复，本轮未点击重试或清spool。未来须区分结果回收与显式新生成。
+- 实际美学反馈经过本会话观察和自然语言修订输入服务器planner；这是已部署通用指导和真实产物，不是自动视觉质量评分能力。跨论文自动首稿科学与审美质量仍未确认。
+## Existing skill research and protected work
+- 已在首批完成后读GitHub原baoyu-article-illustrator/cover-image、K-Dense scientific-schematics/scientific-visualization、Anthropic canvas-design及许可；来源/选择见Hermes台账“图片风格批次与技能选择”。没有安装第三方skill、插件、依赖或新后端。v3结构/坐标/标签规则随v4保留。
+- 现有generateClaimChartSvg只是SVG/text的Claim文字卡片，不具备数值曲线/坐标/公式排版。未来精确科学绘图先核服务器现有库/缓存、复用成熟绘图库；不能为本论文造专用圆形模板或把PNG冒称矢量。
+- 两篇真实公开研究22/v1 deep-sub-cycle（ROc896802c、Versionf4e2dc71）与23/v1 Quantization（RO9067、Version72c315af），均DHL、原PDF可下载。22旧v10已行政勘误为首发v1，audit6c93436f，勿重跑勘误/发布。
+- 正文/卡片公式、内部S编号与制作信息隐藏、证据整体折叠、作者/API/下载及个人空间布局已完成；原4项已授权purge已完成，共享对象保留，不重跑清理。API文档原文curl/Python已实读；特定web工具域名安全拒绝不能称已解决。
+## Constraints and next action
+- 无测试、预检、CI、本机构建/Docker/迁移。仅本机编辑/Git/传输；服务器必要build/start、已知故障最小诊断和真实产品生成/阅读。无授权不安装、删除、读取打印.env/Secret。
+- SSH仅Git Bash显式C:/Program Files/Git/bin/bash.exe调用infra/scripts/ssh-run.sh，项目id_ed25519_xgs；页面fetch继承服务器浏览器认证/代理，不导出cookie，不用context.request绕代理。
+- 当前反馈落实已完成，无活动生成或部署。新两图仍待用户审美判断；淡彩是唯一用户明确喜欢的样本。不要自动公开或继续付费风格循环。下一任务按用户反馈；稳定性合同/精确绘图缺口保留，视频/第三篇/批量仍暂停。
+- Read-first：本handoff → 基线§18.2 → 精确目标代码；服务器先读server-capabilities和deployment相关条目。完整历史证据在Git和tmp/style-batch-*、art-feedback-*，不要扫描旧档案恢复旧next action。
