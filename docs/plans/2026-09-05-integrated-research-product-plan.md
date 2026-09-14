@@ -1,5 +1,17 @@
 # Integrated Research Product Delivery Plan
 
+> 当前任务、版本和已观察结果只见 [CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)。本页保留路线与历史实施证据，不另维护任务状态。
+
+## 当前实施顺序
+
+1. 先完成本轮规则/文档漂移纠正与有界代码去重；处理结果及仍未解决的债务见 [能力台账](../runbooks/hermes-capability-registry.md#当前技术债与处理)。不新增工具、测试、门禁或模型阶段。
+2. 恢复配图前，收敛已识别的上游语义传递、全稿重写与 composition 表示分叉；已有科学 Skill、文献、审核结果和 Gateway 继续复用。
+3. 再推进 Chat 真实配图和用户审阅，保留已认可图、历史产物与公开 v1。此批质量未确认前，视频、第三篇和批量不启动。
+
+## 历史实施记录
+
+下方版本、部署结论和待办只在各记录当时成立；旧 Codex 主用策略、测试/对照流程已被现行 AGENTS 与用户纠正取代。不得从这些段落执行旧脚本或重跑模型。
+
 > 执行者使用 executing-plans；只有独立且有明确 owner 的工作才委派。
 > 状态：CURRENT；当前版本以 Hermes CURRENT handoff 为准。2026-09-09 已授权沿真实用户流程全面优化并直接服务器部署；下方旧审计/版本为历史，不构成预检或重复设计审批要求。
 

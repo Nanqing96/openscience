@@ -11,7 +11,7 @@ import { generateClaimInteractiveHtml } from './interactive-html';
 import { requirePresentationMediaGenerator, type PresentationMediaGenerator } from './minimax-admin';
 import { HostVideoSpool } from './host-video-spool';
 import { Prisma } from '@prisma/client';
-import { loadInstalledMediaSkills, type DesignSkillUsage } from '../skills/installed-media-skills';
+import { loadInstalledMediaSkills, mergeDesignSkillUsage, type DesignSkillUsage } from '../skills/installed-media-skills';
 import { requireStyleReferenceImage } from '@openscience/domain';
 import { reviewIllustrationStoryboard } from './illustration-review';
 
@@ -176,17 +176,6 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       return [claim.id, origin?.sourceTaskLineage ?? origin?.sourceTaskId] as const;
     })) : undefined;
     const sourceEvidence = scientificMedia ? await readReviewedPresentationEvidence(deps.prisma, payload, lineageByClaim) : [];
-    if (payload.hermesRunAuthority && scientificMedia) {
-      for (const claim of claimRows) {
-        const provenance = claim.provenance as Record<string, unknown>;
-        const lineage = provenance.sourceTaskLineage ?? provenance.sourceTaskId;
-        if (!sourceEvidence.some((row) => {
-          const origin = row.provenance as Record<string, unknown>;
-          return row.claimId === claim.id && origin.source === 'reviewed_ingestion'
-            && typeof lineage === 'string' && origin.sourceTaskId === lineage;
-        })) throw new Error('[blocked] Hermes media evidence does not match the reviewed ingestion');
-      }
-    }
     const sourceEvidenceIdentity = presentationEvidenceIdentity(sourceEvidence);
     const claims = canonicalPresentationClaims(claimRows.map((claim) => ({ ...claim,
       sourcePassages: sourceEvidence.filter((row) => row.claimId === claim.id)
@@ -299,11 +288,7 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
           researchObjectId: payload.researchObjectId, versionId: payload.versionId, sourceEvidenceIdentity,
         });
         storyboardDocument = reviewed.document; illustrationReview = reviewed.provenance;
-        for (const used of reviewed.designSkills) {
-          const previous = designSkills?.find(item => item.id === used.id);
-          if (previous) previous.resources = [...new Set([...previous.resources, ...used.resources])];
-          else (designSkills ??= []).push(used);
-        }
+        designSkills = mergeDesignSkillUsage(designSkills, reviewed.designSkills);
       }
       bytes = renderStoryboard(storyboardDocument, payload.storyboard); extension = 'html'; contentType = 'text/html; charset=utf-8';
       generator = 'OpenScience Hermes storyboard planner'; generatorVersion = '1';

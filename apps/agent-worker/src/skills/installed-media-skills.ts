@@ -7,6 +7,20 @@ const SKILLS_ROOT = resolve(__dirname, '../../../../.agents/skills');
 type SkillId = 'openscience-research-illustration' | 'baoyu-article-illustrator' | 'baoyu-cover-image' | 'baoyu-infographic';
 export type DesignSkillUsage = { id: SkillId | typeof SCIENTIFIC_CRITICAL_THINKING_SKILL.id; upstreamCommit?: string; version?: string; resources: string[] };
 export type InstalledMediaSkills = { instructions: string; usage: DesignSkillUsage[] };
+
+// Keep first-use metadata and stable resource order without mutating stage results.
+export function mergeDesignSkillUsage(...groups: (readonly DesignSkillUsage[] | undefined)[]): DesignSkillUsage[] {
+  const merged: DesignSkillUsage[] = [];
+  for (const group of groups) {
+    for (const item of group ?? []) {
+      const current = merged.find(entry => entry.id === item.id);
+      if (current) current.resources = [...new Set([...current.resources, ...item.resources])];
+      else merged.push({ ...item, resources: [...item.resources] });
+    }
+  }
+  return merged;
+}
+
 const files = new Map<string, string>();
 
 // The release mounts these original, MIT-licensed Markdown packages read-only.

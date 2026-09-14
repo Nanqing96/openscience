@@ -1,6 +1,6 @@
 # OpenScience development Langfuse
 
-An independent, small-volume Langfuse installation for observing existing Hermes execution. It does not run models, implement another observability UI, or replace the production application's database. The configuration is prepared for server installation; this directory alone is not evidence of a running or validated service.
+An independent, small-volume Langfuse installation for observing existing Hermes execution. It does not run models, implement another observability UI, or replace the production application's database. Installation and existing metadata reads are recorded in [CURRENT](../../../docs/handoff/2026-09-10-hermes-web-image-handoff.md); this directory describes its configuration, not a guarantee of runtime availability or scientific quality.
 
 ## Upstream and capacity
 
@@ -38,6 +38,14 @@ on those ports. The logged-in Langfuse UI uses its normal account authentication
 - This initial deployment accepts text/structured event data. Media-upload storage and externally downloadable S3 exports are deliberately not configured. The private MinIO is used for Langfuse event persistence.
 - The standard web image requires a domain root. [A custom base path needs a source build](https://langfuse.com/self-hosting/configuration/custom-base-path), so adding `/langfuse` under Portainer's hostname is not a runtime setting. A later unified entry should link to a dedicated hostname or the SSH entry; it must not silently introduce a source build.
 - Username/password authentication is enabled; open signup is disabled. SSO, SMTP, and shared-account integration are not installed. They would need deliberate authentication and egress configuration.
+
+## Login handoff
+
+This is an internal model-call observability console, separate from the OpenScience research product. OpenScience passwords, ChatGPT passwords, project API keys and SSH keys are not Langfuse login credentials. `Invalid credentials` reports rejected account credentials; it does not by itself indicate an expired OpenScience session or a proxy failure.
+
+The initial installation generated an independent owner password. A server administrator hands it to the owner privately using `/etc/openscience-development/langfuse/owner-credentials.txt`; do not print or paste that file into Codex/chat, logs or Git. No login handoff has yet been completed. Opening the sign-in page only demonstrated access through the SSH tunnel. Do not reinstall, regenerate secrets or reset a password merely to fix this handoff. Once the owner has changed their password, the initial file is not proof of the current password.
+
+SMTP is not configured, so the displayed password-reset link is not a working recovery channel for this deployment. Credentials or identity integration need a deliberate separate account operation; normal development can use the existing restricted metadata-query helper without signing into the browser UI.
 
 ## Server installation
 
@@ -80,7 +88,7 @@ bash /opt/openscience-development/langfuse/current/manage.sh start --confirm
 bash /opt/openscience-development/langfuse/current/manage.sh backup --confirm
 ```
 
-`status` only lists this Compose project. The native web health endpoint is `http://127.0.0.1:3130/api/public/health`; it does not prove imported traces are correct. The root task must observe the actual UI and its selected real metadata import after deployment. No model invocation is needed for this.
+`status` only lists this Compose project. Through the client SSH tunnel, the web health endpoint is `http://127.0.0.1:3130/api/public/health` (not a server host listener); it does not prove imported traces are correct. Observe the actual UI and selected existing metadata when the task requires it, reusing valid observations on unchanged services. No model invocation is needed for this.
 
 Five named volumes retain PostgreSQL, Redis AOF, ClickHouse, ClickHouse logs and MinIO data. Names are explicit `openscience-development-langfuse-*`; none reuse a production volume. Restart/stop retains every volume. There is no `down -v`, prune, automatic dataset deletion or migration of core data in these scripts.
 

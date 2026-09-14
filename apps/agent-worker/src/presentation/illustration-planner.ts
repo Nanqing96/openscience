@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import type { AiGateway } from '@openscience/ai-gateway';
 import { describeIllustrationBrief, parseIllustrationBrief, parseStoryboardDocument, requireIllustrationSourceSupport, type IllustrationBrief, type StoryboardDocument, type StoryboardRequest, type StoryboardView } from '@openscience/domain';
 import type { PresentationClaim } from './chart-generator';
-import { loadInstalledMediaSkills } from '../skills/installed-media-skills';
+import { loadInstalledMediaSkills, mergeDesignSkillUsage } from '../skills/installed-media-skills';
 import { compileIllustrationImagePrompt } from './scene-image';
 
 type ScientificScene = { title: string; narration: string; illustration: IllustrationBrief; sourceClaimIds: string[] };
@@ -116,10 +116,6 @@ Return exactly {title,scenes:[{title,narration,message,domain,subjects,labels,co
   }, artMessages, { temperature: 0.3, includeRejectedResponseOnRetry: true,
     validationDiagnostic: () => diagnostic.toLowerCase().replace(/[^a-z0-9_,:-]+/gu, '_').slice(0, 400),
     validationFeedback: () => `Art direction failed: ${diagnostic}. Return exactly {"scenes":[{"layout":"a short text description of placement","treatment":"a short text description of material and typography"}]}, one entry per supplied intent. Both fields must be strings, not objects, arrays or null. Use the requested locale and per-scene layoutCharacterLimit from the input; keep treatment below 220 characters. Shorten only art prose if the complete drawing prompt exceeds 1500 characters. Science fields cannot be edited.` });
-  const designSkills = [...scienceSkills.usage, ...artSkills.usage].reduce<typeof artSkills.usage>((all, item) => {
-    const current = all.find(entry => entry.id === item.id);
-    if (current) current.resources = [...new Set([...current.resources, ...item.resources])]; else all.push({ ...item, resources: [...item.resources] });
-    return all;
-  }, []);
+  const designSkills = mergeDesignSkillUsage(scienceSkills.usage, artSkills.usage);
   return { document: combineArt(art), promptHash: createHash('sha256').update(JSON.stringify([scienceMessages, artMessages])).digest('hex'), designSkills };
 }

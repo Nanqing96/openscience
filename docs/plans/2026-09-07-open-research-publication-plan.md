@@ -1,3 +1,5 @@
+> HISTORICAL — 本文保留当时的实施目标、版本、待办及结果，不是当前工作指令；不得据此重跑测试、迁移、生成或发布。续作只读 [当前交接](../handoff/2026-09-10-hermes-web-image-handoff.md)；未完成需求仍须按当前基线逐项判断。
+
 # Open Research Publication：研究记录与 AI API 实施计划
 
 > 依据：PRD v1.1；用户已授权实现、GitHub 推送与服务器部署。本轮完成 M1/M2 核心闭环；M3/M4 保持后续阶段，不声称整体 PRD 已完成。

@@ -52,29 +52,25 @@ Skill市场管理包，源码工具定位实现和调用，运行日志说明已
 
 现阶段不引入 Backlog.md、Beads、OpenSpec、Spec Kit、BMAD 作为项目主流程；它们与现有 `docs/specs|plans|decisions + task-master + progress + Memory` 重叠。若未来引入，必须先写 ADR 说明替代关系和迁移路径。
 
-### 4. 代码审计/重构工具候选
+### 4. 已有代码与文档维护能力
 
-按阶段引入，不在 `src/` 为空时提前安装：
+以根 package.json / lockfile 和 infra/development-platform 的实际配置为准：
 
-- 语义级 agent 工具：Serena 已作为本次只读符号/引用 MCP 交付；只开放三个读取工具，不开放编辑/执行。具体版本与真实查询见 CURRENT。GitNexus 当前 Noncommercial 许可未采用。
-- 结构搜索/重写：ast-grep（TS/JS AST pattern、YAML 规则、JSON/SARIF 输出）。
-- 安全/规则扫描：Semgrep CE（本地规则扫描，规则入库；优先 `uvx`/CI，可选 MCP）。
-- 架构边界：dependency-cruiser（循环依赖、跨层依赖、依赖图；配合 architecture-guard）。
-- 死代码/依赖 hygiene：Knip（unused files/exports/dependencies；先 baseline，再进 CI）。
-- 重复代码：jscpd v5（重复块检测；优先 AI reporter/低 token 输出）。
-- Monorepo 依赖一致性：syncpack（`packages/` 出现后）。
-- 暂缓：OpenRewrite（TS recipes 运行可能依赖 Moderne）、Sourcegraph/CodeScene（后期可选平台/MCP，不作 MVP 基础）。
+| 问题 | 已有入口 | 边界 |
+|---|---|---|
+| 死代码/无用依赖 | Knip / audit:knip | 是现有分析能力；发现仍须确认动态调用，不能直接删除 |
+| 跨包依赖 | dependency-cruiser / audit:dep；只读 module-graph.sh | 图定位影响范围，不能代表完整动态调用 |
+| 重复实现 | jscpd / audit:dup | 字面相似不等于职责相同，先核业务语义 |
+| 依赖版本一致性 | syncpack / audit:deps | manifest 一致不等于功能合格 |
+| 格式/索引 | markdownlint-cli2、现有 docs-sync 脚本与 Skill | 格式检查不判断内容真伪；audit:docs-sync 含测试 |
+| 当前规则/需求/执行 | AGENTS、基线、唯一 CURRENT、能力台账 | 主代理随实际改动同步，不能由日志或旧任务库自动推断 |
+| API 描述 | apps/api/src/routes/research-record-schema.ts 与 research-record.ts | 现有公开接口已有 OpenAPI；改端点时同步现有定义，不另手写一套 |
 
-### 5. 文档自动维护工具候选
+这些工具已经存在，不需因本轮治理再次安装。按当前用户要求不运行测试/预检/全仓扫描，不新增哈希、基线、门禁或 CI；有具体重大风险/阻塞故障才在允许范围定向核对。旧“先 baseline，再进 CI”的候选建议不是当前执行要求。
 
-- Markdown 门禁：markdownlint-cli2（devDependency）。
-- 链接检查：lychee（优先 CI/Docker/pre-commit，不要求本地全局安装）。
-- 文风检查：Vale（可选；英文规则先行，中文规则后补）。
-- TS API 文档：TypeDoc + typedoc-plugin-markdown，输出到 `docs/api/`。
-- API 合同文档：Fastify route schema 生成 OpenAPI（如 `@fastify/swagger`），禁止手写 API 文档与实现漂移。
-- Monorepo 版本与 changelog：Changesets（`packages/` 出现后）。
-- 依赖更新：Renovate 或 Dependabot（仓库配置文件驱动，不本地全局安装）。
-- 项目自定义漂移检查：Phase 1A 增加 `scripts/docs/check-docs-sync.mjs`，校验 `project_index.md` 路径存在、文档命名规范、ADR/progress/task 状态一致性。
+### 5. 暂未采用的工具
+
+ast-grep、Semgrep、lychee、Vale、TypeDoc、Changesets、CodeScene/Sourcegraph 等保留为过去调研候选；候选不等于已安装或待办。先指出现有工具无法解决的具体缺口及替代范围，再考虑新安装。现阶段无需另一套任务/规格系统。
 
 ### 6. AI Gateway 模型事实
 
@@ -92,16 +88,15 @@ Skill市场管理包，源码工具定位实现和调用，运行日志说明已
 
 成本与约束：
 
-- Phase 1A 需要先建立 root `package.json`/pnpm workspace，才能把 Node 工具纳入 devDependencies。
-- 部分工具（Serena、Semgrep MCP、CodeScene、Sourcegraph）需要后续单独评估安全边界与密钥/Token。
+- 工具和文档本身需要维护；新依赖会增加升级、权限和状态成本，不能把安装数量当治理完成。
+- Serena 等已交付服务的边界见能力台账；未采用工具需要另行评估，不能恢复旧候选列表自动安装。
 - 文档自动维护不能替代人工判断；`docs/progress.md`、ADR 和重大 Memory 仍需人工/agent 主动写。
 
 ## Follow-ups
 
-- Phase 0：继续只读审计，不安装上述工具。
-- Phase 1A：初始化 pnpm workspace 时新增工具 scripts：`docs:lint`、`audit:deps`、`audit:dead`、`audit:dup`、`audit:ast`、`docs:sync-check`。
-- Phase 1B/1C：评估 TypeDoc、OpenAPI、Changesets、Renovate。
-- Phase 1D/1E：评估 Serena MCP、Semgrep MCP、CodeScene/Sourcegraph 是否进入项目级 `.mcp.json`。
+- 当前任务及未解决债务只跟随 CURRENT handoff 和能力台账，不恢复 Phase 0/1 安装路线。
+- 2026-09-14 用户要求新开发前清理已识别重复、统一文档：修改规则必须落到实际交付分支；旧主目录只保留导航。历史记录保留且标明适用性，不删除原件。
+- 每次改动沿“当前需求 → 已有调用 → 本次差异 → 实际结果/未决项”闭合，修改同一份文档，不另建评分/审批体系。
 
 ## References
 

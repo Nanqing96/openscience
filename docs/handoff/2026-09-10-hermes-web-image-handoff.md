@@ -1,11 +1,11 @@
 # Hermes / Workbench CURRENT Handoff
 ## 目标与约束
-- 用户2026-09-14要求先实际完成已调研底层能力，避免遗忘已有实现/重复造轮子，再恢复配图主线；授权项目级工具和独立服务器服务。
+- 用户2026-09-14最新要求：新功能暂停，先清理技术债并对齐开发文档。本轮入口治理/代码去重已收口；后续先处理下方科学行为债，再恢复配图，不再安装工具。
 - 禁止测试/预检/CI/本机构建；仅本机静态编辑/Git/传输，服务器执行必要安装/构建/启动及实际使用。没有新模型调用、图片生成或科研数据修改。
 - Chat生图主用，Codex CLI备用；科学认识来自上游解析/分析。Figma、视频、第三篇及批量仍暂停。
 ## 版本事实
-- 交付工作树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；基础设施代码截至c2b6683e，之后访问接线/文档提交用git HEAD读取；均不是应用release。
-- 生产应用89d05d6dfcf432765697762864e9406ea3588ab8；rollback b2f3cf373c0eafde1adc53d85f198588d1c23391。本轮未部署应用。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；本轮起点HEAD/origin 244726a42fec8709899200c7db18dadd79eb39b3，后续治理提交以git HEAD读取；均不是应用release。
+- 生产应用89d05d6dfcf432765697762864e9406ea3588ab8（本轮只读.release-id仍一致）；rollback b2f3cf373c0eafde1adc53d85f198588d1c23391沿用既有记录。本轮未部署应用，独立开发容器仍运行。
 - Catalog/Serena镜像与源83179c454b75688176060fabf9e611072d46813c；Serena所查源码89d05，快照/source和image不可混写。
 - Langfuse独立bundle83179c454b75688176060fabf9e611072d46813c，official v4.35.0；telemetry镜像c2b6683e8e804d07f2928ee4df2cba8d91fb5703，view/角色已provision，持久state复用。
 - Skills镜像83179（实际list/find在相同CLI代码ce02首次执行）；依赖图脚本c9d98bd70252d7ca21854ca9b05987d2d46af700，源89d05。
@@ -13,6 +13,9 @@
 - receiver bundle8e4已安装、兼容v1/v2；科研应用8e4在Prisma JSON类型构建失败，候选已静态修正但没有重新构建/部署。
 - 根目录dirty main不是交付基线。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。
 ## 已实际交付 / 使用证据
+- 本轮治理：交付AGENTS/17个流程Skill及引用对齐根目录既有精简规则；旧handoff/plan逐份标历史，设计注明需求适用性，根进度/旧交接只导航。无关dirty设计稿保留，不宣称所有旧设计条款已逐行复验。
+- 治理独立High静态GO：机械替换误伤活规则/历史正文的问题已撤销，恢复原文并仅定向标旧release状态。142历史执行记录/67设计适用说明覆盖；未删除文件/独有工具，也未逐行复验全部历史正文。
+- 代码去重：Skill usage 共用 mergeDesignSkillUsage，删除同批Evidence重复lineage遍历；来源/权限/并发重验保持。独立High静态GO；未构建/部署，不声称运行通过。发现及未解决行为债见能力台账“当前技术债与处理”。
 - Backstage标准私有目录API：查询agent-worker返回owner、Gateway/parser/skills和资源依赖；匿名401。不是完整浏览器门户，不替代代码/实际运行事实。
 - Serena官方MCP实际只列overview/find/references三工具；overview列AiGateway，references定位reviewScientific在extractor.ts的两处调用。无写代码、执行shell、读取Secret或生产DB权限。
 - dependency-cruiser18.1.0实际产出19模块、4条worker→ai-gateway跨包边；服务器报告 /opt/openscience-development/reports/presentation-gateway-89d05-v3.json。只是选定scope模块图，不是全仓完整动态调用图。
@@ -21,7 +24,7 @@
 - API读取入口：docker exec openscience-development-gateway-audit node /app/query.mjs [--errors]；24h最多10条。Portainer/Netdata仍用于资源运维，不另造面板。
 - SSH访问：infra/scripts/ssh-run.sh --development-tunnel。解析固定容器内部IP，本机localhost:3130 Langfuse、3131目录API、3132/mcp Serena；项目.codex/config.toml已配置3个read工具。当前任务不会自动热加载新MCP；刷新/新session后可原生使用。
 - Docker24纯internal网络未生成ports映射，已改SSH直连容器IP；本机隧道后台PID74380，日志tmp/development-tunnel-v2.stderr.log。容器重建/IP变化后须重开隧道，不增外网network。
-- Langfuse登录信息只在服务器 /etc/openscience-development/langfuse/owner-credentials.txt（root0600）；未输出。已通过本机SSH隧道在Codex浏览器实际看到Sign in、Email和Password，保留为交付tab；未代用户登录。
+- Langfuse账号独立于OpenScience，初始随机凭据仅在服务器owner-credentials.txt（root0600）；未完成私密交接/登录。用户截图Invalid credentials不证明代理或产品会话失效；未重置密码/打印凭据。无SMTP，恢复链接不能作为本部署恢复渠道；说明见Langfuse README。
 - 已修真实安装故障：legacy builder无BuildKit、Catalog rateLimit类型、Serena空目录、depcruise官方配置/schema与scope、Squid数字开头CONNECT。各最小修复及操作入口写在原工具README。
 - 首条telemetry pending早于Langfuse容器创建，停进程后完整备份checkpoint，仅恢复该确定未到达请求；后续50回执且无pending。今后先启动Langfuse，无法确认的发送不得盲重试。
 - 独立High复核隔离、只读DB/Secret边界、RPM回退、报告输出路径、GET白名单和SSH转发，阻断项已修。没有以安装/Schema/服务健康代替科学质量。

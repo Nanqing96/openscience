@@ -22,12 +22,12 @@ git status --short
 ## 2. 同步合同
 
 - `docs/progress.md`：是 CURRENT progress window，不是永久日志；最多 120 lines。只保留最近状态、当前版本、未完成项与最新证据，旧条目由 Git history 保存，必要时转入明确标记的 archive，且不得默认读取。
-- `project_index.md`：登记路径，并把状态绑定到具体版本；同主题旧入口标 `DEPRECATED/HISTORICAL → CURRENT path`。
+- `project_index.md`：登记路径/用途，当前状态链接唯一 handoff；历史交付版本须标明是当时记录，不再复制可漂移的当前 release。设计仍适用不等于当前已部署。
 - CURRENT handoff：原地压缩到 80 行内，只保留 goal、branch / HEAD / release / rollback、done、constraints、open risks、next action、read-first；不得成为聊天 transcript。
-- `AGENTS.md`：只记录长期规则、命令和拓扑；重大不可逆决策进入 ADR。
+- `AGENTS.md`：只记录长期规则、命令和拓扑；重大不可逆决策进入 ADR。规则及 Skill 修改须进入实际交付分支；根目录 dirty main 的更新不会自动传到 worktree。
 - Memory MCP 可用时只保存跨 session 的决策/纠错，不复制测试日志或 handoff。
 
-必须写清 version tuple：`branch / HEAD / release / rollback`。handoff 或部署前再次运行 `git status --short` 与 `git diff --check`，区分本地候选、远端分支、本地 main 和 ECS 生产版本。
+version tuple `branch / HEAD / release / rollback` 只在 CURRENT handoff 定锚。handoff 或部署前读取 `git status --short`，核对本轮 diff；`git diff --check` 仅在当前规则允许检查时执行。其他工作树只留指向交付树的导航，不复制版本或 next action，也不覆盖无关改动。
 
 ## 3. 去重与清理
 
@@ -37,6 +37,8 @@ git status --short
 - **Do not delete historical files**；通过降级状态、Git history/archive、移出 read-first 和压缩 CURRENT 文档清理活跃记忆。archive 不得成为启动入口。
 - Do not copy full test matrices across progress/index/handoff。完整输出留在测试报告或日志；活文档只写命令、总数、关键指标和证据路径。
 - 新决策与旧 CURRENT 冲突时，同一轮完成：更新 CURRENT → 降级旧入口 → 修索引 → 修 handoff → 加最新 progress。
+- 旧 handoff/实施计划的目标、版本和待办是历史；保留正文证据并在入口明示，不按旧待办重新生成、迁移或部署。设计/ADR 的需求依据与历史执行状态分别标注，不把全部旧需求判为失效。
+- 技术债写进现有能力台账的相关行或定向审查节：具体位置、触发条件、后果、处理/下一步。优先修当前改动依赖的重复或断点；小修不启动全仓重构或新增评分门禁。
 - 不创建同主题第二份活文档，不向仓库外写项目 handoff，不记录 `.env`、Secret 或生产数据。
 - `AGENTS.md` ≤100 lines、CURRENT handoff ≤80 lines、`docs/progress.md` ≤120 lines；超限必须先压缩/轮转再完成任务。
 
