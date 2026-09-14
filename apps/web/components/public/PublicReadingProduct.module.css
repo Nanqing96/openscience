@@ -284,13 +284,13 @@
   color: var(--public-product-ink);
 }
 .claimSection { margin-block: 36px; }
-.claimSection > h2,
-.claimField > h3 { margin: 0 0 14px; color: var(--public-product-ink, #1d2935); font: 650 20px/1.5 var(--font-ui), system-ui, sans-serif; }
+.claimSection > h2 { margin: 0 0 14px; color: var(--public-product-ink, #1d2935); font: 650 20px/1.5 var(--font-ui), system-ui, sans-serif; }
 .claimField { margin-block: 24px; }
-.claimField > h3 { font-size: 16px; color: var(--public-product-teal); }
+details.claimField { margin-block: 0; border-top: 1px solid var(--public-product-rule); }
 .claimEntry { margin: 0; border-top: 1px solid var(--public-product-rule); }
 .claimEntry + .claimEntry { margin-top: 8px; }
 .claimEntry > .claimSummary,
+.claimField > summary,
 .readingSection > summary,
 .boundariesDisclosure > summary,
 .evidenceDisclosure > summary,
@@ -316,6 +316,7 @@
 .claimContent { min-width: 0; padding: 0 0 12px; }
 details.claimEntry[open] > .claimSummary { color: var(--public-product-teal); }
 .entryMeta { display: block; margin-top: 5px; color: var(--public-product-muted); font: 400 13px/1.5 var(--font-ui), system-ui, sans-serif; }
+.claimField > summary > .entryMeta { display: inline; margin: 0 0 0 12px; }
 .readingSection + .readingSection { border-top: 1px solid var(--public-product-rule); }
 .readingSection > .claimBody { margin-top: 6px; }
 .boundariesDisclosure { margin-block: 16px; border-top: 1px solid var(--public-product-rule); }
@@ -341,6 +342,7 @@ details.claimEntry[open] > .claimSummary { color: var(--public-product-teal); }
   .evidenceEntry { margin-inline: 12px; }
 }
 @media print {
+  .claimField::details-content,
   .claimEntry::details-content,
   .readingSection::details-content,
   .boundariesDisclosure::details-content,

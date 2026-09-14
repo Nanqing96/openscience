@@ -1,16 +1,17 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 2026-09-14最新续作进行中：卡片TeX/S遗漏、旧第一篇署名/首发v1、两篇结构化折叠证据及工作台同步。交付树未提交候选；启动fetch/checkup实读release6af9c984，服务healthy/公网200，tmp/ro-feedback-start-checkup.log。第一篇DB实际唯一Publication但No10、authors空；用户现在明确授权行政勘误为v1/DHL，旧“不得重排v10”被这一特定授权取代。脚本尚未执行，禁止根据计划当成已改。
+- 2026-09-14最新续作：1f7032a3已部署，卡片科学文本、同版本结构化证据、工作台作者/公开号已实读；六字段默认目录进一步收紧候选待部署。22已行政勘误v1/DHL并允许原PDF下载，audit6c93436f-3c2e-40fe-82ad-d0c751c32f73；不是新发布，禁止重跑旧publish或按旧文档恢复v10。scope见已审infra/scripts/correct-deep-sub-cycle-publication.mjs。
 - 2026-09-14最新截图反馈已完成：公开Claim复用Hermes科学Markdown，概要/完整推导/适用条件/原文证据分层；不再整篇h3直出。来源按文件/页码分10组保留40条，去重复标题、制作前言、笔记UUID、内部[S]和机器locator；原quote/source也用Markdown与公式显示，原始数据不改。
 - /developers复用公开产品rp颜色/字体/共享标题；curl前置。线上原文教程实跑发现原Python默认UA被Cloudflare403/1010拒绝，显式真实客户端User-Agent后成功；不放宽防护或伪装浏览器。现在页面curl/Python均已逐字执行exit0，六字段/固定URL/下载URL与API一致。
-- 真实论文仍22/v10与23/v1；作者DHL/文字和数据CC-BY-4.0/代码MIT/PDF授权均保留。无新论文发布、模型/图像生成或数据库写入；视频/批量仍暂停。
+- 两篇真实论文现均公开v1、DHL署名及原PDF允许下载；22原dataCC0/23dataCC-BY4、文字CC-BY4/代码MIT保留。本轮仅指定22行政元数据与下载授权写入，无新论文发布或模型/图像生成；视频/批量仍暂停。
 - 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。仅必要服务器build/start和用户明确要求的实际页面/教程读取。自动首稿科学质量仍不稳定，不把人工审校或展示修复称为自动正确。
 ## Version and workspace
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码HEAD/origin6af9c984a6293582e2e966fa7a540c10c48e5e07，随后仅文档补记；实际文档HEAD从Git读取，不等于应用release。
-- 当前ECS release6af9c984a6293582e2e966fa7a540c10c48e5e07 / rollback59c8cebfd8c5a687af83a11cde07c54c47adb708；最终公开/__release实读一致。clean发布树.worktrees/claims-quotes-release-6af9c984；首轮.worktrees/claims-api-release-59c8cebf及全部旧发布树保留。
+- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；已部署代码1f7032a3，六字段目录小修候选准备提交；实际HEAD从Git读取，不等于应用release。
+- 当前ECS release1f7032a342e922fd63b4e4230682e8a6014aff6b / rollback6af9c984a6293582e2e966fa7a540c10c48e5e07；公开/__release实读一致。clean发布树.worktrees/ro-feedback-release-1f7032a3；既有全部发布树保留。
 - 首轮59c8及补修6af均独立High静态PASS，必要服务器build/start完成，--no-tests --skip-migrate；tmp/claims-api-deploy-59c8cebf.log与claims-quotes-deploy-6af9c984-resume.log exit0。6af首试在cloud-sync准备阶段SSH reset，实读59仍healthy且无部署进程后原候选续跑成功；没有手动停服务/改生产记录。
 - 根目录dirty main不是生产基线；交付树无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。c0bc及以前禁止回退；当前兼容rollback59会仅撤原文Markdown补修，不撤主张/API修复。
 ## Latest actual reading
+- tmp/ro-feedback-reading.json/resume.log：22/23两篇core/claims/evidence/图/发行时间与hash均等修改前；22首发v1/DHL/仅1条发布历史，PDF匿名200/3770010字节/hashbb517f00与原件一致。两端来源200；私有工作台标题DHL+公开v1，读取精确f4/72记录。22六字段12Claim/102Evidence、23四原章节1Claim/40Evidence，默认关闭、内部assessment0，23公式57/0错误，368CSS无横溢出。截图已看。首次读页脚本误把桌面来源侧栏当dialog，改正确selector后成功，非产品失败。
 - tmp/claims-api-reading.json/log：匿名记录与a721深度同值，40证据/10文件页组保留，来源点击200。主张展开后内部S/制作前言/笔记UUID均0；tmp/claims-math-source-comparison.json：57/57公式与保存TeX逐字全等，0公式错误。
 - tmp/claims-api-developers-{desktop,mobile}.png已看：统一冷白rp背景/36px标题，1152/380CSS视口无横溢出。tmp/api-tutorial-final.log：从线上页面逐字提取的curl/Python两者exit0；23/v1六项正文、固定URL和下载URL匹配。原失败收据api-tutorial-execute.log、api-python-error.txt保留。
 - 最终6af实际阅读tmp/evidence-final-reading.json/log：来源Markdown正常呈现，段落/粗体/斜体可见、原星号消失、0公式错误，来源按钮200且机器locator不显示，380CSS窄屏无横溢出；claims-api-evidence-final{,-mobile}.png已看。主张/完整推导/窄屏截图claims-api-{claim-desktop,formulas,claim-mobile}.png已看，API和科学内容未在补修改变，复用上述有效证据。
@@ -21,14 +22,14 @@
 - 公开接入：https://openscience.428312321.xyz/developers；规范/api/research-record/openapi；最新完整/api/research/OSR-2026-000023；固定/api/research/OSR-2026-000023/v/1。原PDF下载字节证据复用e7f，不重复下载。
 - 客户端限制：本轮web工具对已公开API返回not safe to open(non-retryable)，未提供HTTP状态，未重试/放宽策略，不推断Cloudflare/登录/DNS根因；记录tmp/public-api-external-client.txt。服务器匿名浏览器沿既有代理读取成功，不冒称所有外部AI客户端均已兼容。
 ## Lifecycle delivered and observation
-- 公开序号publicationNo独立于内部versionNo；发布时分配，旧公开v10/URL保留；冻结公开元数据/图谱/来源/媒体。私有草稿权限单独判断，历史恢复创建新私有草稿并沿用冻结图文。
+- 公开序号publicationNo独立于内部versionNo；发布时分配，冻结公开元数据/图谱/来源/媒体。一般旧URL保留，22旧误号现按用户指定行政勘误与临时别名处理。私有草稿权限单独判断，历史恢复创建新私有草稿并沿用冻结图文。
 - 主页面分析记录收进Hermes；无公开记录不显示发布历史。更多内编辑历史按日期/摘要、可查看再恢复；个人空间和内容项删除、会话默认保留产物、30天回收站/恢复/清除、公开聚合长期归档。
 - 共享存储/公开媒体保留，共同核心锁协调发布、删除及后台回写；搜索物理独立，以核心存续状态过滤且已有TrashEntry重试同步。生产spool提交也在该锁内校验并原子发布，防止清除漏掉迟到副本。
 - 受限宿主清理服务/定时器已安装到/opt/openscience-private-cleanup；结果目录只读挂载、Parser隔离保持。API清除未完成返回202，Worker收到精确complete才记purged；不声称外部ChatGPT历史已被删除。
 - 独立High在精确6b9f5a06上静态PASS。首次服务器构建因retained数组隐式any失败（迁移前），ef9补类型后完整构建、两项核心迁移、镜像与启动成功。无测试/预检/CI。
 - 旧API/Worker停止阻塞：只读确认running AgentTask为空后仅stop两旧容器，原部署事务继续成功；未触发内容变更。根本信号处理问题未证实修复。
 - 实际第二篇object/history/record/media均200，core与reader-clean-before逐字同值，private/revision6、四条历史publicationNo=null，10式/0错误、图1280×720、368CSS窄屏无横溢出；截图已看。
-- 第一篇公开OSR-2026-000022/v/10正常，publicVersionId保留OSR-2026-000022-v10、published/1图。Hermes来源可展开、管理内容80项、回收站空状态可读。
+- 历史生命周期验收时22/v10正常，现已行政勘误v1（见上方最新实读）。Hermes来源可展开、管理内容80项、回收站空状态可读。
 - 02d最后实读：编辑历史四条时间/摘要，无内部笔记UUID/机器英文；桌面/移动截图已看，窄屏dialog354/scroll354/viewport380CSS。打开冻结正文1617字符，恢复入口可用但未点击；管理80项最新在前，已知内部标题0，列表与确认/回收站共用标签。证据tmp/lifecycle-final-reading.{sh,log,json}及四截图，服务器/jobs同名。
 - 证据：本地tmp/lifecycle-{reading,management-reading}.sh/log/json与截图，服务器/jobs同名json/png；原图/正文未重生成。首发v1已在第二篇真实发布观察；真实清除、历史恢复写入和30天到期仍未实际操作，不冒称完整运行验收。
 ## Protected second paper and next action
@@ -49,7 +50,7 @@
 - 图56经admin_reviewed_import复用原图86ffe202-928e-49fd-8877-7ec0787b69f6；原generator/version与importRun来源保留，非重生成。旧version58a45cb5-758f-4d6f-9e94-533b460e8b06科学正文有误，绝不发布；stagingc8e625c4-39cb-4a6c-a0d1-3129c48558f8冻结内容有历史差异，恢复只用冻结记录。
 - 本轮任务完成：许可选择/署名/下载/第二篇发布已落实。下一步由用户在公开页或Hermes提出具体质量反馈，再决定第三篇/视频；先保留2篇真实交付，不自动启动批量。自动首稿科学质量仍未稳定，不把人工审校及本轮发布审核冒充通用自动审校通过。
 ## Protected first paper
-- ROc896802c-35dd-4b59-8db1-5f374f83a6d8、草稿revision11；正式v10 f4e2dc71-1fe8-406f-8c19-e1849503d698、公开OSR-2026-000022/v/10保留。PDF7bb96cc1-bb6f-4d3b-b0bf-352f41971faf与已批图b19a65bd-6497-4b61-bb81-0154b264d58c保护。
+- ROc896802c-35dd-4b59-8db1-5f374f83a6d8、草稿revision11；f4e2dc71-1fe8-406f-8c19-e1849503d698内部10保留，公开现为OSR-2026-000022/v/1（用户2026-09-14行政更正已执行）。DHL署名非通讯作者；原发布时间2026-09-11T14:39:38.371Z与收据e0a8bd97保持。原PDF7bb96cc1公开授权，原图b19a65bd保持；许可textCC-BY4/codeMIT/dataCC0不改。旧v10仅307/no-store临时兼容，未来真实v10优先；规范链接v1。
 - 保护已审92cafb82-73bc-4937-bb9c-bf1228b23dd3（1118字/17引用）、40e23948-4b41-4440-a3a1-49dd9acb8824（2696字/41引用/57式）、方法867ce8b9-1e48-4412-b1bf-1800a5d64dc9（1605字/19引用）、结果3f68d30b-5cab-44f9-9623-2f057aada7ff（1745字/19引用）。均独立原文PASS/真实页面与下载一致；后两稿未采用SDF。
 - ingestion2fdb78de-b52b-40f6-832f-faa3fdd9f4e2/agent1e324308-fd26-4cc1-8612-8a1c269909a9保护；1bf自动review仍误批d5c6f699，4b46/63e/10799未采用。旧失败不能覆盖上述已审稿。
 ## Existing execution and scientific boundaries

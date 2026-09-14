@@ -71,16 +71,15 @@ export function ClaimNarrative({
       <div className={styles.sectionIntro}>
         <p>{t('description')}</p>
       </div>
-      {claims.length === 0 ? <p>{t('empty')}</p> : groups.map(group => <section key={group.field ?? 'other'} className={styles.claimField} data-reading-field={group.field}>
-        {group.field && <h3>{fields(group.field)}</h3>}
-        {group.claims.map((claim) => (
-        <ClaimCard
-          key={claim.id}
-          claim={claim}
-          allEvidence={evidence}
-          onInspect={onInspect}
-        />
-      ))}</section>)}
+      {claims.length === 0 ? <p>{t('empty')}</p> : groups.map(group => {
+        const content = group.claims.map(claim => <ClaimCard key={claim.id} claim={claim} allEvidence={evidence} onInspect={onInspect} />);
+        if (!group.field) return <section key="other" className={styles.claimField}>{content}</section>;
+        const count = evidence.filter(item => group.claims.some(claim => claim.id === item.claimId)).length;
+        return <details key={group.field} className={styles.claimField} data-reading-field={group.field}>
+          <summary><span>{fields(group.field)}</span><span className={styles.entryMeta}>{t('evidenceCount', { count })}</span></summary>
+          {content}
+        </details>;
+      })}
     </section>
   );
 }
