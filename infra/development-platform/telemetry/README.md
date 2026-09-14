@@ -12,7 +12,7 @@
 
 SQL view 与 connector 分别显式重建白名单，避免将来 view 增列时自动增加上传字段。已有错误类别复用；未知失败仅记 `other_failure`。
 
-任务关联来自 Worker 已领取任务的执行上下文：`apps/agent-worker/src/index.ts` 在 Gateway 审计落库时将当前 AgentTask UUID 填入空的 `AuditEvent.requestId`，已有 view/connector 将其传为 `requestCorrelation`。这项接线为未部署候选；2026-09-14 15:15 UTC 实际查询的两条旧生图失败仍为 unknown，不能推测或回填。它用于把调用定位回原任务，再读取原任务的阶段和资产/技能记录；不是用户身份或完整跨任务 trace。API 中原有 requestId、不处于 Worker 任务内的事件保持原行为，不扩大元数据范围或重新导入旧审计。
+任务关联来自 Worker 已领取任务的执行上下文：`apps/agent-worker/src/index.ts` 在 Gateway 审计落库时将当前 AgentTask UUID 填入空的 `AuditEvent.requestId`，已有 view/connector 将其传为 `requestCorrelation`。这项接线已上线；2026-09-14 16:05 UTC 实际查询的两条旧生图失败仍为 unknown，不能推测或回填。新任务关联效果待正常业务调用观察，不为填数据另跑模型。它用于把调用定位回原任务，再读取原任务的阶段和资产/技能记录；不是用户身份或完整跨任务 trace。API 中原有 requestId、不处于 Worker 任务内的事件保持原行为，不扩大元数据范围或重新导入旧审计。精确release及结果见CURRENT。
 
 ## Langfuse v4 传输与统计含义
 

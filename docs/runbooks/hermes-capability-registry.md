@@ -4,18 +4,18 @@
 
 本页是定位入口，不是自动能力注册器。仅阅读与任务匹配的行，再读取调用代码与已有任务记录。**当前版本/暂停状态唯一锚点：[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)**；资源/缓存/安装入口见[服务器清单](server-capabilities.md)。需求来源是最新用户纠正及[需求基线](../OpenScience_Kimi_Development_Spec.md)。没有任何工具保证对整个产品的绝对掌控；未知状态要可见、可定位。
 
-这些文件/符号于2026-09-14按候选8e4c62a1及本轮修正静态核对；本轮未重跑模型。产品域行只证明实现入口存在，不把历史交付当作当前全面验收。AI效果行标明已有实际任务与局限。表内 `skills/`、`presentation/` 和worker文件名相对于 `apps/agent-worker/src/`，其余完整目录从仓库根定位。
+这些文件/符号按2026-09-15本轮交付代码与已有记录核对；必要服务器构建/启动通过，未重跑模型。产品域行不把上线当作当前全面验收。AI效果行标明已有实际任务与局限。表内 `skills/`、`presentation/` 和worker文件名相对于 `apps/agent-worker/src/`，其余完整目录从仓库根定位。
 
 | 产品目的 / 能力 | 实现与实际调用入口（仓库相对路径） | 结果依据与边界 |
 |---|---|---|
 | 上传、全文取得、解析 | `apps/api/src/routes/ingestion.ts` → `apps/agent-worker/src/ingestion-parser.ts`；全文发现走 `apps/agent-worker/src/retrieval/handler.ts`，解析选择走 `apps/agent-worker/src/parsers/cascade-orchestrator.ts` | 既有SourceMap/页码与原始文件是下游来源；解析可读不代表公式正确。复用ScanSci、Docling、Tesseract，资源见服务器清单 |
 | 文献语义理解 | `apps/agent-worker/src/extractor.ts` 的 `semanticReductionGuard`/综合链；引用 `skills/paper-analysis.ts`、`scientific-critical-thinking.ts`；经Gateway | 已有semanticStage、条件/算例/操作/来源关系；后续应沿用经审核结果，不能将先前有错候选当成权威。历史d5c6整稿未通过，当前不重跑 |
-| 共享科学推理规则 | `skills/scientific-critical-thinking.ts` → `extractor.ts` 的reduce/bridge及科学审校 | K-Dense方法的项目runtime v2，确有调用；并非安装整个K-Dense包。新候选的 `skills/installed-media-skills.ts` science/review直接引用同一常量并记录id/version；尚未部署/观察 |
+| 共享科学推理规则 | `skills/scientific-critical-thinking.ts` → `extractor.ts` 的reduce/bridge及科学审校 | K-Dense方法的项目runtime v2，确有调用；并非安装整个K-Dense包。`skills/installed-media-skills.ts` science/review直接引用同一常量并记录id/version，已上线；新模型结果尚未观察 |
 | 原文科学审阅 | `extractor.ts` 的 `scientificReviewPrompt` → `packages/ai-gateway/src/gateway.ts` 的 `reviewScientific` → `infra/chatgpt-browser/review-broker.mjs`/`review-runner.cjs` | 既有Chat网页审阅能力已用过；不是缺一个新供应商。六字段审阅与画面语义审阅的输出不同，不能冒用ingestion身份 |
 | 来源约束写作 | `apps/agent-worker/src/workspace-guide.ts` → `scientific-writing-source.ts`、`skills/scientific-writing.ts` | 写作有原始来源恢复和引用回填；本轮未重观其效果。它写稿，不负责验证坐标/色块的物理意义 |
 | 语义检索 | `apps/agent-worker/src/index.ts` 已接searchIndexer建索引；`packages/search/src/service.ts` 定义 `createHybridSearchService` 查询实现 | BGE容器本次只读观察运行。定向扫描未见应用调用该hybrid service，实际查询效果本轮未观察；配图没有调用它。相似度召回不证明科学蕴含，不能为“用上模型”强行串入 |
 | 画面规划 / 设计skill | `presentation/storyboard.ts` → `illustration-planner.ts` → `skills/installed-media-skills.ts` | 自有skill与3套原版Baoyu实际消费记录见d31e7ccc的designSkills；长Claim/整批证据二次分析仍产生错误曲线，已rejected。安装/Schema成功均不等于科学或审美合格 |
-| 候选画面审阅 | `presentation/handler.ts` → `illustration-review.ts` → 已有 `reviewScientific` | 新v2接收端已安装；应用编译失败，尚未实际调用。审查要求先收敛全稿重写和过大证据池，暂停继续部署/生图 |
+| 候选画面审阅 | `presentation/handler.ts` → `illustration-review.ts` → 已有 `reviewScientific` | v2接收端及应用已部署，全稿重写收为局部艺术修正；旧编译阻断已解决。未实际调用新版，完整Claim上下文仍可能触及既有输入上限；生成仍暂停 |
 | Chat参考图生成 | `presentation/scene-image.ts` → `gateway.generateImage` → `infra/chatgpt-browser/` | 既有Chat生图曾返回图片；新参考图bytes路径已部署但尚无真实新图片请求。保留喜欢的aa41参考、旧图和公开v1；Codex CLI仅备用且不自动切换 |
 | Hermes对话与执行授权 | `apps/api/src/routes/agent.ts`、`research-runs.ts` → `packages/domain/src/agent/research-run.ts`、worker `index.ts` | 对话承接修改、核对、执行；当前能力参数/权限以这些入口为准。开发用MCP与skill目录不自动成为Hermes工具 |
 | 私有编辑 / 回收站 | `apps/api/src/routes/research-objects.ts`、`trash.ts` → Domain；`infra/private-cleanup/` | 草稿编辑与公开发行分开；公开资料保留。最近清除证据见历史f8e44815，本轮未删除任何数据 |
@@ -31,35 +31,35 @@
 
 ### 2026-09-14 定向High审查及处置
 
-1. **构建阻断**：`illustration-review.ts` 将未收窄的decision写入Prisma JSON，实际服务器构建失败。候选已改为字面量判别；未重新构建，不能称编译已通过。
-2. **共享skill断接**：配图science/review未使用既有critical-thinking。候选接同一runtime常量，并用它替换审阅提示词重叠原则；部署与真实效果仍待观察。
-3. **过重审阅**：候选已收为既有场景的 composition/treatment 局部修正；科学字段、来源、场景顺序不能由末审重写，科学错误回上游。IllustrationBrief v2 分开 encoding 与 composition；v1继续原样读取/编译，v1修订明确要求新建方案，不能静默重画。未构建/部署/运行观察。
+1. **构建阻断**：`illustration-review.ts`未收窄decision写入Prisma JSON导致的编译失败已修；本轮必要服务器构建通过并上线。
+2. **共享skill断接**：配图science/review已接同一critical-thinking runtime常量，替换重叠原则并上线；真实模型消费/效果仍待正常任务观察。
+3. **过重审阅**：已上线既有场景composition/treatment局部修正；科学字段、来源、场景顺序不能由末审重写，科学错误回上游。v2分开encoding与composition；v1继续原样读取/编译，修订明确要求新建方案，不能静默重画。未观察新版模型结果。
 4. **上游结果粒度**：当前末审仍只产六字段摘要/原文段；未审semanticStage不能提升为事实。本轮修原确认bridge：已有拆分入口可用sourceBindings选择当前快照原文及Claim级关系，旧请求仍为整字段supports。保存Claim的statement/kind/parent/conditions/limitations及独立Evidence，不建分析库。自动atomic suggestions及每条条件的独立来源绑定仍缺；下游继续保留所选Claim完整上下文，不能仅按画面basis丢掉限定。
 5. **BGE的边界**：检索适合在有明确问题时召回来源，不能替代语义审阅；不因安装了模型就增加无必要的调用。保留已兼容v1/v2的Chat接收端，不整体回退或另装供应商。
 
 ### 当前技术债与处理
 
-范围：交付树的规则治理、去重、配图表示/审阅边界和工具联动断点；精确候选版本见CURRENT。以下是定向诊断，不是全仓无债证明或量化健康评分；未运行扫描、测试、模型或应用构建。
+范围：交付树的规则治理、去重、配图表示/审阅边界和工具联动断点；精确版本见CURRENT。以下是定向诊断，不是全仓无债证明或量化健康评分；执行了必要应用构建/启动和工具实际查询，未运行扫描、测试或模型。
 
 本轮实际联动：Backstage 返回 agent-worker 的 Gateway/parser/skills 依赖；Serena 在生产源码快照定位确认 bridge 的 Hermes/API 两条调用，再用候选源码核对；Langfuse 于2026-09-14 15:15 UTC读回两条已有生图失败，其 requestCorrelation 均为 unknown。沿审计生产者定位到 Worker 已有任务上下文未传给 Gateway sink，补接到既有 requestId/view/connector，不新建观察系统。静态调用/传递断点与运行失败是不同证据，不能据两条失败断言科学内容出错原因。
 
-任务接线经独立High静态审查：逐调用读取上下文而非初始化捕获，已有requestId优先，tx和异常传播保持。未运行；旧unknown不回填，后续在正常授权任务执行后观察新关联，不为填数据重跑模型。该修复不等于完整跨任务trace，也不解决上游科学结果粒度缺口。
+任务接线经独立High静态审查并上线：逐调用读取上下文而非初始化捕获，已有requestId优先，tx和异常传播保持。旧unknown不回填，后续在正常授权任务执行后观察新关联，不为填数据重跑模型。该修复不等于完整跨任务trace，也不解决上游科学结果粒度缺口。
 
 | 问题 / 位置 | 后果 | 处理与后续 |
 |---|---|---|
 | production-release-retention默认将非active/rollback目录列入清理，忽略独立工具仍使用历史源码 | Catalog挂载83179导致9c30部署最终阶段拒绝并回滚 | 正常发布只登记rollback且空清理意图保留历史；明确清理才使用原严格挂载/引用规则。High静态GO，精确部署结果见CURRENT |
 | cloud-sync/evaluation-source-sync把MSYS的/c/...路径传给原生Windows OpenSSH | 指定项目密钥不可读，身份选择可能偏离预期 | 共用ssh-identity-path转换，保留参数数组与host-key规则，启用IdentitiesOnly；不修改密钥/配置。正式上传效果见CURRENT |
-| Worker 创建的 Gateway audit sink 未带已有执行上下文，Langfuse requestCorrelation 为空 | 调用失败无法从管理工具准确回到原任务及其技能/资产结果 | 候选 index.ts 共用现有 audit sink，在每次 record 时读取已有 AsyncLocalStorage taskId，只补空 requestId；现有 view/connector 无须改造。未部署，新任务关联尚未观察；旧记录不猜测回填 |
+| Worker 创建的 Gateway audit sink 未带已有执行上下文，Langfuse requestCorrelation 为空 | 调用失败无法从管理工具准确回到原任务及其技能/资产结果 | index.ts共用现有audit sink，每次record读取已有AsyncLocalStorage taskId，只补空requestId；原view/connector直接消费。已上线，新任务关联尚未观察；旧记录不猜测回填 |
 | 根目录更新未进入交付树：AGENTS 和 17 个流程 Skill/引用文件 | 后续 session 按旧测试/逐步审批/派工规则执行，重复耗费与漂移 | 已将现有精简规则带入交付分支，保留独有脚本/参考；根目录同步导航，不新增工具 |
 | 旧 handoff/计划/index 将当时版本或待办标作当前 | 重复部署、重新生成或复跑已完成阶段 | 旧执行记录逐份加历史适用说明；设计说明区分需求有效性与运行状态；唯一 CURRENT 定锚，未提交独立设计稿保留 |
 | presentation/handler.ts 在 readReviewedPresentationEvidence 后重验同一批 lineage | 同一来源规则多处维护、后续修订可能分叉 | 已删除重复内存遍历；保留入口逐 Claim 来源/非空约束，以及 provider 前和事务内 evidence/权限重验 |
 | illustration-planner.ts / handler.ts 分别合并 Skill usage | 首次版本元数据与资源合并规则容易分叉 | 已共用 skills/installed-media-skills.ts 的 mergeDesignSkillUsage；保留顺序和首次元数据，复制输入 |
-| 候选 illustration-review.ts 全稿重写，且 composition 接受任意文本；planner 依赖中文分隔符 | 审阅可能改掉科学焦点，丢分隔后下次改图又重走科学分析 | 已静态修正：v2独立encoding字段；corrections仅允许既有场景艺术字段，其余沿用candidate；旧v1可读可直接编译，修订显式说明需新方案；尚未部署 |
-| 拆分Claim仍按整字段挂全部supports，且字段只能挂一条Claim | 已有拆分入口不能保留独立来源/限定，配图被迫读长文本 | 本轮候选用当前snapshot索引存逐Claim关系；两API共用schema，web复用Domain类型及服务器批次上限；planner/review收到父关系。High主路径GO；实际构建/部署及观察见CURRENT |
+| illustration-review.ts 全稿重写，且 composition 接受任意文本；planner 依赖中文分隔符 | 审阅可能改掉科学焦点，丢分隔后下次改图又重走科学分析 | 已上线v2独立encoding字段；corrections仅允许既有场景艺术字段，其余沿用candidate；旧v1可读可直接编译，修订显式说明需新方案；新模型结果尚未观察 |
+| 拆分Claim仍按整字段挂全部supports，且字段只能挂一条Claim | 已有拆分入口不能保留独立来源/限定，配图被迫读长文本 | 已上线当前snapshot索引保存逐Claim关系；两API共用schema，web复用Domain类型及服务器批次上限；planner/review收到父关系。High主路径GO；正常用户确认效果尚未观察，见CURRENT |
 | 已审细粒度候选自动预填、逐条condition/limitation来源绑定仍缺 | 用户仍需在现有确认入口拆分/选择；尚不能自动选取可靠原子科学关系 | 最终审阅当前是六字段摘要，后续应扩展该步骤的source-bound atomic suggestions并沿原确认入口采用；不新增模型阶段，不把未审semanticStage当权威 |
 | 只在交接时更新文档，意外中断可能丢状态 | 后续回合不清楚已改/未改或沿用旧待办 | 既有docs-sync补充有变化回合final前同步、关键节点先保存、下轮Git恢复；普通问答不重写，不宣称后台关闭回调或绝对防漂移 |
 
-代码去重及后续v2/局部末审均经独立High静态复核：来源/权限/并发重验保持、v1读取与直接编译兼容，修正范围及Claim/Evidence关联确认。未构建、未部署，不声称运行通过；完整所选Claim上下文仍可能触及既有输入上限。治理和这些重构不能把原有科学质量欠缺变成“已完成”。
+代码去重及v2/局部末审均经独立High静态复核，并完成必要服务器构建/部署；来源/权限/并发重验保持，v1兼容。未观察新版科学/审美结果，完整所选Claim上下文仍可能触及既有输入上限。治理和这些重构不能把原有科学质量欠缺变成“已完成”。
 
 ### 成熟工具选型（官方资料，2026-09-14）
 

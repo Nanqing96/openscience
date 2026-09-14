@@ -1,6 +1,6 @@
 # OpenScience (XGS) 项目文件索引
 
-> CURRENT：能力复用与状态治理优先，配图部署/生成暂停。唯一版本事实及续作入口：[Hermes CURRENT handoff](docs/handoff/2026-09-10-hermes-web-image-handoff.md)。能力按[当前能力索引](docs/runbooks/hermes-capability-registry.md)定向查实现、调用和真实结果；下表日期/版本均为对应改动的历史记录，不作为当前release或自动next action。
+> CURRENT：能力复用与状态治理修复已交付，新增配图风格/生成暂停。唯一版本事实及续作入口：[Hermes CURRENT handoff](docs/handoff/2026-09-10-hermes-web-image-handoff.md)。能力按[当前能力索引](docs/runbooks/hermes-capability-registry.md)定向查实现、调用和真实结果；下表日期/版本均为对应改动的历史记录，不作为当前release或自动next action。
 
 发布与传输入口：`infra/scripts/production-release-retention.mjs`默认保留历史与开发工具挂载；显式清理另行授权。`scripts/ssh-identity-path.mjs`供`cloud-sync.mjs`及`evaluation-source-sync.mjs`共用Windows原生OpenSSH路径转换。当前交付结果见CURRENT。
 
@@ -10,15 +10,15 @@
 |---|---|
 | `packages/domain/src/ingestion/claim-evidence-bridge.ts` / `packages/domain/src/{agent/research-run,research-intelligence/claim-evidence-service}.ts` / `apps/api/src/routes/ingestion-claim-selection-schema.ts` / `apps/api/src/routes/{ingestion,research-runs}.ts` / `apps/web/lib/{api,hermes/ingestion-claim-review}.ts` / `apps/web/components/hermes/IngestionClaimReview.tsx` / `apps/web/messages/{zh,en}.json` | 现有确认链路逐Claim保存原文关系，共享API定义/Domain类型与批次容量；来源折叠，旧请求兼容。配图消费父子关系，状态及局限见CURRENT |
 | `infra/development-platform/langfuse/README.md` | 独立网页登录与本人终端私密查看初始凭据步骤；采集服务身份不依赖用户登录，不读取凭据或代登录 |
-| `apps/agent-worker/src/index.ts` / `infra/development-platform/telemetry/README.md` | 未部署候选：Gateway audit 复用已有任务执行上下文与 requestId，供现有 Langfuse requestCorrelation 定位原任务；不新增追踪系统，不回填未知历史 |
+| `apps/agent-worker/src/index.ts` / `infra/development-platform/telemetry/README.md` | Gateway audit复用已有任务执行上下文与requestId；已上线，正常新调用的任务关联尚未观察，不回填未知历史。精确状态见CURRENT |
 | `infra/development-platform/catalog/` / `infra/development-platform/langfuse/` / `infra/development-platform/telemetry/` / `infra/development-platform/code-intelligence/` / `infra/development-platform/skills/` | 用户授权的底层能力交付：私有Backstage目录、Langfuse Gateway元数据、Serena只读符号与引用、标准技能CLI；独立于科研应用release，具体安装/使用证据见CURRENT |
 | `infra/scripts/ssh-run.sh` | 既有SSH入口增加development私有3130/3131/3132端口转发，不公开管理服务 |
 | `.codex/config.toml` | Codex 项目 Serena HTTP MCP，仅允许 overview/find/references；须建立私有转发，索引源版本见 CURRENT |
 | `infra/development-platform/squid-compat/` | ALinux 原版 Squid SRPM 加上游 Bug5520 修复；隔离编译、原生包替换及保留原 RPM/配置回退，修复数字开头镜像域名 CONNECT |
 | `AGENTS.md` / `.agents/skills/architecture-guard/SKILL.md` / `.agents/skills/docs-sync/SKILL.md` / `docs/decisions/ADR-002-agent-tooling-portability.md` | 复用前定位产品意图、实际调用与已有结果；能力索引按需读取、唯一版本锚点，禁止安装/格式检查冒充运行效果 |
 | `README.md` / `.agents/skills/{brainstorming,finishing-a-development-branch,repo-map,requesting-code-review,subagent-driven-development,test-driven-development,test-gate,using-git-worktrees,using-superpowers,verification-before-completion,writing-plans,writing-skills}/` | 从根目录带入已有精简流程与对应引用，保留独有能力；统一当前入口和已授权范围，避免旧工作树恢复重复流程 |
-| `apps/agent-worker/src/skills/installed-media-skills.ts` / `apps/agent-worker/src/presentation/{illustration-planner,handler}.ts` | 本轮候选去重：共用 mergeDesignSkillUsage、保留单一来源入口及提交时重验；High静态GO，未构建部署 |
-| `packages/domain/src/assets/illustration-brief.ts` / `apps/agent-worker/src/presentation/{illustration-planner,illustration-review}.ts` / `apps/agent-worker/src/skills/installed-media-skills.ts` / `.agents/skills/openscience-research-illustration/SKILL.md` | 未部署候选：v2分开科学编码/排布，末审仅艺术局部修正，v1原样读取；共享critical-thinking与角色状态沿用。上游细粒度确认缺口见CURRENT/能力台账 |
+| `apps/agent-worker/src/skills/installed-media-skills.ts` / `apps/agent-worker/src/presentation/{illustration-planner,handler}.ts` | 去重已上线：共用mergeDesignSkillUsage、保留单一来源入口及提交时重验；High静态GO和服务器构建/启动证据见CURRENT |
+| `packages/domain/src/assets/illustration-brief.ts` / `apps/agent-worker/src/presentation/{illustration-planner,illustration-review}.ts` / `apps/agent-worker/src/skills/installed-media-skills.ts` / `.agents/skills/openscience-research-illustration/SKILL.md` | v2分开科学编码/排布、末审仅艺术局部修正、v1原样读取、共享critical-thinking均已上线；未重跑模型。上游细粒度确认缺口见CURRENT/能力台账 |
 | `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | dd4c935a/v4已部署；区分科学批准与审美认可、定向修改保持/否定构图重排。新学术cdce/封面1a1d均被用户否定，仍只认可淡彩aa41；实际结果/局限见CURRENT |
 | `apps/web/app/dashboard/dashboard.module.css` | 6504c004已部署实看：收回Hermes遗留跨三行布局，首行等高、后续整行及紧凑导入；桌面/手机无横溢出 |
 | `infra/private-cleanup/{runner.mjs,install.sh}` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 已交付f8：Node符号链接精确身份、正常排空退出、安装等锁、回收站自动刷新；原4项已实际清除。独立Codex仅090文件补丁、base1ad运行环境保留 |
