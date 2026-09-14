@@ -32,7 +32,7 @@ export function parseIllustrationBrief(value: unknown, claimIds?: readonly strin
     const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (typeof b.claimId !== 'string' || !uuid.test(b.claimId) || (claimIds && !claimIds.includes(b.claimId))
       || typeof b.evidenceId !== 'string' || !uuid.test(b.evidenceId)
-      || typeof b.quote !== 'string' || b.quote.trim().length < 12 || b.quote.length > 400) return fail();
+      || typeof b.quote !== 'string' || b.quote.trim().length < 12 || b.quote.length > 12000) return fail();
     return { description: line(raw.description, 100), basis: { claimId: b.claimId, evidenceId: b.evidenceId, quote: b.quote } };
   });
   return { schemaVersion: 1, message: line(v.message, 120), domain: v.domain as IllustrationBrief['domain'],

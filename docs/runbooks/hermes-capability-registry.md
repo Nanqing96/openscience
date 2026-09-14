@@ -1,5 +1,7 @@
 # Hermes Capability Registry
 
+- 2026-09-14当前应用b88b0fe2/rollback e2cccb4d，Chat bundle e2：两个真实结构化方案f3c75142/393f050d均因科学错误API200 rejected，未出图。实际输入确认整篇Claim及40Evidence被混合艺术规划，400字符切割拆散源上下文；新候选改科学意图→艺术设计两阶段，前者选完整上游证据/关系，后者只排布与视觉处理，科学字段由代码保留。可复用方案经High架构认可，当前diff待最终审查/部署；不用更多模板或手编论文图代替能力。
+
 - 2026-09-14当前候选（尚未部署）：自有 `openscience-research-illustration` v1 已装项目与本机 Codex，Hermes 按阶段读取。上游已核对分析/原文派生科学关系与画面意图，独立版本 IllustrationBrief 保存来源关联、构图、材质、标签及条件；直接编译现代 brief，旧方案兼容。Chat 新增同 RO/version 的实际 style PNG 输入，原子 sidecar、输入身份、上传就绪及保存前权限检查；不回退 Codex。参考图不充当科学证据。High 静态复核后补足所有关系/公式须有 subject 原文依据；服务器实际生图尚待观察，不能由安装推断跨文献质量。当前 release/rollback 与下一步见 CURRENT handoff。
 
 - 2026-09-14历史应用f8e44815/rollback9a36c1e0：整块证据默认关闭，个人空间仅显示正在排队/上传/解析任务；核对建议、失败详情与历史集中Hermes，未伪造确认。回收站4项原请求已完成清除，共享对象保留，两篇公开v1科研字段/证据/图不变。Node符号链接身份、正常排空退出与清理安装等锁已修复；独立Codex runner090文件补丁/base1ad54c72，原运行环境/认证复用；受限清理bundle f8，浏览器runner未改。空回收站/Dashboard/公共/工作台/窄屏已实看，必要build/start exit0，无测试/新模型/迁移；完整收据与限制见CURRENT。

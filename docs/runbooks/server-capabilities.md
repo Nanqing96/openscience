@@ -1,6 +1,8 @@
 # 服务器能力与复用清单
 
-- 2026-09-14当前应用ea43696d/rollback dd4c935a；三套原版baoyu设计技能已随release安装，Hermes image storyboard/scene-image读取原文章节，固定路径/最多2风格1布局，provenance记录实际消费。必要build/start exit0；真实私有方案141f42d3一次成功且来源可追溯，但科学域/公式仍混乱，High及根agent拒绝出图，已API200标rejected。无新图片/公开变更/测试/迁移/新后端；image runner114与Codex runner090保持。Figma两配置disabled，仅调查。最新结果/限制见CURRENT及tmp/design-skills-*。
+- 2026-09-14历史应用及 Chat bundle e2cccb4d/rollback ea43696d：自有通用科研配图 skill v1、上游原文支撑的结构化画面意图、直接编译与真实 Chat style PNG 输入已部署；复用原镜像/浏览器/代理，必要 build/start 与 provider 安装 exit0。清理器同源安装只扩展精确 reference.png，无新清除请求。产品页面/__release 实读一致，首个真实结构化方案 f3c75142 已由 API202 排队，图片上传与质量尚待观察；无测试/预检/CI/迁移/Codex调用。以 CURRENT 后续结果为准。
+
+- 2026-09-14历史应用ea43696d/rollback dd4c935a；三套原版baoyu设计技能已随release安装，Hermes image storyboard/scene-image读取原文章节，固定路径/最多2风格1布局，provenance记录实际消费。必要build/start exit0；真实私有方案141f42d3一次成功且来源可追溯，但科学域/公式仍混乱，High及根agent拒绝出图，已API200标rejected。无新图片/公开变更/测试/迁移/新后端；image runner114与Codex runner090保持。Figma两配置disabled，仅调查。最新结果/限制见CURRENT及tmp/design-skills-*。
 
 - 2026-09-14历史应用6504c004/rollback f8e44815：仅个人空间CSS重排，首行等高双卡、后续整行和紧凑导入；必要build/start exit0，桌面/窄屏已实看。没有新增能力、依赖或运行器代码，Codex仍runner090/base1ad，受限清理代码沿用f8；不重跑生成或清除。当前状态见唯一CURRENT handoff。
 

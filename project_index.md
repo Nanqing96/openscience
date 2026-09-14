@@ -17,7 +17,7 @@
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：ECS ea43696d/rollback dd4c935a；新自有科研配图skill+带来源的结构化brief+Chat参考图传递已实现待High/部署。上游文献分析决定每篇科学关系与表达，不固定模板；Chat主用/Codex备用。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> CURRENT 2026-09-14：应用b88b0fe2/rollback e2cccb4d；Chat bundle e2。自有skill及参考图已部署，真实两稿科学不合格已拒绝，未生图。新科学意图→艺术设计两阶段代码待High/部署。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
@@ -650,4 +650,4 @@
 
 | .agents/skills/baoyu-article-illustrator/、baoyu-cover-image/、baoyu-infographic/；apps/agent-worker/src/skills/installed-media-skills.ts | 三个原版MIT设计技能及Hermes只读原文章节加载；消费写入既有资产provenance | 2026-09-14已部署ea43696d；上游commit1567581c；真实方案141f42d3消费三包，但方案质量不合格已rejected，见CURRENT |
 
-| .agents/skills/openscience-research-illustration/；packages/domain/src/assets/illustration-brief.ts；apps/agent-worker/src/presentation/{storyboard,scene-image,handler}.ts；packages/ai-gateway/src/{image,codex-image-protocol,codex-image,gateway}.ts；infra/chatgpt-browser/{broker.mjs,runner.cjs} | 自有科学分析驱动配图skill、带原文basis的brief与Chat真实参考图传递 | 本轮候选待部署/实际出图；精确状态见CURRENT handoff |
+| .agents/skills/openscience-research-illustration/；packages/domain/src/assets/illustration-brief.ts；apps/agent-worker/src/presentation/{illustration-planner,storyboard,scene-image,handler}.ts；packages/ai-gateway/src/{image,codex-image-protocol,codex-image,gateway}.ts；infra/chatgpt-browser/{broker.mjs,runner.cjs} | 自有科学分析驱动配图skill、带原文basis的brief与Chat真实参考图传递 | 本轮候选待部署/实际出图；精确状态见CURRENT handoff |

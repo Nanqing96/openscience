@@ -9,9 +9,19 @@ metadata:
 
 Create a readable scientific image with a deliberate composition. The source supplies the science; the user's accepted images and feedback guide the art. Chat image generation is the current primary execution path. Keep Codex CLI available as a reserve; never select it automatically or consume its quota as a fallback.
 
+## Scientific intent
+
+First select one useful scientific explanation from the upstream reviewed analysis and its complete original passages. This stage chooses what the reader should understand, not an artistic style. A whole-paper conclusion often contains several independent ideas; select one coherent relationship instead of compressing all of them into one picture. Follow an explicitly requested number of pictures, otherwise prefer one. Preserve complete source context: do not split equations from definitions or qualifiers to fit a short quotation field.
+
+For each selected explanation, establish the domain, the minimum subjects and relationships, exact short labels, essential conditions and the meaning of every intended visual mark. Use complete original passage identifiers; the server supplies their actual text. The passage must support the full statement, including qualifiers. Reviewed summaries supply context but do not override a conflicting or narrower original passage. Unsupported details should be left out or reported as missing, not repaired from general knowledge.
+
+In the encoding, distinguish physical position, parameter coordinates and logical groupings. Decide what each axis, boundary, distance, arrow or region would mean before designing its appearance. A meaningful color has one consistent role. Quantitative curves and data-derived shapes require a data renderer; do not ask an image model to invent their values or extrema. Choose a different supported explanatory role when a faithful illustration is not available from the supplied sources.
+
+The science fields and encodings are carried into art direction unchanged. Later stages can arrange and style them but cannot introduce another scientific idea, equation, numerical example or relationship. An invalid scientific intent must return for correction before image generation.
+
 ## Planning
 
-Derive the visual intent from the upstream literature analysis and its reviewed original passages: what was studied, what was established, how it works, and under which conditions. Choose what benefits from a visual explanation. This may be a physical arrangement, mechanism, comparison, classification or another relationship; do not assume every paper needs the same kind or number of pictures. A generated conceptual illustration cannot replace a quantitative data renderer.
+Design the already selected scientific intent. The upstream literature analysis and its reviewed original passages establish what was studied, what was established, how it works, and under which conditions. Its visual explanation may be a physical arrangement, mechanism, comparison, classification or another relationship; do not assume every paper needs the same kind or number of pictures. A generated conceptual illustration cannot replace a quantitative data renderer.
 
 Identify what must remain invariant before considering style: the scientific domain, source-supported subjects, relationships, quantities and essential conditions. A reference image is visual guidance, not evidence for the new paper. A changed upstream analysis invalidates the old visual intent; derive a new one rather than preserving a stale picture.
 

@@ -1,30 +1,27 @@
 # Hermes / Workbench CURRENT Handoff
-## Current task and constraints
-- 用户要求固化我们自己的通用科研配图skill，避免反复手改提示词；最新强调画面认识须来自上游文献科学解析与分析，不可固定文章/构图模板。Chat生图为主，Codex CLI仅备用，不主动调用或自动回退耗额度。
-- 本轮实现：从每篇已核对分析与原文派生结构化IllustrationBrief，画面对象关联Claim/证据；构图与风格分别表达；现代brief直接编译生图输入，避免第二LM改写科学含义。参考图只作style，绝非文献证据。
-- 用户只认可淡彩aa41，否定学术cdce/编辑1a1d及更早两图。上次实际方案141f42d3因科学域混排/公式冲突已rejected；不能恢复或用它生图。
+## Goal and constraints
+- 用户要求自有通用科研配图skill：科学认识来自每篇上游文献解析/分析，不是固定模板。Chat生图主用，Codex CLI备用，不自动回退或耗其额度。
+- 禁止测试/预检/CI/本机运行检查；只做本机静态编辑与传输、必要服务器build/start、真实产品观察。不得删除资料、修改公开v1或恢复rejected方案。Figma/视频/第三篇/批量暂停。
 ## Version tuple
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；本轮起始HEAD/origin cfa45e3c0edba93bca9008426825ab4d5afc73df。
-- 本轮启动实读ECS release ea43696dd6b115415712fe87fd8ff4d2a4cbdc37，rollback dd4c935aca25c37b95a3295e05cce1ce1ecebffb；当前新代码尚未部署，勿混淆candidate与production。
-- 唯一无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。根目录dirty main不是生产基线。
-## Implemented, awaiting deployment
-- 自有.agents/skills/openscience-research-illustration/{SKILL.md,references/art-directions.md}已创建并装入C:/Users/Mac/.codex/skills同名目录。不写死论文和科学对象，选择上游关系、艺术方向、真实参考图与保留反馈均有指导。继续复用原版baoyu三包的设计参考；baoyu-image-gen未安装、不切其Codex路径。
-- packages/domain/src/assets/illustration-brief.ts：独立schemaVersion1，单主域、message/subjects/composition/treatment/labels/constraints。subjects携带解引用到原文的basis；planner只返回claimId/quoteId，服务器映射到evidenceId/quote并校验其仍在当前reviewed passages。visualAction唯一派生，读回不一致拒绝；超1500直接拒绝不截断。旧无brief计划保留旧兼容路径，视频保持。
-- 现有SceneImageRequest新增styleReferenceAssetId；API与worker限定同RO/version、未删除draft/approved、规范Hermes scene PNG。初读/外发前提交事务/保存前校验hash与可读状态；生成资产单独记录styleReference，不纳入Claims/evidence或公开科学依赖。
-- Gateway仅Chat provider支持reference PNG；验证字节/hash，固定inbox sidecar先原子持久化，既有promptHash有ref时扩展成版本化canonical JSON身份，无ref保持旧hash。broker固定安全路径复制到私有job，runner图片模式后上传并确认单附件就绪，失败不静默纯文本/不盲重发。
-- 传输层由/root/chat_reference_transport负责6文件，已完成；独立High已看全部diff，其最后指出的科学关系覆盖与单域scene规则已补入skill及planner。无测试、预检、CI、本机构建/迁移/新依赖。
-## Server/browser evidence and pending operations
-- 只读观察服务器自建空白Chat页：#prompt-textarea.closest(form)内唯一input#upload-files[type=file]，Send prompt/send-button，初始groups=[]。未上传演练/未发送，页已关闭。
-- 新附件就绪selector复用已部署review-runner的单role=group文件名模式，仍需本次实际私有图任务观察，不能宣称已可用。
-- 新应用需既有deploy.sh --confirm --no-tests --skip-migrate --reuse-unchanged-capability-images，rollback ea43696d；复用干净发布树.worktrees/art-direction-release-41ae8902。Chat provider broker/runner协议需用既有install.sh --confirm-provider从新immutable release一同安装，复用既有renderer image，不重建浏览器/登录/代理。
-- review-runner源码最后变更501da7a3、page-lifecycle d369ccc2与线上一致，安装保持这些能力；Codex runner09058847/base1ad54c72保持，不调用其额度。
-## Real research and next action
-- Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；private e77dc3c7-95cb-4269-ac3c-24276fea74e7（internal8/revision9）；Claim93416292-0dbb-42b1-8810-6bdf77804c1f/40Evidence。
-- aa41a018-b2ff-4ffb-9557-19ecabe104bc是用户指定可借鉴的淡彩PNG；原contentHash565fa04e0c79ab9ee797b4bfd9d3a334b6f49b88b72756f8d1533bb631e7330b保持。公开OSR-2026-000023/v1/version72c315af不改；所有旧图/文件保留。
-- 完成High问题修复、提交和服务器必要构建安装后，让Hermes基于上述上游分析生成一个新的真实私有结构化方案（不手工编科学内容），读科学依据/构图质量；科学可用后通过既有approved-plan API生成一张Chat参考图，实际看原图/页面/附件与provenance，保留draft供用户判断，不公开。
-- 原tmp/design-skills-*和art-feedback-*脚本有历史mutation，禁止直接重跑。新操作保存新的tmp/及服务器/jobs收据、幂等key，超时先查状态。
-## Remaining limits
-- 输出仍1280×720，不新增确定性绘图/视频/任意画幅。本轮先完成结构化科学传递和Chat真实参考图；未知额度/精确字体/科学正确性不得靠安装或成功状态声称通过。
-- 历史Chat发送前间歇失败、通用retry复用terminal task ID不一致仍未解决；本轮不清spool。第三篇、视频、批量冷启动与Figma暂停。
-## Read next
-- 当前diff、新skill、illustration-brief.ts、storyboard.ts、scene-image.ts；Chat传输6文件；server-capabilities/deployment相关条目。源上游MIT commit1567581c详情仍在hermes-capability-registry。
+- 工作树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release，HEAD/origin b88b0fe2b0a76071aa5b300bf49cad9153e53569。
+- 实际应用 release b88b0fe2b0a76071aa5b300bf49cad9153e53569 / rollback e2cccb4d75ee8980167d23d4b5c1867263caf2e8，Chat bundle e2cccb4d，cleanup b88b0fe2；新两阶段代码尚未部署。
+- 干净发布树 .worktrees/art-direction-release-41ae8902 当前 b88b0fe2。唯一无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交或覆盖。根main不是生产基线。
+## Delivered
+- 项目/Codex安装自有 openscience-research-illustration 与 art-directions；保留3套原版baoyu/MIT/commit1567581c。Hermes实际读取并在provenance记录skill和章节；baoyu-image-gen只研究未安装，不切CLI。
+- e2cccb4d部署了原文关联IllustrationBrief、唯一visualAction及确定性生图编译；新方案无第二次科学改写；旧无brief方案兼容。固定prompt1500不截断。
+- 同版本styleReferenceAssetId贯通API/worker/Chat，原图字节/hash经权限与状态校验、原子sidecar、Chat文件附件上传就绪；没有纯文字fallback。新gateway/runner/broker已安装，实际参考上传尚未发生，不宣称可用。
+- e2必要build/start与Chat/cleanup installer exit0，b88仅补视觉编码skill后再次必要build/start exit0；日志tmp/illustration-brief-deploy.log、illustration-provider-install.log、illustration-encoding-deploy.log。复用既有镜像/会话/代理，无新依赖/迁移。
+## Actual quality findings and current implementation
+- 两个真实plan-only f3c75142、393f050d均由Hermes一次成功保存，但科学不合格已API200 rejected，未生图。前者把波矢角谱画成实空间弧/色带；后者补造Bessel主瓣极值，重复错误远场条件。不能以succeeded/有引用称科学通过。
+- 已按真实输入定位：Claim是约4k整篇人工已审笔记，40条Evidence含900–1600字符完整段；原规划一次混入全文与设计skill，又机械切400导致定义/公式/限定分离。实读tmp/illustration-upstream.json、两稿provenance.json。
+- High同意改两阶段。当前新 illustration-planner.ts：science阶段仅读自有Scientific intent与完整上游，选择一个关系、单domain、1–2subjects/conditions及科学编码；art阶段只读已选科学意图与设计参考，仅输出layout/treatment；代码保留科学字段与原文不变，仍组装已有brief/API。引用上限放至12000保留完整段；不把引用文本传入生图prompt；总输入100k、prompt1500仍限。
+- storyboard.ts早路由image并去旧image死分支，video保持；loader增加science阶段；skill同步本机；此diff等待/root/art_direction_review最终High，只读，不测试。
+## Real research / pending
+- RO9067a2d5-42ad-4c06-b234-753728b71064；private e77dc3c7-95cb-4269-ac3c-24276fea74e7；Claim93416292-0dbb-42b1-8810-6bdf77804c1f；40Evidence。
+- 用户认可参考aa41a018-b2ff-4ffb-9557-19ecabe104bc/hash565fa04e0c79ab9ee797b4bfd9d3a334b6f49b88b72756f8d1533bb631e7330b；公开OSR-2026-000023/v1/version72c315af不改，所有历史图片保留。
+- 下一步：完成High修正和两阶段代码提交/服务器部署，让Hermes实际产生新plan，确认科学选题和艺术映射均准确后再只生一张私有Chat参考图。若不准则拒绝，不能为完成任务而放行。
+- tmp/illustration-reference-generate.sh现硬编码已rejected393f050d，绝对不能直接执行；其他plan/reject脚本都已有mutation收据，禁止重跑旧请求。新任务用新receipt/幂等key，模糊超时先查状态。
+## Limits
+- 现有12000原文引用只是完整性上限，不证明蕴含正确；科学与美学需实际看。输出仍1280×720；无确定性数据绘图器。
+- Chat历史发送前间歇失败和通用retry终态task ID问题仍有边界，不重置spool；附件selector只只读看过页面，尚无实际上传证据。
+- SSH仅项目脚本/显式Git Bash/XGS_CONFIG_ROOT，不读取凭据。后续应用回退到b88无需回退e2协议；不让旧纯文字runner处理新参考请求。

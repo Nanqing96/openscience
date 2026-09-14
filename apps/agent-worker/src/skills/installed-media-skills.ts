@@ -23,7 +23,7 @@ const layouts = [
   'jigsaw', 'venn-diagram', 'winding-roadmap', 'circular-flow', 'dense-modules',
 ] as const;
 
-export function loadInstalledMediaSkills(style: string, instruction: string, stage: 'plan' | 'render' = 'plan'): InstalledMediaSkills {
+export function loadInstalledMediaSkills(style: string, instruction: string, stage: 'science' | 'plan' | 'render' = 'plan'): InstalledMediaSkills {
   const usage: DesignSkillUsage[] = [];
   const excerpts: string[] = [];
   function include(id: SkillId, relativePath: string, headings?: readonly string[]) {
@@ -48,6 +48,10 @@ export function loadInstalledMediaSkills(style: string, instruction: string, sta
     entry.resources.push(...(headings ? headings.map((heading) => `${relativePath}#${heading}`) : [relativePath]));
   }
 
+  if (stage === 'science') {
+    include('openscience-research-illustration', 'SKILL.md', ['Scientific intent']);
+    return { usage, instructions: excerpts.join('\n\n') };
+  }
   include('openscience-research-illustration', 'SKILL.md', [stage === 'plan' ? 'Planning' : 'Execution']);
   include('openscience-research-illustration', 'references/art-directions.md');
   include('baoyu-article-illustrator', 'SKILL.md', ['Three Dimensions', 'Types']);
