@@ -1,5 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
+- 当前新任务进行中：用户批准同一已审论文的学术机制图/封面插画/淡彩三张私有候选；先落实，再检索生图/绘图/构图skills。选用23/v1的已审内容恢复私有工作草稿，旧公开v1/原图保留；不启动视频或第三篇批量。候选art-direction v2与图片wrapper已静态High GO，待部署和真实生成/视觉科学复核，不先声称成图质量通过。
 - 当前布局反馈已完成：6504c004已部署，rollback f8e44815。仅dashboard.module.css调整：Hermes与继续研究首行等高并排，后续工具整行，桌面导入说明/操作紧凑分栏、窄屏单列。独立High GO、必要服务器build/start exit0，无测试/预检/迁移/数据或生成操作。
 - 当前反馈已完成：f8e44815已部署；Node符号链接识别、Codex正常信号退出及清理安装等待锁修复。用户原4项purge_pending已全部purged：旧RO66已删除、两会话不存在、笔记内容清空；共享对象仍有引用而保留。整块证据默认关闭，Dashboard仅显示排队/上传/解析任务，核对建议和失败/历史保留Hermes，未伪造确认或重跑科学分析。
 - 2026-09-14最新续作完成：9a36c1e0已部署，卡片科学文本、同版本结构化折叠证据、工作台作者/公开号已实读；第一篇六字段默认折叠、第二篇四原章节分层。22已行政勘误v1/DHL并允许原PDF下载，audit6c93436f-3c2e-40fe-82ad-d0c751c32f73；不是新发布，禁止重跑旧publish或按旧文档恢复v10。scope见已审infra/scripts/correct-deep-sub-cycle-publication.mjs。
