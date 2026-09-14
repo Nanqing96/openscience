@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Host-owned, ID-only cleanup. It never accesses external ChatGPT conversations.
 import { constants } from 'node:fs';
-import { lstat, open, readdir, readFile, readlink, rename, unlink, rmdir } from 'node:fs/promises';
+import { lstat, open, readdir, readFile, readlink, realpath, rename, unlink, rmdir } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { isDeepStrictEqual } from 'node:util';
 import { randomUUID } from 'node:crypto';
@@ -194,6 +194,9 @@ async function checkOperators() {
 }
 async function signalRunner(unit) {
   const allowed = SIGNAL_UNITS[unit]; if (!allowed) pending('UNKNOWN_UNIT');
+  // Distribution Node packages may expose /usr/bin/node as a versioned symlink.
+  // Compare the running executable with the resolved trusted entry point.
+  const nodeExecutable = await realpath('/usr/bin/node');
   const cgroup = execFileSync('/usr/bin/systemctl', ['show', '--property=ControlGroup', '--value', unit], { encoding: 'utf8', timeout: 5000 }).trim();
   if (cgroup !== `/system.slice/${unit}`) pending('UNVERIFIED_CGROUP');
   const pids = (await readFile(`/sys/fs/cgroup${cgroup}/cgroup.procs`, 'utf8')).trim().split(/\s+/u).filter(Boolean);
@@ -207,7 +210,7 @@ async function signalRunner(unit) {
     const relative = args[1].slice(allowed.base.length);
     const match = /^\/releases\/([a-f0-9]{40})\/infra\/codex-image-runner\/(runner|video-runner)\.mjs$/u.exec(relative);
     if (!args[1].startsWith(`${allowed.base}/`) || !match || `${match[2]}.mjs` !== allowed.script || args[3] !== `${allowed.base}/config-${match[1]}.json`
-      || !membership.split('\n').includes(`0::${cgroup}`) || await readlink(`/proc/${pid}/exe`) !== '/usr/bin/node') continue;
+      || !membership.split('\n').includes(`0::${cgroup}`) || await readlink(`/proc/${pid}/exe`) !== nodeExecutable) continue;
     matched.push(pid);
   }
   if (matched.length !== 1) pending('RUNNER_NOT_IDENTIFIED');
@@ -242,4 +245,4 @@ async function main() {
   try { await sweep(scopes); }
   catch { for (const scope of scopes) await receipt(scope, 'pending', 'HOST_LEASE_OR_OPERATOR_PENDING'); process.exitCode = 1; }
 }
-main().catch(() => { console.error('PRIVATE_CLEANUP_PENDING'); process.exitCode = 1; });
+main().catch(error => { console.error('PRIVATE_CLEANUP_PENDING', /^[A-Z_]+$/u.test(error.code ?? '') ? error.code : 'HOST_CLEANUP_PENDING'); process.exitCode = 1; });

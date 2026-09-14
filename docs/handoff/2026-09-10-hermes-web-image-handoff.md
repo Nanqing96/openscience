@@ -1,5 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
+- 当前新任务进行中：回收站4个已确认purge_pending受宿主Node符号链接校验阻塞（/usr/bin/node→node-22）；修复真实可执行路径比较及Codex正常SIGTERM退出误报失败。整块证据默认折叠、Dashboard仅显示真正处理中任务，核对/历史保留Hermes。候选未部署；已读应用仍9a36c1e0/rollback1f7032a3，HEAD从Git读取。tmp/trash-current-reading.log确认4范围不含22/23、无目标66公开记录；不扩大删除范围。
 - 2026-09-14最新续作完成：9a36c1e0已部署，卡片科学文本、同版本结构化折叠证据、工作台作者/公开号已实读；第一篇六字段默认折叠、第二篇四原章节分层。22已行政勘误v1/DHL并允许原PDF下载，audit6c93436f-3c2e-40fe-82ad-d0c751c32f73；不是新发布，禁止重跑旧publish或按旧文档恢复v10。scope见已审infra/scripts/correct-deep-sub-cycle-publication.mjs。
 - 2026-09-14最新截图反馈已完成：公开Claim复用Hermes科学Markdown，概要/完整推导/适用条件/原文证据分层；不再整篇h3直出。来源按文件/页码分10组保留40条，去重复标题、制作前言、笔记UUID、内部[S]和机器locator；原quote/source也用Markdown与公式显示，原始数据不改。
 - /developers复用公开产品rp颜色/字体/共享标题；curl前置。线上原文教程实跑发现原Python默认UA被Cloudflare403/1010拒绝，显式真实客户端User-Agent后成功；不放宽防护或伪装浏览器。现在页面curl/Python均已逐字执行exit0，六字段/固定URL/下载URL与API一致。

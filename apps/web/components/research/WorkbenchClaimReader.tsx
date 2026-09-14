@@ -52,10 +52,7 @@ export function WorkbenchClaimReader({ record }: { record: ReadingRecord }) {
   }
 
   return <section className={styles.workbenchReader} data-version-claim-reader={versionId}>
-    <details>
-      <summary>{t('title')}</summary>
-      <ClaimNarrative claims={record.claims} evidence={evidence} onInspect={item => void inspectEvidence(item)} />
-    </details>
+    <ClaimNarrative claims={record.claims} evidence={evidence} onInspect={item => void inspectEvidence(item)} />
     <EvidenceSheet open={sourceOpen} onOpenChange={open => { setSourceOpen(open); if (!open) sourceRequest.current?.abort(); }} onReturnFocus={() => returnFocus.current?.focus()} evidence={selected} source={source} loading={sourceLoading} error={sourceError} />
   </section>;
 }

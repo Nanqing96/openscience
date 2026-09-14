@@ -279,7 +279,6 @@ export function PublicReadingSurface({ research, activeTab = 'overview', onTabCh
 
           <PresentationAssetGallery assets={supplementaryMedia} />
           <section className={styles.claimSection}>
-            <h2>{t('claimReader.title')}</h2>
             <ClaimNarrative claims={research.claims} evidence={research.evidence} onInspect={inspectEvidence} />
           </section>
           <details className={styles.resources}>

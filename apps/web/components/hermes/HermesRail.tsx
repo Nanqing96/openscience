@@ -4,16 +4,12 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import * as React from 'react';
 
-import { hermesTaskHref } from './hermes-state';
+import { hermesTaskHref, isProcessingHermesTask } from './hermes-state';
 
-const localizedTaskStates: Record<string, 'queued' | 'uploading' | 'parsing' | 'stored' | 'needsReview' | 'failedRetryable' | 'failedBlocked'> = {
+const localizedTaskStates: Record<string, 'queued' | 'uploading' | 'parsing'> = {
   queued: 'queued',
   uploading: 'uploading',
   parsing: 'parsing',
-  stored: 'stored',
-  needs_review: 'needsReview',
-  failed_retryable: 'failedRetryable',
-  failed_blocked: 'failedBlocked',
 };
 
 export interface HermesRailTask {
@@ -26,14 +22,14 @@ export interface HermesRailTask {
   error: string | null;
 }
 
-export function HermesRail({ historyTasks = [], tasks, loadState = 'ready' }: { historyTasks?: HermesRailTask[]; tasks: HermesRailTask[]; loadState?: 'loading' | 'ready' | 'unavailable' }) {
+export function HermesRail({ tasks, loadState = 'ready' }: { tasks: HermesRailTask[]; loadState?: 'loading' | 'ready' | 'unavailable' }) {
   const t = useTranslations('dashboard');
   const [expanded, setExpanded] = React.useState(false);
-  const attentionTasks = tasks.filter((task) => task.state === 'needs_review' || task.state.startsWith('failed_'));
-  const backgroundTasks = tasks.filter((task) => task.state !== 'needs_review' && !task.state.startsWith('failed_'));
-  const visibleAttention = expanded ? attentionTasks : attentionTasks.slice(0, 3);
-  const visibleBackground = expanded ? backgroundTasks : backgroundTasks.slice(0, 2);
-  const hiddenCount = tasks.length - visibleAttention.length - visibleBackground.length;
+  const processingTasks = tasks.filter(isProcessingHermesTask);
+  const visibleTasks = expanded ? processingTasks : processingTasks.slice(0, 3);
+  const hiddenCount = processingTasks.length - visibleTasks.length;
+
+  if (processingTasks.length === 0 && loadState === 'ready') return null;
 
   const taskRow = (task: HermesRailTask) => {
     const stateKey = localizedTaskStates[task.state];
@@ -61,38 +57,16 @@ export function HermesRail({ historyTasks = [], tasks, loadState = 'ready' }: { 
       className="border-t border-os-rule-paper pt-5"
       data-hermes-protected="true"
     >
-      <div className="flex items-end justify-between gap-4 border-b border-os-rule-paper pb-3">
-        <div>
-          <p data-reading-role="caption" className="text-os-muted-paper">{t('hermes.activity.eyebrow')}</p>
-          <h2 id="hermes-task-title" className="mt-2 text-xl font-medium text-os-ink">{t('hermes.activity.title')}</h2>
-        </div>
-      </div>
+      <h2 id="hermes-task-title" className="border-b border-os-rule-paper pb-3 text-lg font-medium text-os-ink">{t('hermes.activity.title')}</h2>
 
       {loadState !== 'ready' ? <p role="status" className="py-3 text-sm leading-6 text-os-muted-paper">{t(loadState === 'loading' ? 'hermes.activity.loading' : 'hermes.activity.unavailable')}</p> : null}
-      {tasks.length === 0 && loadState === 'ready' ? (
-        <p className="py-6 text-sm leading-6 text-os-muted-paper">{t('hermes.empty')}</p>
-      ) : <>
-        {visibleAttention.length > 0 ? <section className="mt-4" aria-labelledby="hermes-attention-title">
-          <h3 id="hermes-attention-title" className="text-xs font-semibold tracking-wide text-os-vermilion-ink">{t('hermes.activity.attention')}</h3>
-          <ol className="mt-1 list-none divide-y divide-os-rule-paper p-0">{visibleAttention.map(taskRow)}</ol>
-        </section> : null}
-        {visibleBackground.length > 0 ? <section className="mt-4" aria-labelledby="hermes-background-title">
-          <h3 id="hermes-background-title" className="text-xs font-semibold tracking-wide text-os-muted-paper">{t('hermes.activity.background')}</h3>
-          <ol className="mt-1 list-none divide-y divide-os-rule-paper p-0">{visibleBackground.map(taskRow)}</ol>
-        </section> : null}
-        {hiddenCount > 0 || expanded ? <button
-          aria-expanded={expanded}
-          className="mt-3 min-h-11 border-b border-os-rule-paper text-sm text-os-ink hover:border-os-vermilion-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-os-vermilion-ink"
-          onClick={() => setExpanded((current) => !current)}
-          type="button"
-        >{expanded ? t('hermes.showLess') : t('hermes.showMore', { count: hiddenCount })}</button> : null}
-      </>}
-      {historyTasks.length > 0 ? <details className="mt-5 border-t border-os-rule-paper pt-3">
-        <summary className="min-h-11 cursor-pointer py-3 text-sm text-os-muted-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-os-vermilion-ink">
-          {t('hermes.activity.history', { count: historyTasks.length })}
-        </summary>
-        <ol className="list-none divide-y divide-os-rule-paper p-0">{historyTasks.map(taskRow)}</ol>
-      </details> : null}
+      {visibleTasks.length > 0 ? <ol className="mt-1 list-none divide-y divide-os-rule-paper p-0">{visibleTasks.map(taskRow)}</ol> : null}
+      {hiddenCount > 0 || expanded ? <button
+        aria-expanded={expanded}
+        className="mt-3 min-h-11 border-b border-os-rule-paper text-sm text-os-ink hover:border-os-vermilion-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-os-vermilion-ink"
+        onClick={() => setExpanded((current) => !current)}
+        type="button"
+      >{expanded ? t('hermes.showLess') : t('hermes.showMore', { count: hiddenCount })}</button> : null}
     </aside>
   );
 }

@@ -4,6 +4,8 @@
 
 | 本轮文件 | 用途 |
 |---|---|
+| `infra/private-cleanup/runner.mjs` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 当前修复候选：Node符号链接精确身份、正常排空退出、回收站自动刷新；不扩大已确认清除范围，生产仍9a36c1e0 |
+| `apps/web/components/public/ClaimNarrative.tsx` / `apps/web/components/hermes/{HermesRail.tsx,hermes-state.ts}` / `apps/web/app/dashboard/page.tsx` | 当前修复候选：整块证据默认关闭，个人空间只展示处理中任务，建议和历史集中Hermes对话 |
 | `infra/scripts/correct-deep-sub-cycle-publication.mjs` | 用户指定的首次发布行政勘误已执行：唯一22/v10→v1、DHL署名和原PDF下载，既有Serializable锁/审计保留原值；audit6c93436f，勿重跑发布；状态见CURRENT |
 | `apps/web/components/research/WorkbenchClaimReader.tsx` / `apps/web/components/public/evidence-display.ts` / `apps/web/components/public/ClaimNarrative.tsx` | DEPLOYED9a36c1e0；保存版本的原字段/章节/引用关系共享折叠阅读，六字段默认关闭、来源按需读取，科学数据不重生成 |
 | `apps/web/components/explore/ResearchCard.tsx` / `apps/web/components/content/ScientificText.tsx` | DEPLOYED1f7032a3并含于9a36；首页/Explore共用科学公式和完整数学token截取，阅读隐藏内部来源编号 |

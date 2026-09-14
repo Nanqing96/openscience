@@ -1,5 +1,15 @@
 # Runbook: 部署（Deployment）
 
+## 2026-09-14 回收站已确认清除卡住：修复准备
+
+实际原因：宿主 `/usr/bin/node` 为 `node-22` 符号链接，精确进程识别原以未解析路径比较而拒绝正确进程；Codex runner 正常 SIGTERM 还返回 1，导致系统自动重启争抢清理锁。修复保留原 argv/config/cgroup 约束，比较可信 Node 的真实路径；只有真实运行/心跳故障才返回失败。
+
+执行：应用正常必要 build/start 后，独立宿主 runner 沿用现有 1ad54c72 运行包，仅复制新版 runner.mjs 到新补丁目录，保留原 source-id 并登记 runner-source-id；配置只按原权限复制，不读取输出。备份原 unit，短时 `/run` drop-in 设置 Restart=no，精确发信号并等原进程自然退出，再换 ExecStart 与恢复原 Restart 规则；不杀整个进程组。受限清理器按现有 install.sh 从该 release 安装，继续原4项已确认请求，不新建删除请求。具体操作候选 `tmp/install-trash-runner-fix.sh`，运行收据见 CURRENT。
+
+回滚：恢复保存的旧 unit 前，候选亦须精确信号自然排空；不能退出则保留现场，不强杀。临时 override 移至备份并 daemon-reload，恢复之前启用的清理 timer。应用可退9a36c1e0，但旧清理器/旧 runner 恢复会重新引入阻塞；已完成的永久清除不能用应用回滚恢复。
+
+实际观察尚待执行：原4项最终状态、回收站页面自动移除、公开22/23 v1原文和附件仍可访问。只续用户已确认的队列，不运行测试、演练或新生图。
+
 > 状态：**CURRENT 操作手册**。实际 production/application source、rollback 与未完成验收以 `docs/handoff/2026-09-10-hermes-web-image-handoff.md` 和服务器精确 release 核验为准；下方阶段记录保留历史版本，不能据此恢复旧 release 或跳过当前验收。
 > 格式遵循 `.agents/skills/infra-runbook/SKILL.md` 四节强制要求。
 > 当前用户已授权实现及部署，且禁止测试/预检/CI。走 `infra/scripts/deploy.sh --confirm --no-tests` 的必要构建、迁移、启动；下方历史 CI/验收清单不触发额外执行或重复确认。

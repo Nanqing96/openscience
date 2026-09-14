@@ -15,6 +15,10 @@ export interface HermesStateInput {
   state: string;
 }
 
+export function isProcessingHermesTask(task: HermesStateInput): boolean {
+  return ['queued', 'uploading', 'parsing'].includes(task.state);
+}
+
 const PRIORITY: Record<string, number> = {
   needs_review: 6,
   failed_retryable: 5,

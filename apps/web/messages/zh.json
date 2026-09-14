@@ -69,6 +69,7 @@
     "loadFailed": "暂时无法读取，请重试。", "operationFailed": "操作未完成，请刷新状态后重试。",
     "contentEmpty": "暂无可管理的内容。", "empty": "回收站和归档中暂无内容。", "adopted": "已采用，关联成果将保留", "retained": "关联材料保留",
     "intro": "删除的内容保留 30 天。归档的公开研究可随时恢复，不会自动清除。", "back": "返回个人空间", "expires": "可恢复至 {date}", "archived": "已归档", "purging": "正在清除", "restored": "已恢复", "removed": "已彻底删除", "privateDraft": "私有草稿",
+    "purgingNotice": "正在清除已确认删除的内容，完成后此列表会自动更新。",
     "kind": { "research_object": "研究工作", "session": "Hermes 会话", "task": "笔记与分析草稿", "asset": "图文内容", "artifact": "附件" },
     "contentTitle": {
       "sourceImport": "资料导入", "sourceReanalysis": "资料重新分析", "researchVideo": "研究视频制作", "mediaGeneration": "图文内容制作",
@@ -1242,8 +1243,8 @@
       },
       "activity": {
         "eyebrow": "当前研究状态",
-        "title": "研究进展",
-        "loading": "正在读取研究进展…",
+        "title": "当前任务",
+        "loading": "正在读取当前任务…",
         "unavailable": "部分进展暂未更新；已有研究仍可继续编辑。",
         "attention": "需要我处理",
         "background": "后台进行",

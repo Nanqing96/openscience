@@ -69,6 +69,7 @@
     "loadFailed": "Unable to load. Please try again.", "operationFailed": "The operation did not finish. Refresh the status before retrying.",
     "contentEmpty": "No content to manage yet.", "empty": "Trash and archives are empty.", "adopted": "Adopted; linked work is retained", "retained": "Referenced material retained",
     "intro": "Deleted items are kept for 30 days. Archived published research can be restored at any time and is not automatically erased.", "back": "Back to workspace", "expires": "Restorable until {date}", "archived": "Archived", "purging": "Erasing", "restored": "Restored", "removed": "Permanently deleted", "privateDraft": "Private draft",
+    "purgingNotice": "Erasing the items you confirmed. This list will update automatically when finished.",
     "kind": { "research_object": "Research", "session": "Hermes conversation", "task": "Note or analysis draft", "asset": "Presentation", "artifact": "Attachment" },
     "contentTitle": {
       "sourceImport": "Source import", "sourceReanalysis": "Source reanalysis", "researchVideo": "Research video creation", "mediaGeneration": "Presentation creation",
@@ -1242,8 +1243,8 @@
       },
       "activity": {
         "eyebrow": "Current research status",
-        "title": "Research progress",
-        "loading": "Loading research progress…",
+        "title": "Current tasks",
+        "loading": "Loading current tasks…",
         "unavailable": "Some progress is temporarily unavailable. You can keep editing your research.",
         "attention": "Needs your attention",
         "background": "Running in the background",

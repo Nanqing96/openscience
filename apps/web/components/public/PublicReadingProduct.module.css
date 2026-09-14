@@ -284,7 +284,9 @@
   color: var(--public-product-ink);
 }
 .claimSection { margin-block: 36px; }
-.claimSection > h2 { margin: 0 0 14px; color: var(--public-product-ink, #1d2935); font: 650 20px/1.5 var(--font-ui), system-ui, sans-serif; }
+.claimNarrative { border-top: 1px solid var(--public-product-rule); }
+.claimNarrativeSummary > h2 { display: inline; margin: 0; font: inherit; }
+.claimNarrativeBody { min-width: 0; padding-top: 8px; }
 .claimField { margin-block: 24px; }
 details.claimField { margin-block: 0; border-top: 1px solid var(--public-product-rule); }
 .claimEntry { margin: 0; border-top: 1px solid var(--public-product-rule); }
@@ -295,7 +297,7 @@ details.claimField { margin-block: 0; border-top: 1px solid var(--public-product
 .boundariesDisclosure > summary,
 .evidenceDisclosure > summary,
 .evidenceEntry > summary,
-.workbenchReader > details > summary {
+.claimNarrative > .claimNarrativeSummary {
   min-height: 44px;
   padding: 14px 4px;
   color: var(--public-product-ink);
@@ -329,11 +331,11 @@ details.claimEntry[open] > .claimSummary { color: var(--public-product-teal); }
 .evidencePassage > button { min-height: 44px; }
 .remainingEvidence > h4 { margin: 20px 0 0; font: 600 14px/1.7 var(--font-ui), system-ui, sans-serif; }
 .workbenchReader { margin-block: 28px; border-top: 1px solid var(--public-product-rule); }
-.workbenchReader > details > summary { font-size: 18px; }
+.workbenchReader > .claimNarrative { border-top: 0; }
+.claimNarrative > .claimNarrativeSummary { font-size: 18px; }
 .workbenchReader :global(.pub-text-button) { color: var(--public-product-teal); min-height: 44px; }
 @media (hover: hover) {
-  .claimNarrative summary:hover,
-  .workbenchReader > details > summary:hover { color: var(--public-product-teal); }
+  .claimNarrative summary:hover { color: var(--public-product-teal); }
 }
 @media (max-width: 640px) {
   .claimBody { font-size: 16px; line-height: 1.85; }
@@ -342,6 +344,7 @@ details.claimEntry[open] > .claimSummary { color: var(--public-product-teal); }
   .evidenceEntry { margin-inline: 12px; }
 }
 @media print {
+  .claimNarrative::details-content,
   .claimField::details-content,
   .claimEntry::details-content,
   .readingSection::details-content,

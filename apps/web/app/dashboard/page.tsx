@@ -15,6 +15,7 @@ import { ImportStage } from '@/components/dashboard/ImportStage';
 import { LiteratureAcquisitionDisclosure } from '@/components/dashboard/LiteratureAcquisition';
 import { ResearchList } from '@/components/dashboard/ResearchList';
 import { HermesRail, type HermesRailTask } from '@/components/hermes/HermesRail';
+import { isProcessingHermesTask } from '@/components/hermes/hermes-state';
 import { HermesAssistantDrawer } from '@/components/hermes/HermesAssistantDrawer';
 import { deriveHermesGuide } from '@/components/hermes/hermes-guide';
 import { DashboardShell } from '@/components/shell/DashboardShell';
@@ -32,7 +33,6 @@ export default function DashboardPage() {
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [researchObjects, setResearchObjects] = useState<DashboardResearch[]>([]);
   const [tasks, setTasks] = useState<HermesRailTask[]>([]);
-  const [taskHistory, setTaskHistory] = useState<HermesRailTask[]>([]);
   const [taskLoadState, setTaskLoadState] = useState<'loading' | 'ready' | 'unavailable'>('loading');
   const [error, setError] = useState('');
   const [hermesOpen, setHermesOpen] = useState(false);
@@ -64,7 +64,7 @@ export default function DashboardPage() {
           const visibleTasks = latestId && latestTasksAvailable
             ? [...latestTasks, ...globalTasks.filter((task) => task.researchObjectId !== latestId)]
             : globalTasks;
-          applyDashboardTasks(currentResearch, visibleTasks, setResearchObjects, setTasks, setTaskHistory);
+          applyDashboardTasks(currentResearch, visibleTasks, setResearchObjects, setTasks);
         };
         const hasBackgroundWork = () => [...latestTasks, ...globalTasks].some((task) => isBackgroundTask(task));
         function scheduleRefresh() {
@@ -113,7 +113,7 @@ export default function DashboardPage() {
           document.removeEventListener('visibilitychange', refreshWhenVisible);
         };
         setUser(currentUser);
-        applyDashboardTasks(currentResearch, [], setResearchObjects, setTasks, setTaskHistory);
+        applyDashboardTasks(currentResearch, [], setResearchObjects, setTasks);
         let remainingTaskLoads = latestId ? 2 : 1;
         let taskLoadFailed = false;
         refreshRunning = true;
@@ -211,6 +211,7 @@ export default function DashboardPage() {
   }
 
   const guideWorking = guideTask?.status === 'pending' || guideTask?.status === 'running';
+  const processingTasks = tasks.filter(isProcessingHermesTask);
   const suggestion = deriveHermesGuide({ tasks, researchObjects });
   const dashboardContext = {
     tasks: tasks.slice(0, 20).map((task) => ({ id: task.id, researchObjectId: task.researchObjectId, state: task.state })),
@@ -247,11 +248,11 @@ export default function DashboardPage() {
         </header>
 
         <div className={styles.continueResearch}>
-          <ContinueResearch research={researchObjects[0] ?? null} tasks={tasks} />
+          <ContinueResearch research={researchObjects[0] ?? null} tasks={processingTasks} />
         </div>
         <div className={styles.taskRail}>
           <HermesConversationCard onInvoke={() => setHermesOpen(true)} working={guideWorking} />
-          <HermesRail historyTasks={taskHistory} tasks={tasks} loadState={taskLoadState} />
+          <HermesRail tasks={tasks} loadState={taskLoadState} />
         </div>
         <div className={styles.startResearch}>
           <ImportStage />
@@ -293,36 +294,27 @@ function applyDashboardTasks(
   sourceTasks: HermesRailTask[],
   setResearch: React.Dispatch<React.SetStateAction<DashboardResearch[]>>,
   setCurrent: React.Dispatch<React.SetStateAction<HermesRailTask[]>>,
-  setHistory: React.Dispatch<React.SetStateAction<HermesRailTask[]>>,
 ): void {
-  const taskPortfolio = organizeDashboardTasks(sourceTasks);
+  const currentTasks = organizeDashboardTasks(sourceTasks);
   setResearch(research.map((item) => ({
     id: item.id,
     publicId: item.publicId ?? `DRAFT-${item.id.slice(0, 8)}`,
     title: item.title,
     versionNo: item.version,
     status: item.status,
-    pendingCount: taskPortfolio.current.filter((task) => task.researchObjectId === item.id && needsUserAttention(task)).length,
+    // Ingestion suggestions are handled in Hermes, not a second review inbox.
+    pendingCount: 0,
   })));
-  setCurrent(taskPortfolio.current);
-  setHistory(taskPortfolio.history);
+  setCurrent(currentTasks);
 }
 
-function organizeDashboardTasks(tasks: HermesRailTask[]): { current: HermesRailTask[]; history: HermesRailTask[] } {
+function organizeDashboardTasks(tasks: HermesRailTask[]): HermesRailTask[] {
   const seenIds = new Set<string>();
-  const seenSources = new Set<string>();
-  const current: HermesRailTask[] = [];
-  const history: HermesRailTask[] = [];
-
-  for (const task of tasks) {
-    if (seenIds.has(task.id)) continue;
+  // Keep every distinct task available to Hermes; filenames do not identify
+  // whether a different source or a later revision supersedes an earlier one.
+  return tasks.filter(task => {
+    if (seenIds.has(task.id) || (!needsUserAttention(task) && !isBackgroundTask(task))) return false;
     seenIds.add(task.id);
-    const path = task.logicalPath.trim().toLocaleLowerCase();
-    const sourceKey = path ? `${task.researchObjectId}\u0000${path}` : task.id;
-    if (seenSources.has(sourceKey) && needsUserAttention(task)) history.push(task);
-    else current.push(task);
-    seenSources.add(sourceKey);
-  }
-
-  return { current, history };
+    return true;
+  });
 }

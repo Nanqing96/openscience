@@ -22,23 +22,35 @@ export default function TrashPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [selected, setSelected] = useState<Entry | null>(null);
   const confirm = useRef<HTMLDialogElement>(null);
-  const load = useCallback(async () => {
-    setLoading(true); setError('');
+  const load = useCallback(async (background = false) => {
+    if (!background) { setLoading(true); setError(''); }
     try {
       const loaded = (await apiRequest<{ items: Entry[] }>('/api/trash')).items;
       setItems([...loaded].sort((a, b) => (Date.parse(b.deletedAt) || 0) - (Date.parse(a.deletedAt) || 0)));
     }
     catch { setError(t('loadFailed')); }
-    finally { setLoading(false); }
+    finally { if (!background) setLoading(false); }
   }, [t]);
   useEffect(() => { void load(); }, [load]);
+  const hasPending = items.some(entry => entry.state === 'purge_pending');
+  useEffect(() => {
+    if (!hasPending) return;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const refresh = async () => {
+      if (!stopped && document.visibilityState === 'visible') await load(true);
+      if (!stopped) timer = setTimeout(() => void refresh(), 5000);
+    };
+    timer = setTimeout(() => void refresh(), 5000);
+    return () => { stopped = true; clearTimeout(timer); };
+  }, [hasPending, load]);
   async function act(entry: Entry, action: 'restore' | 'purge') {
     setBusy(entry.id); setError(''); setStatus('');
     try {
       const result = await apiRequest<{ pending?: boolean; state?: string; entry?: { state?: string; retainedReason?: string | null } }>(`/api/trash/${encodeURIComponent(entry.id)}/${action}`, { method: 'POST', body: '{}' });
       confirm.current?.close();
       const state = result.state ?? result.entry?.state;
-      setStatus(t(action === 'restore' ? 'restored' : state === 'purged' ? 'removed' : result.entry?.retainedReason ? 'retained' : 'purging'));
+      setStatus(action === 'restore' ? t('restored') : state === 'purged' ? t('removed') : result.entry?.retainedReason ? t('retained') : '');
       await load();
     } catch { setError(t('operationFailed')); }
     finally { setBusy(null); }
@@ -48,7 +60,7 @@ export default function TrashPage() {
       <Link className={styles.link} href="/dashboard">← {t('back')}</Link>
       <h1 className="mt-5 text-4xl">{t('title')}</h1>
       <p className="mt-4 leading-7 text-os-muted-paper">{t('intro')}</p>
-      {status && <p className="mt-4" role="status">{status}</p>}
+      {(status || hasPending) && <p className="mt-4" role="status">{status || t('purgingNotice')}</p>}
       {error && <p className="mt-4" role="alert">{error} <button className={styles.action} type="button" onClick={() => void load()}>{t('retry')}</button></p>}
       {loading ? <p className="mt-8" role="status">{t('loading')}</p> : items.length === 0 ? <p className="mt-8 border-y border-os-rule-paper py-8">{t('empty')}</p> : <ul className={styles.list}>
         {items.map(entry => {

@@ -67,7 +67,9 @@ export function ClaimNarrative({
   const fields = useTranslations('productSurfaces.fields');
   const groups = [...readingFields, undefined].map(field => ({ field, claims: claims.filter(claim => claimReadingField(claim, evidence) === field) })).filter(group => group.claims.length > 0);
   return (
-    <section className={`pub-claim-narrative ${styles.claimNarrative}`} data-claim-narrative="true" aria-label={t('title')}>
+    <details className={`pub-claim-narrative ${styles.claimNarrative}`} data-claim-narrative="true">
+      <summary className={styles.claimNarrativeSummary}><h2>{t('title')}</h2></summary>
+      <div className={styles.claimNarrativeBody}>
       <div className={styles.sectionIntro}>
         <p>{t('description')}</p>
       </div>
@@ -80,6 +82,7 @@ export function ClaimNarrative({
           {content}
         </details>;
       })}
-    </section>
+      </div>
+    </details>
   );
 }
