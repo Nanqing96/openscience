@@ -42,11 +42,13 @@
       "original": "research JSON 提供公开研究对象的结构化内容，不等于原 PDF 的全文转录。需要论文原文时，请读取获准提供的 downloadUrl；同时保留作者、许可、版本与来源。"
     },
     "examples": {
+      "client": "Python 示例使用 User-Agent 标明客户端名称。接入时可换成你自己的应用名；部分默认脚本标识可能被网站边缘防护拦截。",
       "title": "请求示例",
       "body": "代码可直接选取复制。示例不发送登录 cookie，不依赖第三方 Python 包。",
       "retry": "Python 示例最多尝试 3 次，仅对 429 按 Retry-After 等待。若服务要求等待超过 60 秒，本次执行停止，交由调用方稍后再试；其他错误直接返回调用方。"
     },
     "access": {
+      "blockedClient": "请求被边缘防护拦截。检查返回的错误说明及客户端 User-Agent；若持续失败，请联系站点维护者，不要反复重试。",
       "title": "状态与访问范围",
       "ok": "请求成功。仍需检查公开状态与可用正文。",
       "invalid": "参数无效，请修正公开标识或版本号。",
@@ -657,6 +659,7 @@
     "warnings": "警告项 ({count})",
     "legalDisclaimer": "法律免责声明",
     "claimReader": {
+      "fullArgument": "完整论证与推导",
       "kicker": "可核验的研究叙事",
       "title": "核心主张与证据",
       "description": "每条主张都保留适用条件、已知边界以及可回到原文的证据关系。",
@@ -664,6 +667,8 @@
       "conditions": "适用条件",
       "limitations": "已知边界",
       "evidenceCount": "证据（{count}）",
+      "passage": "原文片段",
+      "passageCount": "{count} 条原文",
       "noEvidence": "尚无已核验的公开证据。",
       "expandEvidence": "展开证据",
       "collapseEvidence": "折叠证据",

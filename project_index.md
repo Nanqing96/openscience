@@ -638,3 +638,5 @@
 | apps/web/components/content/ScientificText.tsx / editor/CoreEditor.tsx / presentation/{ResearchMediaDeck,PresentationWorkbench,PresentationResultGallery}.tsx / public/{PublicVersionPage,PresentationAssetGallery}.tsx / research/{VersionRecord,ResearchPublication}.tsx；apps/web/app/research* 阅读路由 | 隐藏Hermes内部来源编号与媒体制作详情，保留原文和公式 | DEPLOYEDc0bc653d；截图修复与真实阅读见CURRENT handoff |
 
 | .agents/skills/frontend-design/SKILL.md | 科研阅读入口统一公式渲染、内部核查留后台、Hermes反馈规则 | 2026-09-13用户纠偏已固化；无新增工具或测试门禁 |
+
+| apps/web/components/content/ScientificMarkdown.tsx / public/evidence-display.ts / public/{ClaimNarrative,EvidenceDisclosure,EvidenceRail}.tsx / public/PublicReadingProduct.module.css | 共用Hermes已有Markdown与公式保护；长主张分层、证据按文件页码组织、阅读隐藏机器信息 | 2026-09-14候选，部署及实际阅读见CURRENT |

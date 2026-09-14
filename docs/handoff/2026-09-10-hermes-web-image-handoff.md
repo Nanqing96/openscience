@@ -1,6 +1,8 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 2026-09-14公开文章标准API已交付：latest/exact共用原公开读取，最新返回完整JSON；统一OpenAPI3.1含8个真实GET、/developers中英文档与导航、HTML JSON alternate、Link/Content-Location/links.self。借鉴Crossref/OpenAlex/OpenAPI；无新服务/依赖/迁移/科研写入，独立High静态PASS。下一步用户实际接入其外部AI客户端；本轮无待部署代码。
+- 2026-09-14新反馈处理中：核心主张误用h3直出Markdown/TeX/制作前言；正在复用Hermes科学Markdown，按原章节和文件/页码组织证据并去机器locator。API页复用公开产品rp/共享排版。候选尚未部署，无科研记录修改。
+- 已逐字提取线上教程实跑：curl exit0返回23/v1六字段与40证据；Python exit1，Cloudflare403/1010(browser_signature_banned)。明确User-Agent OpenScience-API-Example/1.0后相同GET已200；候选文档加入该客户端标识/403说明，部署后再逐字执行完整教程。收据tmp/api-tutorial-execute.log及api-python-error.sh/client.sh。
+- 2026-09-14公开文章标准API已交付：latest/exact共用原公开读取，最新返回完整JSON；统一OpenAPI3.1含8个真实GET、/developers中英文档与导航、HTML JSON alternate、Link/Content-Location/links.self。借鉴Crossref/OpenAlex/OpenAPI；无新服务/依赖/迁移/科研写入，独立High静态PASS。该API基础已交付，本轮按最新截图修复阅读与教程。
 - 2026-09-14第二篇已真实发布OSR-2026-000023/v/1，作者DHL、完整原题、文字/数据CC-BY-4.0、代码MIT，原PDF允许匿名下载。用户确认原创/昵称/下载并委托选许可；两篇真实论文已公开，等待用户对产品质量反馈，视频/批量暂停。
 - 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/migrate/start与真实页面阅读已执行，不通过删除/发布受保护论文验证功能。
 - 服务器MiniMax-M3。自动生成、引导共编、人工校正分别记录；独立High审核不能冒称产品自动审校。

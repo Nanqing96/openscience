@@ -3,6 +3,9 @@
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import type { PublicEvidence } from '../../lib/api';
+import { ScientificText } from '../content/ScientificText';
+import { evidenceReadingTitle, groupEvidenceBySource } from './evidence-display';
+import styles from './PublicReadingProduct.module.css';
 import {
   readLocalEvidenceDefaultCollapsed,
   subscribeEvidenceReadingPreference,
@@ -42,20 +45,21 @@ export function EvidenceDisclosure({
           {collapsed ? t('expandEvidence') : t('collapseEvidence')}
         </button>
       </div>
-      <div className="pub-evidence-transcript" data-evidence-transcript="true" data-print-evidence="true">
-        {evidence.map((item) => (
-          <article className="pub-evidence-item" data-evidence-relation={item.relation} key={item.id}>
-            <button type="button" className="pub-evidence-select" onClick={() => onInspect(item)}>
-              <span className="pub-evidence-relation">{t(`relation.${item.relation}`)}</span>
-              <strong>{item.title}</strong>
-              {item.exactQuote && <q>{item.exactQuote}</q>}
-              <span className="pub-evidence-locator">
-                {item.artifact.logicalPath}
-                {typeof item.locator.page === 'number' ? ` · ${t('page', { page: item.locator.page })}` : ''}
-              </span>
-              <span className="pub-evidence-open">{t('inspectSource')}</span>
-            </button>
-          </article>
+      <div className="pub-evidence-transcript" hidden={collapsed} data-evidence-transcript="true" data-print-evidence="true">
+        {groupEvidenceBySource(evidence).map((group) => (
+          <details className={styles.evidenceGroup} key={group.items[0].id}>
+            <summary><span>{group.file}</span><span>{group.page === null ? t('passage') : t('page', { page: group.page })} · {t('passageCount', { count: group.items.length })}</span></summary>
+            {group.items.map((item) => (
+              <article className="pub-evidence-item" data-evidence-relation={item.relation} key={item.id}>
+                <button type="button" className="pub-evidence-select" onClick={() => onInspect(item)}>
+                  <span className="pub-evidence-relation">{t(`relation.${item.relation}`)}</span>
+                  {evidenceReadingTitle(item) && <ScientificText as="strong" hideSourceMarkers>{evidenceReadingTitle(item)}</ScientificText>}
+                  {item.exactQuote && <ScientificText as="q">{item.exactQuote}</ScientificText>}
+                  <span className="pub-evidence-open">{t('inspectSource')}</span>
+                </button>
+              </article>
+            ))}
+          </details>
         ))}
       </div>
     </section>

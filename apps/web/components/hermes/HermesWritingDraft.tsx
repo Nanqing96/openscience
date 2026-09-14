@@ -1,83 +1,15 @@
 'use client';
 
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Children, type ReactNode, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 
-import { escapeScientificMathForMarkdown, ScientificText } from '@/components/content/ScientificText';
+import { ScientificMarkdown } from '@/components/content/ScientificMarkdown';
 import type { SourceLocator, WorkspaceGuideResult } from '@/lib/api';
 
 import styles from './HermesWritingDraft.module.css';
 
 export type HermesWritingDraftValue = NonNullable<WorkspaceGuideResult['writingDraft']>;
-
-function normalizeMathOutsideCode(markdown: string) {
-  let fence = '';
-  let prose = '';
-  let output = '';
-  const flushProse = () => {
-    output += escapeScientificMathForMarkdown(prose);
-    prose = '';
-  };
-  markdown.split('\n').forEach((line, lineIndex) => {
-    if (lineIndex) {
-      if (fence) output += '\n';
-      else prose += '\n';
-    }
-    const fenceMatch = line.match(/^\s*(`{3,}|~{3,})/u);
-    if (fenceMatch) {
-      flushProse();
-      const marker = fenceMatch[1][0];
-      if (!fence) fence = marker;
-      else if (fence === marker) fence = '';
-      output += line;
-      return;
-    }
-    if (fence) {
-      output += line;
-      return;
-    }
-    let inlineFence = '';
-    for (let index = 0; index < line.length;) {
-      if (line[index] === '`') {
-        flushProse();
-        let end = index + 1;
-        while (line[end] === '`') end += 1;
-        const marker = line.slice(index, end);
-        if (!inlineFence) inlineFence = marker;
-        else if (inlineFence === marker) inlineFence = '';
-        output += marker;
-        index = end;
-        continue;
-      }
-      if (inlineFence) output += line[index];
-      else prose += line[index];
-      index += 1;
-    }
-  });
-  flushProse();
-  return output;
-}
-
-function ScientificChildren({ children, budget }: { children: ReactNode; budget: { expressions: number; text: number } }) {
-  return Children.map(children, (child, index) => {
-    if (typeof child === 'string') {
-      const expressions = Math.floor((child.match(/\$/gu)?.length ?? 0) / 2);
-      if (expressions && (budget.expressions + expressions > 64 || budget.text + child.length > 16_000)) return child;
-      budget.expressions += expressions;
-      if (expressions) budget.text += child.length;
-      return <ScientificText as="span" key={index}>{child}</ScientificText>;
-    }
-    return child;
-  });
-}
-
-function safeMarkdownUrl(url: string) {
-  const value = url.trim();
-  return value.startsWith('#') || /^(?:https?:|mailto:)/iu.test(value) ? value : '';
-}
 
 function downloadableMarkdown(draft: HermesWritingDraftValue, sourcesHeading: string, locator: (source: SourceLocator) => string) {
   const citations = draft.citations.filter((citation) => draft.body.includes(citation.marker));
@@ -85,28 +17,6 @@ function downloadableMarkdown(draft: HermesWritingDraftValue, sourcesHeading: st
     ? `\n\n## ${sourcesHeading}\n\n${citations.map((citation) => `- ${citation.marker} ${citation.quote.replace(/\n/gu, '\n  ')}\n  - ${locator(citation.sourceLocator)}`).join('\n')}`
     : '';
   return `# ${draft.title.replace(/\r?\n/gu, ' ')}\n\n${draft.body.trim()}${sources}\n`;
-}
-
-function MarkdownBody({ body }: { body: string }) {
-  const mathBudget = { expressions: 0, text: 0 };
-  return <ReactMarkdown
-    remarkPlugins={[remarkGfm]}
-    skipHtml
-    urlTransform={safeMarkdownUrl}
-    components={{
-      img: () => null,
-      a: ({ href, children }) => href && safeMarkdownUrl(href) ? <a href={href} rel="noreferrer noopener" target="_blank"><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></a> : <span><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></span>,
-      p: ({ children }) => <p><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></p>,
-      h1: ({ children }) => <h1><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></h1>,
-      h2: ({ children }) => <h2><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></h2>,
-      h3: ({ children }) => <h3><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></h3>,
-      h4: ({ children }) => <h4><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></h4>,
-      li: ({ children }) => <li><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></li>,
-      blockquote: ({ children }) => <blockquote><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></blockquote>,
-      strong: ({ children }) => <strong><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></strong>,
-      em: ({ children }) => <em><ScientificChildren budget={mathBudget}>{children}</ScientificChildren></em>,
-    }}
-  >{normalizeMathOutsideCode(body)}</ReactMarkdown>;
 }
 
 export function HermesWritingDraft({
@@ -212,7 +122,7 @@ export function HermesWritingDraft({
             <textarea id={`writing-body-${draftTaskId}`} className={styles.editor} disabled={disabled} maxLength={60_000} value={draft.body}
               onChange={(event) => onChange({ ...draft, body: event.target.value })} />
             <p className={styles.editNote}>{t('editNote')}</p>
-          </div> : <div className={styles.body}><MarkdownBody body={draft.body} /></div>}
+          </div> : <div className={styles.body}><ScientificMarkdown body={draft.body} /></div>}
           {sourceList}
         </div>
       </div>

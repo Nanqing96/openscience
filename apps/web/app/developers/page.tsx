@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import LocaleSwitcher from '@/components/LocaleSwitcher';
 import SiteHeader from '@/components/landing/SiteHeader';
 import { PublicShell } from '@/components/shell/PublicShell';
+import readingStyles from '@/components/public/PublicReadingProduct.module.css';
 import type { Locale } from '@/i18n/locale';
 import styles from './developers.module.css';
 
@@ -23,7 +24,8 @@ ORIGIN = "${origin}"
 
 def read_json(path):
     request = Request(urljoin(ORIGIN, path),
-                      headers={"Accept": "application/json"})
+                      headers={"Accept": "application/json",
+                               "User-Agent": "OpenScience-API-Example/1.0"})
     for attempt in range(3):
         try:
             with urlopen(request, timeout=20) as response:
@@ -60,10 +62,10 @@ export default async function DevelopersPage() {
   const locale = await getLocale() as Locale;
   const fields = ['core', 'authors', 'licenses', 'claims', 'evidence', 'artifacts', 'media', 'history', 'record', 'links'] as const;
   const paths = ['version.core', 'authors', 'licenses', 'claims', 'evidence', 'artifactPaths', 'presentationAssets', 'history', 'recordUrl', 'links'];
-  return <PublicShell tone="paper" headerActions={<SiteHeader active="developers" context="public-product" tone="paper" />} navigationLabel={shell('primaryNavigation')} skipLabel={shell('skipToContent')} wrapHeaderActionsOnMobile>
+  return <PublicShell className={`research-product ${readingStyles.surface} ${styles.shell}`} mainClassName={styles.main} tone="paper" headerActions={<SiteHeader active="developers" context="public-product" tone="paper" />} navigationLabel={shell('primaryNavigation')} skipLabel={shell('skipToContent')} wrapHeaderActionsOnMobile>
     <article className={styles.page}>
-      <header className={styles.header}>
-        <div><p className={styles.eyebrow}>OpenScience API</p><h1>{t('title')}</h1><p className={styles.intro}>{t('intro')}</p></div>
+      <header className={`${readingStyles.identity} ${styles.header}`}>
+        <div><p className="pub-kicker">OpenScience API</p><h1>{t('title')}</h1><p className={styles.intro}>{t('intro')}</p></div>
         <div className={styles.language}><LocaleSwitcher locale={locale} /></div>
       </header>
       <div className={styles.layout}>
@@ -73,34 +75,34 @@ export default async function DevelopersPage() {
         </nav>
         <div className={styles.sections}>
           <section id="start" className={styles.section}>
-            <h2>{t('start.title')}</h2><p>{t('start.body')}</p>
+            <header className={readingStyles.sectionIntro}><h2>{t('start.title')}</h2></header><p>{t('start.body')}</p>
             <dl className={styles.facts}><div><dt>{t('baseUrl')}</dt><dd><code>{origin}/api</code></dd></div><div><dt>{t('authentication')}</dt><dd>{t('anonymous')}</dd></div></dl>
             <div className={styles.exampleLinks}><a href={examplePath}>{t('openJson')}</a><a href="/research/OSR-2026-000023/v/1">{t('openArticle')}</a><a href="/api/research-record/openapi">{t('openSchema')}</a></div>
+            <h3>curl</h3><pre tabIndex={0} aria-label={t('curlExample')}><code>{curlExample}</code></pre>
           </section>
           <section id="versions" className={styles.section}>
-            <h2>{t('versions.title')}</h2>
+            <header className={readingStyles.sectionIntro}><h2>{t('versions.title')}</h2></header>
             <div className={styles.endpoint}><code>GET /research/&#123;publicId&#125;</code><p>{t('versions.latest')}</p></div>
             <div className={styles.endpoint}><code>GET /research/&#123;publicId&#125;/v/&#123;versionNo&#125;</code><p>{t('versions.fixed')}</p></div>
             <p>{t('versions.reference')}</p><p>{t('versions.relative')}</p>
             <pre tabIndex={0} aria-label={t('relativeExample')}><code>{`const self = new URL(research.links.self, "${origin}").href;`}</code></pre>
           </section>
           <section id="fields" className={styles.section}>
-            <h2>{t('fields.title')}</h2><p>{t('fields.body')}</p>
+            <header className={readingStyles.sectionIntro}><h2>{t('fields.title')}</h2></header><p>{t('fields.body')}</p>
             <div className={styles.tableScroll}><table><thead><tr><th scope="col">{t('field')}</th><th scope="col">{t('meaning')}</th></tr></thead><tbody>
               {fields.map((field, index) => <tr key={field}><th scope="row"><code>{paths[index]}</code></th><td>{t(`fields.${field}`)}</td></tr>)}
             </tbody></table></div>
             <p className={styles.note}>{t('fields.original')}</p>
           </section>
           <section id="examples" className={styles.section}>
-            <h2>{t('examples.title')}</h2><p>{t('examples.body')}</p>
-            <h3>curl</h3><pre tabIndex={0} aria-label={t('curlExample')}><code>{curlExample}</code></pre>
+            <header className={readingStyles.sectionIntro}><h2>{t('examples.title')}</h2></header><p>{t('examples.body')}</p>
             <h3>{t('pythonTitle')}</h3><pre tabIndex={0} aria-label={t('pythonExample')}><code>{pythonExample}</code></pre>
-            <p>{t('examples.retry')}</p>
+            <p>{t('examples.client')}</p><p>{t('examples.retry')}</p>
           </section>
           <section id="access" className={styles.section}>
-            <h2>{t('access.title')}</h2>
+            <header className={readingStyles.sectionIntro}><h2>{t('access.title')}</h2></header>
             <dl className={styles.responses}>
-              <div><dt>200</dt><dd>{t('access.ok')}</dd></div><div><dt>400</dt><dd>{t('access.invalid')}</dd></div><div><dt>404</dt><dd>{t('access.missing')}</dd></div><div><dt>429</dt><dd>{t('access.limited')}</dd></div>
+              <div><dt>200</dt><dd>{t('access.ok')}</dd></div><div><dt>400</dt><dd>{t('access.invalid')}</dd></div><div><dt>403</dt><dd>{t('access.blockedClient')}</dd></div><div><dt>404</dt><dd>{t('access.missing')}</dd></div><div><dt>429</dt><dd>{t('access.limited')}</dd></div>
             </dl>
             <p>{t('access.status')}</p><p>{t('access.cookie')}</p>
           </section>

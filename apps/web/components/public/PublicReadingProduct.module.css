@@ -235,3 +235,32 @@
 @media (min-width: 760px) { .fields > section { grid-template-columns: 130px minmax(0, 1fr); gap: 28px; padding-block: 26px; } .fields > section h3 { align-items: flex-start; padding-top: 2px; font-size: 18px; } .fields > section h3::before { margin-top: 4px; } }
 @media (max-width: 640px) { .leadingMedia[data-has-video='false'] > section:last-child { grid-template-columns: minmax(0, 1fr); gap: 10px; } .readingActions { justify-content: flex-start; } }
 @media print { .resources:not([open]) > .resourcesBody { display: block; } .readingActions { display: none; } }
+
+/* The claim is prose, while source passages remain independently inspectable. */
+.surface .claimNarrative { margin: 0; }
+.claimNarrative .sectionIntro { margin: 0 0 16px; padding: 0; border: 0; }
+.claimBody { margin: 16px 0 24px; min-width: 0; font: 400 17px/1.85 var(--font-ui), system-ui, sans-serif; overflow-wrap: anywhere; }
+.claimBody > p { margin: 14px 0; }
+.claimBody :is(h1, h2, h3, h4, h5, h6) { margin: 28px 0 12px; color: var(--public-product-ink); font: 650 20px/1.5 var(--font-ui), system-ui, sans-serif; }
+.claimBody :is(ul, ol) { padding-left: 24px; }
+.claimBody :is(pre, table) { display: block; max-width: 100%; overflow-x: auto; }
+.claimBody blockquote { margin-inline: 0; padding-left: 16px; border-left: 2px solid var(--public-product-teal); }
+.claimNarrative :global(.pub-claim-header) { color: var(--public-product-muted); font: 600 13px/1.5 var(--font-ui), system-ui, sans-serif; letter-spacing: 0; }
+.claimNarrative :global(.pub-claim-boundaries) { background: var(--public-product-canvas); }
+.claimNarrative :global(.pub-claim-boundaries h4), .claimNarrative :global(.pub-evidence-heading h4) { font: 600 14px/1.6 var(--font-ui), system-ui, sans-serif; letter-spacing: 0; }
+.claimNarrative :global(.pub-evidence-disclosure) { background: var(--public-product-paper); border-color: var(--public-product-rule); }
+.claimNarrative :global(.pub-evidence-transcript) { max-height: none; overflow: visible; mask-image: none; }
+.claimNarrative :global(.pub-evidence-select q) { font: 400 16px/1.8 var(--font-ui), system-ui, sans-serif; }
+.claimNarrative :global(.pub-evidence-relation), .claimNarrative :global(.pub-evidence-open) { color: var(--public-product-teal); font-family: var(--font-ui), system-ui, sans-serif; }
+.evidenceGroup + .evidenceGroup { border-top: 1px solid var(--public-product-rule); }
+.evidenceGroup > summary { padding: 14px 16px; color: var(--public-product-ink); font: 500 14px/1.6 var(--font-ui), system-ui, sans-serif; cursor: pointer; overflow-wrap: anywhere; }
+.evidenceGroup > summary span:last-child { display: block; margin-top: 4px; color: var(--public-product-muted); font-size: 13px; }
+.evidenceGroup > summary:focus-visible { outline: 2px solid var(--public-product-teal); outline-offset: -2px; }
+@media print {
+  .claimNarrative :global(.pub-evidence-transcript[hidden]) { display: block !important; }
+  .evidenceGroup::details-content { content-visibility: visible; display: block; }
+}
+.claimDetails { margin-top: 16px; }
+.claimDetails > summary { min-height: 44px; color: var(--public-product-teal); font: 600 14px/24px var(--font-ui), system-ui, sans-serif; cursor: pointer; }
+.claimDetails > p { margin: 14px 0; }
+@media print { .claimDetails::details-content { content-visibility: visible; display: block; } }

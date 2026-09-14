@@ -42,11 +42,13 @@
       "original": "The research JSON contains the public object's structured content. It is not a full transcription of the original PDF. For the original paper, use an authorized downloadUrl and retain the authors, licenses, version and sources."
     },
     "examples": {
+      "client": "The Python example identifies its client with User-Agent. Use your own application name when integrating; some default script identifiers may be blocked by edge protection.",
       "title": "Request examples",
       "body": "Select and copy the code directly. These examples send no login cookies and require no third-party Python packages.",
       "retry": "The Python example makes at most 3 attempts and retries only 429 responses, following Retry-After. If the server asks for more than 60 seconds, this execution stops so the caller can try again later. Other errors are returned to the caller."
     },
     "access": {
+      "blockedClient": "Edge protection blocked the request. Check the error details and client User-Agent. If the problem persists, contact the site maintainer instead of retrying repeatedly.",
       "title": "Status and access",
       "ok": "The request succeeded. Check the publication status and available text as well.",
       "invalid": "Invalid parameters. Correct the public identifier or version number.",
@@ -657,6 +659,7 @@
     "warnings": "Warnings ({count})",
     "legalDisclaimer": "Legal disclaimer",
     "claimReader": {
+      "fullArgument": "Full argument and derivation",
       "kicker": "Verifiable research narrative",
       "title": "Core claims and evidence",
       "description": "Every claim retains its conditions, known boundaries, and evidence relationships that lead back to the original source.",
@@ -664,6 +667,8 @@
       "conditions": "Conditions",
       "limitations": "Known boundaries",
       "evidenceCount": "Evidence ({count})",
+      "passage": "Source passage",
+      "passageCount": "{count} passages",
       "noEvidence": "No verified public evidence is available yet.",
       "expandEvidence": "Expand evidence",
       "collapseEvidence": "Collapse evidence",
