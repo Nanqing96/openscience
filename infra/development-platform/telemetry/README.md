@@ -12,6 +12,8 @@
 
 SQL view 与 connector 分别显式重建白名单，避免将来 view 增列时自动增加上传字段。已有错误类别复用；未知失败仅记 `other_failure`。
 
+任务关联来自 Worker 已领取任务的执行上下文：`apps/agent-worker/src/index.ts` 在 Gateway 审计落库时将当前 AgentTask UUID 填入空的 `AuditEvent.requestId`，已有 view/connector 将其传为 `requestCorrelation`。这项接线为未部署候选；2026-09-14 15:15 UTC 实际查询的两条旧生图失败仍为 unknown，不能推测或回填。它用于把调用定位回原任务，再读取原任务的阶段和资产/技能记录；不是用户身份或完整跨任务 trace。API 中原有 requestId、不处于 Worker 任务内的事件保持原行为，不扩大元数据范围或重新导入旧审计。
+
 ## Langfuse v4 传输与统计含义
 
 目标为独立 Langfuse `v4.35.0` 的 `POST /api/public/otel/v1/traces`，使用项目 Basic Auth、OTLP/HTTP JSON 与 `x-langfuse-ingestion-version: 4`。每个审计是一条完整 generation/root span，无输入输出字段。JSON 经 Node 22 原生 `fetch` 发送，不引入 Langfuse/OTEL SDK 或模型 SDK。

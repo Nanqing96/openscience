@@ -722,12 +722,13 @@ async function main(): Promise<void> {
   const parserJobDir = process.env.PARSER_JOB_DIR;
   if (!parserJobDir) throw new Error('PARSER_JOB_DIR is required; unsafe in-worker binary parsing is disabled');
   const prisma = createPrismaClient();
+  const audit = createPrismaAuditSink(prisma);
   const redis = createRedisClient();
   const storage = createStorageAdapter(storageConfigFromEnv());
   const trashSearchClient = process.env.SEARCH_DATABASE_URL ? createSearchPrismaClient({ env: process.env }) : undefined;
   const deps: WorkerDeps = {
     prisma, redis, storage,
-    audit: createPrismaAuditSink(prisma),
+    audit,
     malwareScanner: process.env.CLAMAV_HOST ? createClamAvScanner(process.env.CLAMAV_HOST, Number(process.env.CLAMAV_PORT ?? 3310)) : undefined,
     mailer: { send: async () => undefined },
   };
@@ -758,7 +759,14 @@ async function main(): Promise<void> {
   const gateway = buildGateway(
     process.env,
     globalThis.fetch,
-    createPrismaAuditSink(prisma),
+    {
+      record: (event, tx) => {
+        // Reuse the claimed task context so existing telemetry can locate this call.
+        // Read per call: concurrent tasks must not share a captured task ID.
+        const taskId = spoolTaskExecution.getStore()?.taskId;
+        return audit.record(taskId && !event.requestId ? { ...event, requestId: taskId } : event, tx);
+      },
+    },
     externalProcessingPolicy,
     undefined,
     { image: imageSubmission, review: reviewSubmission, illustration: illustrationSubmission },

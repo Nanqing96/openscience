@@ -6,6 +6,7 @@
 
 | 本轮文件 | 用途 |
 |---|---|
+| `apps/agent-worker/src/index.ts` / `infra/development-platform/telemetry/README.md` | 未部署候选：Gateway audit 复用已有任务执行上下文与 requestId，供现有 Langfuse requestCorrelation 定位原任务；不新增追踪系统，不回填未知历史 |
 | `infra/development-platform/catalog/` / `infra/development-platform/langfuse/` / `infra/development-platform/telemetry/` / `infra/development-platform/code-intelligence/` / `infra/development-platform/skills/` | 用户授权的底层能力交付：私有Backstage目录、Langfuse Gateway元数据、Serena只读符号与引用、标准技能CLI；独立于科研应用release，具体安装/使用证据见CURRENT |
 | `infra/scripts/ssh-run.sh` | 既有SSH入口增加development私有3130/3131/3132端口转发，不公开管理服务 |
 | `.codex/config.toml` | Codex 项目 Serena HTTP MCP，仅允许 overview/find/references；须建立私有转发，索引源版本见 CURRENT |

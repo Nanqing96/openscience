@@ -39,10 +39,15 @@
 
 ### 当前技术债与处理
 
-范围：交付树的规则治理、去重及后续配图表示/审阅修正；精确候选版本见CURRENT。以下是定向静态诊断，不是全仓无债证明或量化健康评分；未运行扫描、测试、模型或应用构建。
+范围：交付树的规则治理、去重、配图表示/审阅边界和工具联动断点；精确候选版本见CURRENT。以下是定向诊断，不是全仓无债证明或量化健康评分；未运行扫描、测试、模型或应用构建。
+
+本轮实际联动：Backstage 返回 agent-worker 的 Gateway/parser/skills 依赖；Serena 在生产源码快照定位确认 bridge 的 Hermes/API 两条调用，再用候选源码核对；Langfuse 于2026-09-14 15:15 UTC读回两条已有生图失败，其 requestCorrelation 均为 unknown。沿审计生产者定位到 Worker 已有任务上下文未传给 Gateway sink，补接到既有 requestId/view/connector，不新建观察系统。静态调用/传递断点与运行失败是不同证据，不能据两条失败断言科学内容出错原因。
+
+任务接线经独立High静态审查：逐调用读取上下文而非初始化捕获，已有requestId优先，tx和异常传播保持。未运行；旧unknown不回填，后续在正常授权任务执行后观察新关联，不为填数据重跑模型。该修复不等于完整跨任务trace，也不解决上游科学结果粒度缺口。
 
 | 问题 / 位置 | 后果 | 处理与后续 |
 |---|---|---|
+| Worker 创建的 Gateway audit sink 未带已有执行上下文，Langfuse requestCorrelation 为空 | 调用失败无法从管理工具准确回到原任务及其技能/资产结果 | 候选 index.ts 共用现有 audit sink，在每次 record 时读取已有 AsyncLocalStorage taskId，只补空 requestId；现有 view/connector 无须改造。未部署，新任务关联尚未观察；旧记录不猜测回填 |
 | 根目录更新未进入交付树：AGENTS 和 17 个流程 Skill/引用文件 | 后续 session 按旧测试/逐步审批/派工规则执行，重复耗费与漂移 | 已将现有精简规则带入交付分支，保留独有脚本/参考；根目录同步导航，不新增工具 |
 | 旧 handoff/计划/index 将当时版本或待办标作当前 | 重复部署、重新生成或复跑已完成阶段 | 旧执行记录逐份加历史适用说明；设计说明区分需求有效性与运行状态；唯一 CURRENT 定锚，未提交独立设计稿保留 |
 | presentation/handler.ts 在 readReviewedPresentationEvidence 后重验同一批 lineage | 同一来源规则多处维护、后续修订可能分叉 | 已删除重复内存遍历；保留入口逐 Claim 来源/非空约束，以及 provider 前和事务内 evidence/权限重验 |

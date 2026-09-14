@@ -1,11 +1,11 @@
 # Hermes / Workbench CURRENT Handoff
 ## 目标与约束
-- 用户2026-09-14最新要求：继续清债，并明确每回合结束如何同步状态。既有docs-sync已补回合结束前/关键节点同步；本轮修配图表示和末审边界，上游细粒度确认仍待处理，不再安装工具。
+- 用户2026-09-14最新纠正：底层软件/Skill须联动定位和修复能力断点，不能靠文档代替清债。规则后续会话持续适用，非后台回调；本轮实际查工具并修任务审计接线，上游细粒度确认仍是主要未完成项。
 - 禁止测试/预检/CI/本机构建；仅本机静态编辑/Git/传输，服务器执行必要安装/构建/启动及实际使用。没有新模型调用、图片生成或科研数据修改。
 - Chat生图主用，Codex CLI备用；科学认识来自上游解析/分析。Figma、视频、第三篇及批量仍暂停。
 ## 版本事实
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；本轮起点HEAD/origin 2f066ecdbdfd5b47f99222d589e8c2154b640f51，完整本轮候选以git HEAD读取；不是应用release。
-- 生产应用89d05d6dfcf432765697762864e9406ea3588ab8 / rollback b2f3cf373c0eafde1adc53d85f198588d1c23391沿用上一轮只读记录；本轮仅静态编辑/Git，无服务器操作，不把旧运行状态称新观察。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；本轮起点HEAD/origin 054c9f3ba920e59e3ba498e997d62e85615f193a，完整本轮候选以git HEAD读取；不是应用release。
+- 生产应用89d05d6dfcf432765697762864e9406ea3588ab8 / rollback b2f3cf373c0eafde1adc53d85f198588d1c23391沿用既有只读记录；本轮服务器仅查询Catalog/Serena/Langfuse，不把它们当应用版本或新生图观察。
 - Catalog/Serena镜像与源83179c454b75688176060fabf9e611072d46813c；Serena所查源码89d05，快照/source和image不可混写。
 - Langfuse独立bundle83179c454b75688176060fabf9e611072d46813c，official v4.35.0；telemetry镜像c2b6683e8e804d07f2928ee4df2cba8d91fb5703，view/角色已provision，持久state复用。
 - Skills镜像83179（实际list/find在相同CLI代码ce02首次执行）；依赖图脚本c9d98bd70252d7ca21854ca9b05987d2d46af700，源89d05。
@@ -13,6 +13,9 @@
 - receiver bundle8e4已安装、兼容v1/v2；科研应用8e4在Prisma JSON类型构建失败，候选已静态修正但没有重新构建/部署。
 - 根目录dirty main不是交付基线。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。
 ## 已实际交付 / 使用证据
+- 本轮实际联动：Catalog返回worker依赖；Serena定位确认bridge在Hermes/API的调用，再以候选代码核对。Langfuse 15:15 UTC读回2条已有image失败，requestCorrelation均unknown，定位到Worker有执行上下文而Gateway审计未接入。
+- 新候选 index.ts 共用既有audit sink，record时取AsyncLocalStorage taskId补空requestId；旧requestId/事务/无上下文行为保留，现有view/connector直接消费。未构建部署，旧记录不回填，新任务效果未观察。
+- 本轮独立High静态GO：逐调用上下文隔离、已有ID优先、tx/异常语义及UUID白名单确认；未运行。当前handler均await调用，未来若引入脱离handler的异步Gateway工作需重新审查归属。
 - 本轮候选：IllustrationBrief v2独立encoding/composition；planner不再拆中文分隔符，末审只允许已有场景composition/treatment局部修正。v1保持原样读取/直接编译，v1 base修订显式要求新方案，不静默重画或改旧资产。
 - 本轮静态纠错：science/review都传kind/assessment；末审保留所选Claim全文及全部Evidence，upstream通过sourceIds与原文关联。旧bridge把同字段各段均标supports，不能按basis截掉可能的限定。
 - 本轮独立High静态GO：确认局部字段白名单/顺序与来源不变、v1兼容、v2解析、Claim与Evidence关联；未构建/运行，完整所选Claim上下文仍可能触及既有输入上限。

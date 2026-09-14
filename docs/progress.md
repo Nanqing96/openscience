@@ -1,5 +1,12 @@
 # CURRENT Progress Window
 
+## 2026-09-14 — 工具联动取证与任务审计接线
+- 用户纠正：清债需要已安装软件/Skill参与实际能力复用和代码修改，文档只是状态记录；规则后续会话持续适用，不是仅当前回合有效，也不等同后台回调。
+- 实际使用 Backstage 查询依赖、Serena 查询确认 bridge 调用方、Langfuse 读取两条已有生图失败；发现任务关联为空。沿代码定位 Worker 现有执行上下文没有接入 Gateway audit。
+- index.ts 候选共用现有 audit sink，逐调用取 AsyncLocalStorage taskId 补空 requestId；现有 view/connector 已接该字段，不另建 trace 库、模型步骤或技能包。未部署，新任务关联未观察，旧记录保持 unknown。
+- 独立High静态GO：并发上下文、既有ID优先、事务/异常与隐私边界保持；未运行，不能称新关联已在Langfuse出现。
+- 上游语义点/限定关系的确认与传递仍未完成；不能以监控接线或文件同步替代科学链路清债。无测试/预检/CI/构建/新模型调用；无关 dirty 设计稿保留。版本和下一步见 [CURRENT handoff](handoff/2026-09-10-hermes-web-image-handoff.md)。
+
 ## 2026-09-14 — 回合状态同步与配图审阅边界
 - 更新既有 docs-sync/AGENTS：有状态变化的回合final前同步，关键节点先保存；普通问答不重写，意外中断后以Git恢复。Skill不是后台回调，不另装重复能力或定时任务。
 - 候选 IllustrationBrief v2 分开科学encoding与排布composition；末审只接受既有场景艺术字段的局部修正，其余沿用原candidate。旧v1继续读取/直接编译，修订显式要求新方案，不静默重画旧资产。
