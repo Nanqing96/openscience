@@ -96,6 +96,7 @@ else
     openscience-development-telemetry-ingest >/dev/null
 fi
 log=$root/logs/install-$release-$(date -u +%Y%m%dT%H%M%SZ).log
+[[ ! -e $root/current || -L $root/current ]] || { printf 'Unexpected current path; no services changed.\n' >&2; exit 1; }
 printf 'Starting only openscience-development-langfuse; private startup log: %s\n' "$log"
 if ! "${docker_cmd[@]}" compose --project-name openscience-development-langfuse --project-directory "$target" \
   --env-file "$config/runtime.env" -f "$target/compose.yaml" up -d --pull missing --wait --wait-timeout 300 > "$log" 2>&1; then

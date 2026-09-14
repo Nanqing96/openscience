@@ -16,6 +16,7 @@ case "${1:-}" in
   start)
     [[ $# == 2 && $2 == --confirm ]] || exit 64
     root=/opt/openscience-development/langfuse
+    [[ ! -e $root/current || -L $root/current ]] || { printf 'Unexpected current path; no services changed.\n' >&2; exit 1; }
     if [[ -L $root/current && $(readlink -f "$root/current") != "$release_dir" ]]; then
       printf 'Refusing an older release against current data volumes. Restore matching data separately.\n' >&2
       exit 1

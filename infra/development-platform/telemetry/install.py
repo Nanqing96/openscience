@@ -109,8 +109,15 @@ def main():
         run(['docker', 'network', 'connect', '--alias', 'development-gateway-audit-db',
              'openscience-development-telemetry-db', 'openscience-prod-postgres-1'])
     state = Path('/opt/openscience-development/telemetry/state')
-    state.mkdir(parents=True, exist_ok=True, mode=0o700)
-    os.chown(state, 1000, 1000)
+    private_path(state.parent.parent, directory=True)
+    state.parent.mkdir(exist_ok=True, mode=0o700)
+    private_path(state.parent, directory=True)
+    if not state.exists() and not state.is_symlink():
+        state.mkdir(mode=0o700)
+        os.chown(state, 1000, 1000)
+    state_info = state.lstat()
+    if not stat.S_ISDIR(state_info.st_mode) or (state_info.st_uid, state_info.st_gid, stat.S_IMODE(state_info.st_mode)) != (1000, 1000, 0o700):
+        raise ValueError('Unexpected connector state directory')
     log = config / f'install-{args.release}.log'
     with log.open('a') as output:
         subprocess.run(['with-proxy', 'docker', 'build', '--network', 'host', '--build-arg', 'HTTP_PROXY',

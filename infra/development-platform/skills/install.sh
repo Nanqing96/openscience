@@ -6,6 +6,8 @@ set +x
 umask 077
 skills_source_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 skills_npm_cache=${SKILLS_NPM_CACHE_DIR:-/root/.npm}
+skills_release=${SKILLS_RELEASE:?Set the full infrastructure Git revision}
+[[ $skills_release =~ ^[a-f0-9]{40}$ ]] || exit 64
 
 if [[ $(uname -s) != Linux || $EUID != 0 ]]; then
   printf '%s\n' 'Run this installer as root on the server.' >&2
@@ -24,9 +26,11 @@ if [[ ! -f "$skills_source_dir/pnpm-lock.yaml" ]]; then
     node:22-bookworm-slim \
     npx --yes pnpm@9.15.0 install --lockfile-only --prod --ignore-scripts
   chmod 0644 "$skills_source_dir/pnpm-lock.yaml"
+  printf 'Dependency lock generated; commit and transfer it before building.\n'
+  exit 0
 fi
 
 with-proxy docker build --pull=false --network host \
   --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg http_proxy --build-arg https_proxy --build-arg NO_PROXY \
-  --tag openscience-development-skills:1.5.26 "$skills_source_dir"
+  --tag "openscience-development-skills:$skills_release" "$skills_source_dir"
 printf '%s\n' 'Skills CLI image built. No skills installed and no product runtime invoked.'
