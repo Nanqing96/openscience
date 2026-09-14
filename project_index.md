@@ -2,6 +2,8 @@
 
 > CURRENT：能力复用与状态治理优先，配图部署/生成暂停。唯一版本事实及续作入口：[Hermes CURRENT handoff](docs/handoff/2026-09-10-hermes-web-image-handoff.md)。能力按[当前能力索引](docs/runbooks/hermes-capability-registry.md)定向查实现、调用和真实结果；下表日期/版本均为对应改动的历史记录，不作为当前release或自动next action。
 
+发布与传输入口：`infra/scripts/production-release-retention.mjs`默认保留历史与开发工具挂载；显式清理另行授权。`scripts/ssh-identity-path.mjs`供`cloud-sync.mjs`及`evaluation-source-sync.mjs`共用Windows原生OpenSSH路径转换。当前交付结果见CURRENT。
+
 > 2026-09-14 文档治理：旧handoff/实施计划保留历史证据，设计区分有效需求与编写时状态；未提交的集成设计稿保留原改动。当前债务及处理只维护在[能力台账](docs/runbooks/hermes-capability-registry.md#当前技术债与处理)，不另建任务库。AGENTS/流程Skill变更须进入交付分支，旧main只留导航。
 
 | 本轮文件 | 用途 |

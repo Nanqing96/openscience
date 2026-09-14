@@ -47,6 +47,8 @@
 
 | 问题 / 位置 | 后果 | 处理与后续 |
 |---|---|---|
+| production-release-retention默认将非active/rollback目录列入清理，忽略独立工具仍使用历史源码 | Catalog挂载83179导致9c30部署最终阶段拒绝并回滚 | 正常发布只登记rollback且空清理意图保留历史；明确清理才使用原严格挂载/引用规则。High静态GO，精确部署结果见CURRENT |
+| cloud-sync/evaluation-source-sync把MSYS的/c/...路径传给原生Windows OpenSSH | 指定项目密钥不可读，身份选择可能偏离预期 | 共用ssh-identity-path转换，保留参数数组与host-key规则，启用IdentitiesOnly；不修改密钥/配置。正式上传效果见CURRENT |
 | Worker 创建的 Gateway audit sink 未带已有执行上下文，Langfuse requestCorrelation 为空 | 调用失败无法从管理工具准确回到原任务及其技能/资产结果 | 候选 index.ts 共用现有 audit sink，在每次 record 时读取已有 AsyncLocalStorage taskId，只补空 requestId；现有 view/connector 无须改造。未部署，新任务关联尚未观察；旧记录不猜测回填 |
 | 根目录更新未进入交付树：AGENTS 和 17 个流程 Skill/引用文件 | 后续 session 按旧测试/逐步审批/派工规则执行，重复耗费与漂移 | 已将现有精简规则带入交付分支，保留独有脚本/参考；根目录同步导航，不新增工具 |
 | 旧 handoff/计划/index 将当时版本或待办标作当前 | 重复部署、重新生成或复跑已完成阶段 | 旧执行记录逐份加历史适用说明；设计说明区分需求有效性与运行状态；唯一 CURRENT 定锚，未提交独立设计稿保留 |

@@ -1,6 +1,8 @@
 # Runbook: 部署（Deployment）
 
-当前版本和暂停原因统一见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)。本次8e4接收端安装完成，应用构建在agent-worker Prisma JSON类型处失败，旧应用继续运行。用户转向能力复用治理和代码审查，暂停继续部署/生成。新review request v2只用于配图，旧v1保持；兼容新版receiver可服务旧应用；若需回退receiver，先回退producer，禁止旧receiver接新v2。以后恢复交付沿用既有no-tests/skip-migrate和receiver先行顺序；本段不是重跑部署指令。
+当前版本、部署结果和暂停范围统一见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)。review request v2只用于配图，旧v1保持；兼容新版receiver可服务旧应用；若需回退receiver，先回退producer，禁止旧receiver接新v2。交付沿用既有no-tests/skip-migrate和receiver先行顺序；本段不是重跑部署指令。
+
+2026-09-14发布收尾修正：正常部署仍在FD9锁内登记并发布精确rollback身份，但prepare默认写空v2清理意图，保留全部历史release、capability与镜像。原因是独立开发工具可能仍挂载旧release；9c30构建/启动通过后曾因此拒绝并回滚。历史清理是另行明确授权的操作，只有prepare显式传`--prune-unused 1`才规划原严格清理，complete/resume仍按已记录意图执行；不得为清理已被容器引用的目录而绕过保护。普通部署不传该参数。保留历史会继续占用磁盘，沿用现有磁盘监控，由独立清理任务决定范围。
 
 2026-09-14历史科研配图能力：应用 release `e2cccb4d75ee8980167d23d4b5c1867263caf2e8` / rollback `ea43696dd6b115415712fe87fd8ff4d2a4cbdc37`。独立 High 静态审阅修正科学关系来源覆盖后，干净发布树执行 `deploy.sh --confirm --no-tests --skip-migrate --reuse-unchanged-capability-images --rollback-ref ea43696dd6b115415712fe87fd8ff4d2a4cbdc37 e2cccb4d75ee8980167d23d4b5c1867263caf2e8`，必要服务器 build/start exit0。随后用该 immutable release 的 `infra/chatgpt-browser/install.sh --confirm-provider --source /opt/openscience-releases/e2cccb4d75ee8980167d23d4b5c1867263caf2e8 --renderer-image sha256:1c47a579ceb608f244878b41888eee50bda1135ff325cb7b49de3a275ee2013d` 安装 broker/runner/协议；既有清理器 installer 同源更新精确 reference.png 后缀，均 exit0，不提交清理请求。没有测试/预检/CI/迁移/新依赖，浏览器会话、代理和 Codex reserve 保持。收据 `tmp/illustration-brief-deploy.log`、`tmp/illustration-provider-install.log`。回退时应用与 Chat bundle 同步：应用回 ea43696d，image broker 恢复 b78fb94d bundle（config-d1630135），runner11494323、science501da7a3、helperd369ccc2；不以旧纯文本 runner 处理新参考图请求。实际功能结果见 CURRENT handoff。
 
@@ -1375,7 +1377,7 @@ core/search were `29/29` and `2/2`, parser/BGE runtime contracts passed, public
 and loopback release identities matched, seven backups remained, and build cache
 was zero.
 
-Future confirmed deployments use `production-release-retention.mjs` under the
+Historical behavior before the 2026-09-14 change above: confirmed deployments used `production-release-retention.mjs` under the
 same inherited FD 9 lock. The ordering is acceptance and backup refresh → write
 `.rollback-id.pending` → commit deployment journal → publish `.rollback-id` →
 execute the frozen exact retention plan → remove pending intent. Exit `78` means
@@ -1384,7 +1386,7 @@ the application or delete the intent. Re-enter the lock and run the exact
 `resume` command with the recorded candidate/rollback identities after inspecting
 the pending file metadata without printing secrets.
 
-Automatic retention is release-only. It may remove inactive one-level SHA
+Explicitly authorized retention remains release-only. It may remove inactive one-level SHA
 release directories, their matching capability files, and exact release-tagged
 Worker/Parser/Embedding tags. It fails closed for unexpected ownership,
 symlinks, nested mounts, stopped or running container references, source-marker

@@ -1,5 +1,10 @@
 # CURRENT Progress Window
 
+## 2026-09-14 — 发布与开发工具挂载联动修复
+- 9c30服务器必要build/start通过，最终历史清理规划因Backstage挂载旧源码目录而拒绝，自动回滚完成；未清除历史文件。精确release/rollback和日志见CURRENT。
+- 修正正常发布仅登记回滚身份、保留历史；显式清理仍走原挂载/引用与精确意图约束。Windows传输共用MSYS identity路径转换并约束OpenSSH身份选择。两项独立High静态GO，准备再次交付，无测试/预检/模型调用。
+- Serena已更新候选9c30快照，暂不代表生产；本机浏览器桥返回nodeRepl.fetch request failed，未完成页面观察，不解释为登录失败。
+
 ## 2026-09-14 — 确认结果复用与登录交接
 - 沿既有Hermes拆分/确认入口保存sourceBindings：当前来源快照索引与Claim级支持/限定/反证/背景关系；不再同栏目仅允许一条带证据Claim。多个确认API共用定义，web复用Domain selection类型，来源默认折叠。
 - 配图接收父子Claim关系，既有并发比较包含父关系；192证据上限沿用持久层并下发UI，不新增库/模型阶段。独立High主路径和容量修正均GO；未构建部署时不能称运行有效。

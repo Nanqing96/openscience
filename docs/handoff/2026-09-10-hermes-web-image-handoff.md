@@ -5,14 +5,16 @@
 - Chat生图主用，Codex CLI备用；科学认识来自上游解析/分析。Figma、视频、第三篇及批量仍暂停。
 ## 版本事实
 - 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；本轮起点HEAD/origin e06948162a424bbe20953d81b69f5540137891a4，完整本轮候选以git HEAD读取；不是应用release。
-- 本轮重新读取生产.release-id为89d05d6dfcf432765697762864e9406ea3588ab8；原rollback b2f3cf373c0eafde1adc53d85f198588d1c23391。只读Git fetch已完成，干净专用发布树art-direction-release-41ae8902仍在8e4，可用于本轮必要交付。
-- Catalog/Serena镜像与源83179c454b75688176060fabf9e611072d46813c；Serena所查源码89d05，快照/source和image不可混写。
+- 9c30e107必要服务器构建及应用启动通过，但提交前历史清理规划因Catalog仍挂载83179目录而拒绝，自动回滚完成。实读release恢复89d05d6dfcf432765697762864e9406ea3588ab8，rollback b2f3cf373c0eafde1adc53d85f198588d1c23391。完整日志tmp/source-bindings-deploy.log，部署exit65；未执行历史删除。干净发布树art-direction-release-41ae8902在9c30。
+- Catalog镜像与源83179c454b75688176060fabf9e611072d46813c；Serena已更新9c30e107候选快照，缓存镜像23fcfab77fa1，install exit0。快照不是当前应用release；尚未查询新符号。
 - Langfuse独立bundle83179c454b75688176060fabf9e611072d46813c，official v4.35.0；telemetry镜像c2b6683e8e804d07f2928ee4df2cba8d91fb5703，view/角色已provision，持久state复用。
 - Skills镜像83179（实际list/find在相同CLI代码ce02首次执行）；依赖图脚本c9d98bd70252d7ca21854ca9b05987d2d46af700，源89d05。
 - Squid原生兼容包7:7.2-1.alnx4.openscience.1.x86_64；构建/原RPM/配置备份目录ce02ee5273aa7fb9de2a7e9679b480485ae46939，native-rpm.sh可回退。
 - receiver bundle8e4已安装、兼容v1/v2；科研应用8e4在Prisma JSON类型构建失败，候选已静态修正但没有重新构建/部署。
 - 根目录dirty main不是交付基线。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。
 ## 已实际交付 / 使用证据
+- 新候选修复上述联动故障：正常发布只保存rollback身份，空v2清理意图保留全部历史目录/镜像；单独明确授权的prepare --prune-unused 1才沿原严格挂载/引用约束清理。High静态GO，未重新部署。
+- 同步传输实际出现Windows原生OpenSSH不识别/c/... identity警告；新增共享ssh-identity-path供两个既有传输脚本转换路径，并启用IdentitiesOnly。High静态GO，等待下一次正式上传观察，不重建密钥/修改凭据。
 - 新候选：确认sourceBindings按当前snapshot的sourceIndex解引用，逐Claim保存既有Evidence.relation；多个拆分Claim可各自关联原文。旧请求省略bindings仍全段supports；客户端不得提交quote/locator，不自动回填旧Claim。
 - 确认API复用一个Zod定义、web selection复用Domain类型；Hermes来源折叠可调整关系，split独立复制。原192条证据批次上限从持久层下发预览供UI使用，未提高上限。
 - planner/review沿用原Claim/Evidence，并带parentClaimId；原并发内容比较覆盖父关系。High静态审查主路径及容量修正均GO；没有运行或质量证明。
@@ -46,7 +48,7 @@
 - 无工具保证绝对掌控/科学正确或全调用覆盖；快照无第三方类型，动态引用可能缺失，费用缺失不能当0。
 ## 后续科研工作
 - 本轮保存的是用户确认的细粒度Claim及Claim级原文关系；不是每条condition/limitation的独立来源映射。自动预填仍缺最终科学审阅的atomic suggestions，可扩展现有末审输出后沿现确认入口审核，不新增模型阶段/分析库，不直接升格未审semanticStage。
-- 本轮表示/末审修正及之前共享critical-thinking、JSON类型收窄均为未部署候选；没有构建/模型证据。下一步处理上述确认关系，再恢复必要应用交付和真实Chat配图；不复跑旧候选/脚本。
+- 9c30所含表示/末审修正、共享critical-thinking、确认关系及任务审计均已服务器构建通过，但部署回滚，尚未上线。下一步提交本轮发布/传输修复，正常部署后更新源码工具快照；不触发新模型或生图补证据。
 - 自有skill/三套Baoyu有真实消费记录，但通用科学/审美质量未获确认；参考图bytes路径已部署但未实际上传生图。
 - RO9067a2d5-42ad-4c06-b234-753728b71064；private e77dc3c7-95cb-4269-ac3c-24276fea74e7；Claim93416292-0dbb-42b1-8810-6bdf77804c1f；40Evidence保持。
 - 喜爱图aa41a018-b2ff-4ffb-9557-19ecabe104bc保留；公开OSR-2026-000023/v1/version72c315af不改。旧图/原件/笔记不删除。

@@ -9,7 +9,7 @@
 | 入口 | 现有运行方式与实际证据 |
 |---|---|
 | Backstage目录API | `openscience-development-catalog-catalog-1`；标准实体实际返回Hermes owner/deps，匿名401；SQLite独立state，只读Token身份，无Docker socket/生产DB |
-| Serena只读MCP | `openscience-development-serena-serena-1`；实际三工具列表、Gateway符号及extractor调用返回；只读89d05源码快照，缓存独立，不加载仓库脚本/Secret/测试/依赖目录 |
+| Serena只读MCP | `openscience-development-serena-serena-1`；实际三工具列表、Gateway符号及extractor调用返回；快照按CURRENT区分候选与生产，缓存独立，不加载仓库脚本/Secret/测试/依赖目录 |
 | Langfuse | `openscience-development-langfuse-*`六个独立服务，官方v4.35.0；独立PG/Redis/ClickHouse/MinIO，登录页200，实际API读回已有调用；无provider keys、外部AI任务或论文正文 |
 | Gateway元数据 | `openscience-development-gateway-audit`；专用只读`xgs_telemetry.gateway_calls`视图/角色，无原表SELECT，50条接收回执，抽读12条；checkpoint和凭据持久保存 |
 | 模块依赖 / 技能CLI | 复用现有dependency-cruiser18.1.0，真实19模块/4跨包边；Vercel Skills1.5.26 list/find已实际使用，不安装搜索结果 |
