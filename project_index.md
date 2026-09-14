@@ -4,7 +4,7 @@
 
 | 本轮文件 | 用途 |
 |---|---|
-| `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | 图片风格首批已交付：41ae/v2三张真实私有候选及工作台轮播已看，公开v1保持；v3信息结构/坐标域/标签强化a1a5f30d已部署，后续技能检索与边界见Hermes台账及CURRENT |
+| `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | a1a5/v3已部署；用户仅认可淡彩，学术/封面需重做。v4候选区分科学批准与审美认可、允许重排被否定构图；本轮部署/实际结果见CURRENT，不能沿用旧三图均接受结论 |
 | `apps/web/app/dashboard/dashboard.module.css` | 6504c004已部署实看：收回Hermes遗留跨三行布局，首行等高、后续整行及紧凑导入；桌面/手机无横溢出 |
 | `infra/private-cleanup/{runner.mjs,install.sh}` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 已交付f8：Node符号链接精确身份、正常排空退出、安装等锁、回收站自动刷新；原4项已实际清除。独立Codex仅090文件补丁、base1ad运行环境保留 |
 | `apps/web/components/public/ClaimNarrative.tsx` / `apps/web/components/hermes/{HermesRail.tsx,hermes-state.ts}` / `apps/web/app/dashboard/page.tsx` | 已部署f8实读：整块证据默认关闭约59px，个人空间只展示处理中任务，建议/失败和历史集中Hermes对话；后台状态未改 |

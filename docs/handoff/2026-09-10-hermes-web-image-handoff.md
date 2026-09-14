@@ -1,5 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Current task and result
+- 最新用户反馈：仅淡彩aa41审美认可，学术dc216和封面d4ff被评价平庸。旧“独立接受”只代表当时候选评估，不能覆盖用户审美判断。正在以同一私有草稿重做两图；科学内容/淡彩图/公开v1保留。art-direction v4候选区分科学批准与审美认可，拒绝仅换色，允许被否定的构图重排；实际部署/成图尚待本轮完成。
 - 用户顺序：先同一已审论文的学术图、封面、淡彩三张私有候选；落实后检索现有生图/绘图/构图skill。三张已实际生成、独立看图接受、画廊与工作台轮播均可达；尚未公开或在产品审批为approved。水墨指导已配置但本批不生第四张。
 - 学术图dc216a9f-2683-47d5-8aec-eef55b88aa2a；封面d4ffa9d0-2ad6-417e-9593-6b437a91f269；淡彩aa41a018-b2ff-4ffb-9557-19ecabe104bc。均1280×720/draft，来源同一reviewed Claim93416292/40Evidence。旧误导光晕封面249a5536标rejected并保留文件；旧成功资产未删除。
 - 研究RO9067a2d5-42ad-4c06-b234-753728b71064；本轮通过restore API从已审72c315af恢复私有草稿e77dc3c7-95cb-4269-ac3c-24276fea74e7，内部versionNo8/RO revision9。正文core全等、40证据继承。不能再次运行tmp/style-batch-restore.sh。
