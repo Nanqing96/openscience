@@ -1,9 +1,11 @@
 # CURRENT Progress Window
 
-## 2026-09-14 — 文献分析驱动配图与Chat语义审阅（交付中）
-- branch codex/onchip-video-release，HEAD/origin/应用89d05d6d，rollback b2f3cf37；Chat bundle e2cccb4d。必要服务器build/start exit0，无测试/预检/CI/迁移/新依赖。
-- 两阶段科学→艺术和完整原文已部署，实际d31e7ccc仍产生不支持的公式/连续曲线/峰值，现API200 rejected。旧两稿也被拒；cdc/997已各retry一次失败。没有新图片，不称质量通过。
-- 新候选复用Chat科学审阅：一次核对完整上游与最终画面，修正后直接编译，禁止再自由改写。独立presentation授权和v2 source保留真实来源边界；旧PDF/OCR不变。High静态复核中，未部署。
-- 自有skill和原版Baoyu已在Codex/Hermes安装使用；本次补Scientific review阶段。参考图transport已部署但实际上传尚未发生。
-- 下一步集中复核→一次部署/receiver更新→真实私有方案→科学通过后单张参考图→看产品实际图。公开v1和所有旧资料保留；Figma/视频/第三篇/批量暂停。
-- 唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。无关dirty integrated-research-product-design.md保持。
+## 2026-09-14 — 优先修能力复用与状态漂移
+- 用户先要求解决“已有能力被遗忘、重复实现、效果不明”，再code-review。配图仍是后续目标；现在暂停部署/模型调用/生成，公开版本与数据保持。
+- 唯一版本事实与下一步见[CURRENT handoff](handoff/2026-09-10-hermes-web-image-handoff.md)。应用保持89d05；receiver8e4已装，应用8e4构建失败。当前工作树基于8e4做静态修正，无测试/预检/CI。
+- 已定向High审查：原科学skill确有调用，配图没复用；长Claim/整证据二次分析、Chat全稿重写仍有风险。BGE不能替代科学判断。
+- 候选bf8db1ad接回同一个critical-thinking runtime skill并删重复原则，修decision未收窄导致的Prisma JSON类型原因；最终High静态复核完成，未再构建/部署，效果未知。
+- 复用现有AGENTS、architecture-guard、docs-sync、ADR-002和能力台账，补产品目的/代码调用/实际效果索引；根main入口仅链接交付树CURRENT，不复制release。
+- 官方工具调研和定向review问题/处置在[能力台账](runbooks/hermes-capability-registry.md)当前部分。没有新管理平台、依赖、MCP、自动化或重复门禁。
+- 审查发现并修正BGE台账虚假调用箭头：worker建索引已接，hybrid query实现本轮未见app调用方。根main导航和跨session决策Memory已同步；既有其他dirty内容保留。
+- 真实d31及旧错误方案已rejected，没有新图片。后续先修已审上游到窄视觉焦点的传递，收敛审阅再恢复交付；不执行旧tmp脚本。

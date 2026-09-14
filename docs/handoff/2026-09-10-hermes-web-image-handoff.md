@@ -1,27 +1,32 @@
 # Hermes / Workbench CURRENT Handoff
-## Goal / constraints
-- 自有通用科研配图skill，科学认识来自每篇上游解析/分析。Chat生图主用；Codex CLI仅备用，不自动切换。实际看图后才能判断审美。
-- 禁止测试/预检/CI/本机运行检查；只静态编辑、传输、必要服务器build/start和真实私有产品操作。保留旧资料/图片/公开v1。Figma、视频、第三篇、批量暂停。
-## Version tuple
-- 工作树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；HEAD/origin 89d05d6dfcf432765697762864e9406ea3588ab8，新增Chat最终语义审阅为未提交候选。
-- 实际应用 release89d05d6dfcf432765697762864e9406ea3588ab8 / rollback b2f3cf373c0eafde1adc53d85f198588d1c23391；Chat bundle e2cccb4d75ee8980167d23d4b5c1867263caf2e8。必要服务器build/start已exit0，未有新图片。
-- 干净发布树 .worktrees/art-direction-release-41ae8902 当前89d05。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖；根main不是部署基线。
-## Implemented and actual evidence
-- 自有skill安装到项目和Codex；3套原版Baoyu/MIT/commit1567581c保留。Hermes确实消费Scientific intent、Planning和设计参考，记入provenance。baoyu-image-gen只研究未安装。
-- 两阶段MiniMax：完整上游原文/短sourceId选择科学意图；艺术阶段只做布局/处理；代码保留科学字段、原文引用和最终1500字符编译边界，无截断。结构成功不等于科学正确。
-- 原图参考接口/真实bytes传递、同RO/version权限、hash、附件就绪、唯一发送已部署e2；实际新图片/附件上传尚未发生，不能称已稳定。
-- f3c75142、393f050d科学域/极值/来源错误，API200 rejected；cdc212ed和9977dcab已各用一次retry后failed，不再retry。
-- 最新d31e7ccc-95d0-4ce6-9264-27e425bc612d保存成功，但来源不支持描述、把复数积分核画成连续实曲线、艺术阶段补造峰值；已API200 rejected（2026-09-14T11:49:08Z）。tmp/illustration-locale-provenance.json与服务器/jobs/illustration-locale-plan-rejected.json保留。
-- 根因不只提示词/格式：Claim是约4k人工已审整篇笔记，40 Evidence含完整段与旧80字符片段；引用相等不证明语义蕴含。当前停止继续堆提示词，接已有Chat独立科学审阅。
-## Current candidate
-- 新presentation/illustration-review.ts：两阶段仅产候选；Chat一次审完整上游与最终构图，accepted保留/revised完整修正/blocked停止。sourceId重新解引用后直接compile/保存，不再LM改写，不自动生图/发布。
-- 新review request v2明确illustration-plan+真实RO/version/evidenceIdentity/candidateHash；requestId父task.id，一任务一次；v1 ingestion/OCR保持。独立policy与submission锁中复核实际task/attempt、scope、权限、Claim/Evidence/原文件/base。已有prompt/responseHash复用，不伪装artifact。
-- skill新增Scientific review章节，Hermes按阶段读取并记录实际usage；Codex本机已同步。High静态审阅中；尚未构建/部署/观察新Chat调用。
-## Next
-- 完成集中High静态复核，单次应用部署及Chat receiver bundle更新（v1/v2兼容），再用真实私有任务产一份方案。Chat修正科学通过后才批准方案并生一张参考图，实际检查返回图片和产品尺寸。
-- 部署：显式Git Bash+infra/scripts/ssh-run.sh/deploy.sh；no-tests/skip-migrate/reuse既有镜像；复用Chat浏览器会话/代理，不读.env/凭据。receiver支持v2后才提交新任务；旧runner不能接新v2。
-## Protected scope / cautions
+## 当前目标与暂停边界
+- 用户2026-09-14最新要求：先修能力复用/产品状态掌握问题，再code-review；生图主线保留，但暂停部署、模型任务、改稿和生成。
+- 禁止测试/预检/CI/本机运行检查。只静态编辑、Git、必要状态读取；无新依赖、MCP、后台管理服务、删除或公开变更。
+- 科学认识来自上游解析/分析，不固定文献/图形模板；Chat生图主用，Codex CLI仅备用。Figma、视频、第三篇、批量继续暂停。
+## 版本事实
+- 工作树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；代码/治理候选bf8db1ad（基于8e4c62a1），未部署；此后纯交接提交的HEAD/origin用Git读取，不代表代码或release变化。
+- 本次只读 `.release-id` 确认应用89d05d6dfcf432765697762864e9406ea3588ab8；保留既有rollback b2f3cf373c0eafde1adc53d85f198588d1c23391。容器列表含健康worker/API与运行Portainer/Netdata；这不证明内容质量。
+- Chat receiver bundle8e4c62a1已安装exit0，兼容旧v1和新v2；应用8e4构建在handler.ts359 Prisma JSON类型失败exit2，旧应用保持。部署session20551已结束，不重跑。
+- 干净发布树 .worktrees/art-direction-release-41ae8902 当前8e4；根目录dirty main不是交付基线。交付树无关dirty integrated-research-product-design.md不得提交/覆盖。
+## 本轮完成 / 实际证据
+- 独立High定向审查确认：科学critical-thinking在extractor已使用；配图另写重叠规则；长Claim+全部证据二次分析造成断接。BGE是检索，写作skill是带引用写稿，不能强接为配图真伪裁定器。
+- 候选installed-media-skills直接复用既有critical-thinking常量，记录id/version/源码资源；审阅提示词删重叠原则。decision改字面量收窄，修已定位类型原因；未重新构建，不能称编译通过。
+- 复用architecture-guard/docs-sync/ADR-002，补“目的→已有实现与调用→真实任务结果→缺口”的工作方式；不新建管理系统或机器门禁。
+- 原能力台账增加紧凑当前索引，历史表明确降级；服务器/部署手册只链接此handoff版本事实，索引不再复制过期release。根main入口只修导航，保留其他编辑。
+- 官方调研Backstage、Portainer、Langfuse、GitNexus、Vercel Skills/Agent Skills，取舍在能力台账；仅Portainer原已运行，无新工具安装。
+- 最终High静态复核完成：类型收窄/共享skill无新增权限回归，治理无第二版本库/门禁。修正其发现的BGE台账误连：索引已接，hybrid query只有实现，本次未见app调用方。尚未构建/部署，不称科学质量通过。
+- 真实失败保留：d31e7ccc保存但引用不支持描述/复数核画连续实曲线/艺术补造峰值，已API200 rejected；f3c/393也已rejected，cdc/997各retry一次后failed。没有新image请求。
+## 未完成 / 科学与工程风险
+- 8e4新增Chat final review从未实际调用；整批证据+完整storyboard重写仍过重，不能直接继续部署试错。
+- 上游已有已审语义/来源关系尚未作为窄视觉焦点充分传入；先补该交接点，不能把有错旧semanticStage盲目提为事实。
+- 原参考图bytes路径已部署但未真实上传/生成；输出仍1280×720。自有skill/3套Baoyu已实际消费，但通用科学及审美质量未获证实。
+- 管理索引和规则已整理；没有自动全产品调用图或持续质量评分，不能承诺彻底杜绝遗漏。效果按实际产物与用户反馈更新。
+## 下一步
+- 本轮治理与候选修正已静态复核并提交；保持产品主线暂停，不自动执行tmp生成/部署脚本。
+- 恢复配图主线时：先让既有上游已审关系/原文限定提供一个视觉焦点，艺术只做表达；收敛最终审阅范围与允许修改字段。当前完整重写候选先调整，勿先部署碰运气。
+- 后续必要交付沿用既有Gateway和v1/v2接收端、权限/来源关系及no-tests流程；不因skill市场有包就安装新运行器。
+## 保护范围 / 读法
 - RO9067a2d5-42ad-4c06-b234-753728b71064；private e77dc3c7-95cb-4269-ac3c-24276fea74e7；Claim93416292-0dbb-42b1-8810-6bdf77804c1f；40 Evidence。
-- 喜爱参考aa41a018-b2ff-4ffb-9557-19ecabe104bc，hash565fa04e0c79ab9ee797b4bfd9d3a334b6f49b88b72756f8d1533bb631e7330b。公开OSR-2026-000023/v1/version72c315af不改。
-- tmp下所有旧*-generate.sh都硬编码失败/被拒方案，不得执行；旧plan/reject脚本已有写入收据，不重跑。新任务用新幂等key并先保存receipt，模糊超时先查状态。
-- 没有任何新image请求；原图/候选保留。输出仍1280×720，数据绘图器未接；科学与审美的通用质量均尚未证实。
+- 喜爱参考aa41a018-b2ff-4ffb-9557-19ecabe104bc保留；公开OSR-2026-000023/v1/version72c315af不改。旧图/笔记/原件不删除。
+- tmp旧*-generate.sh绑定已拒方案不得执行；illustration-reviewed-plan.sh尚未发请求，现暂停。旧写操作收据先读不重发。
+- 先读本页→能力台账当前匹配行→实际调用代码；不全文加载历史日志。部署日志tmp/illustration-reviewed-deploy.log，receiver安装tmp/illustration-review-provider-install-8e4.log；失败产物tmp/illustration-locale-provenance.json。
