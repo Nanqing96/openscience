@@ -1,6 +1,6 @@
 # OpenScience (XGS) 项目文件索引
 
-> 当前任务 2026-09-14：公开文章标准API与发现入口实施中，最新版本完整JSON、固定版链接、统一OpenAPI和/developers接入文档。候选基线3700e4ae，生产实读e7f95180/rollback0931cf12；无新科研写入/依赖/测试。最终部署及读取证据以唯一CURRENT handoff为准。
+> 当前任务 2026-09-14已完成：公开文章标准API/统一OpenAPI和/developers发现入口已部署a7214fc9（rollbacke7f95180）。匿名文档/最新/固定/旧v10/来源均200，内容保持、截图已看；外部web工具域名拒绝仍有客户端兼容边界。代码HEAD/origina7214fc9，随后仅文档补记；唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮文件 | 用途 |
 |---|---|
@@ -10,7 +10,7 @@
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：第二篇已公开OSR-2026-000023/v/1（72c315af），完整原题/DHL署名/CC-BY-4.0文字与数据许可、MIT代码许可。已审正文/40来源/图保留，匿名PDF下载200且原件字节一致；已完成两篇真实发布，视频/批量暂停。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，代码HEAD/origin/应用e7f95180 / rollback0931cf12，随后仅文档补记；无删除/测试/迁移。
+> CURRENT 2026-09-14：第二篇已公开OSR-2026-000023/v/1（72c315af），完整原题/DHL署名/CC-BY-4.0文字与数据许可、MIT代码许可。已审正文/40来源/图保留，匿名PDF下载200且原件字节一致；已完成两篇真实发布，视频/批量暂停。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，应用a7214fc9 / rollbacke7f95180；本篇发布操作历史见CURRENT。无删除/测试/迁移。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |

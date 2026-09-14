@@ -1,13 +1,17 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 2026-09-14新授权正在实施：外部AI按公开文章ID/版本直接GET JSON；latest与exact共用既有公开读取，提供links/Content-Location/Link、完整OpenAPI、/developers导航/文档与HTML JSON alternate。不需导出、不新装服务/依赖。改动尚未部署；下一步独立High终审→服务器必要build/start→匿名真实文档/论文读取。
+- 2026-09-14公开文章标准API已交付：latest/exact共用原公开读取，最新返回完整JSON；统一OpenAPI3.1含8个真实GET、/developers中英文档与导航、HTML JSON alternate、Link/Content-Location/links.self。借鉴Crossref/OpenAlex/OpenAPI；无新服务/依赖/迁移/科研写入，独立High静态PASS。下一步用户实际接入其外部AI客户端；本轮无待部署代码。
 - 2026-09-14第二篇已真实发布OSR-2026-000023/v/1，作者DHL、完整原题、文字/数据CC-BY-4.0、代码MIT，原PDF允许匿名下载。用户确认原创/昵称/下载并委托选许可；两篇真实论文已公开，等待用户对产品质量反馈，视频/批量暂停。
 - 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/migrate/start与真实页面阅读已执行，不通过删除/发布受保护论文验证功能。
 - 服务器MiniMax-M3。自动生成、引导共编、人工校正分别记录；独立High审核不能冒称产品自动审校。
 ## Version and workspace
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；代码HEAD/origine7f95180643a852951cfcfb4f7cc8dd65fac58d5，随后仅文档补记；实际文档HEAD从Git读取，不等于应用release。
-- 当前ECS releasee7f95180643a852951cfcfb4f7cc8dd65fac58d5 / rollback0931cf122c93fb9730926771bfe9739d9a87e108；本轮git fetch后重新只读.release-id/.rollback-id与Nginx /__release一致，API/Worker健康、Web运行。093回退暂失公开下载/单结论；c0bc及以前不兼容，禁止回退。本轮API候选未部署，预定兼容回滚为e7f；无迁移/新服务/依赖。
+- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；代码HEAD/origina7214fc9bff7c2837ec562fc923ae23a6c4e8d6e，随后仅文档补记；实际文档HEAD从Git读取，不等于应用release。
+- 当前ECS releasea7214fc9bff7c2837ec562fc923ae23a6c4e8d6e / rollbacke7f95180643a852951cfcfb4f7cc8dd65fac58d5。tmp/public-api-deploy-a7214fc9.log及exec98387 exit0：--no-tests --skip-migrate，服务器完整build/start、精确release切换与journal收尾完成，无手动stop。clean树.worktrees/public-api-release-a7214fc9；e7f回滚保留前次发布/下载，但撤销本次API入口升级。c0bc及以前仍禁回退。
 - clean发布树.worktrees/public-download-release-e7f95180；先前各发布树保留。根目录dirty main不是生产基线，未合并main；无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
+## Public API observation
+- tmp/public-api-reading.json/log（服务器/jobs同名）：匿名/developers、OpenAPI、23/latest、23/v1、22/v10及冻结来源均200；latest除兼容latestVersion字段外与exact深度同值，固定links.self/Content-Location正确；23正文/Claim/原配图与上轮数据同值，40来源保留，下载URL授权保持。HTML中固定JSON alternate和开发者导航可发现，旧引用区技术链接0。tmp/public-api-developers.png已视觉查看。
+- 公开接入：https://openscience.428312321.xyz/developers；规范/api/research-record/openapi；最新完整/api/research/OSR-2026-000023；固定/api/research/OSR-2026-000023/v/1。原PDF下载字节证据复用e7f，不重复下载。
+- 客户端限制：本轮web工具对已公开API返回not safe to open(non-retryable)，未提供HTTP状态，未重试/放宽策略，不推断Cloudflare/登录/DNS根因；记录tmp/public-api-external-client.txt。服务器匿名浏览器沿既有代理读取成功，不冒称所有外部AI客户端均已兼容。
 ## Lifecycle delivered and observation
 - 公开序号publicationNo独立于内部versionNo；发布时分配，旧公开v10/URL保留；冻结公开元数据/图谱/来源/媒体。私有草稿权限单独判断，历史恢复创建新私有草稿并沿用冻结图文。
 - 主页面分析记录收进Hermes；无公开记录不显示发布历史。更多内编辑历史按日期/摘要、可查看再恢复；个人空间和内容项删除、会话默认保留产物、30天回收站/恢复/清除、公开聚合长期归档。
