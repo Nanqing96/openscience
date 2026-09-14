@@ -25,7 +25,9 @@
 | [Anthropic canvas-design](https://github.com/anthropics/skills/blob/main/skills/canvas-design/SKILL.md) | 主体、留白、构图与字体层次；[Apache-2.0](https://github.com/anthropics/skills/blob/main/skills/canvas-design/LICENSE.txt)。 | 构图参考优先级次于科学语义；不能将其创作自由原则套在来源约束上，也不需要独立生成“设计哲学”文档。 |
 | 现有本地imagegen / Gemini image-generation | 前者明确生成/编辑边界和精确标签；后者有科学/光学示例，但存在λ<100fs量纲错误。 | 保留既有工具，不将其当科研证据；服务器链路继续复用ChatGPT executor，未用Codex手工图替代产品生成。 |
 
-v3候选自写三项规则：信息结构与艺术处理分开；每幅图明确实空间/时间/频率/波矢/参数域，装饰边缘不暗示额外截止；实际统计可见标签，并以文字/线形等补充颜色编码。不加新模型调用、依赖、API或schema。三图是在v2和具体修订简报下得到的，不能记为v3自动验证。
+v3自写三项规则已随应用a1a5f30d部署（rollback41ae8902，High GO，必要build/start exit0，公网release200实读；无测试/预检/迁移）：信息结构与艺术处理分开；每幅图明确实空间/时间/频率/波矢/参数域，装饰边缘不暗示额外截止；实际统计可见标签，并以文字/线形等补充颜色编码。不加新模型调用、依赖、API或schema。三图是在v2和具体修订简报下得到的，不能记为v3自动验证。
+
+确定性绘图代码实读：`generateClaimChartSvg()`目前只是固定SVG图元与text/tspan的Claim卡片，没有坐标、数值曲线或数学排版。成熟科学绘图库尚未接入；下一步先复用服务器已有工具，再选择绘图库，不能把旧chart资产名称当成已有科学绘图能力。
 
 未解决：普通Agent“重试”与image handler保留结果恢复合同不一致；间歇image_mode未提交错误尚未定根因。runner11494323有界就绪及安全子阶段记录已安装，后两次实际图成功。后续按具体故障修复，不清空spool、不盲重复提交。
 ## 历史状态（2026-09-13）
@@ -48,7 +50,7 @@ v3候选自写三项规则：信息结构与艺术处理分开；每幅图明确
 | 3 | 科学写作与引用 | 既有SourceMap、基稿血缘与精确引用重映射是通用实现；867方法稿与3f68结果稿来源指导修订后科学/引用PASS。具体指导和独立复核未自动产品化；editorDraft缺同等来源；602首次writing显式来源已实际传递，第二篇来源指导修订71科学/引用PASS，自动首稿失败保留。 |
 | 4 | 精美笔记 | 既有research-note-formatting、阅读/编辑、折叠来源与Markdown下载；0685已保护数学原文经过Markdown后逐字还原，复用splitMath与安全KaTeX。同一真实稿26式全部匹配；多格式导出按需补齐。 |
 | 5 | 多格式附件 | XLSX/PPTX/HTML已生产，派生副本清洗、原件保留；真实多样样本兼容未观察。复用已有解析器，未另装MarkItDown全套。 |
-| 6 | 艺术图片与视频 | 既有艺术指导/构图、locale/style及服务器网页生图已接通，23原图已实际生成并公开。2026-09-14批次：v2应用41ae已产3张1280×720私有候选并实际看图/工作台轮播；学术dc216、封面d4ff、淡彩aa41。水墨未生成，v3通用强化候选待部署；自动首稿和间歇就绪限制见CURRENT。 |
+| 6 | 艺术图片与视频 | 既有艺术指导/构图、locale/style及服务器网页生图已接通，23原图已实际生成并公开。2026-09-14批次：v2应用41ae已产3张1280×720私有候选并实际看图/工作台轮播；学术dc216、封面d4ff、淡彩aa41。水墨未生成，v3通用强化a1a5f30d已部署；自动首稿和间歇就绪限制见CURRENT。 |
 
 用户流程：一句话或附件开始同一私有研究 → Hermes理解整理 → 用户少量修改/确认 → 图片或视频 → 审核发布。主屏标题/贡献→核心媒体→六字段→文末资料；长笔记独立阅读。
 
@@ -103,7 +105,7 @@ v3候选自写三项规则：信息结构与艺术处理分开；每幅图明确
 | ClamAV | 上传文件恶意内容扫描 | `PRODUCTION` | 免费、本地 CPU | agent-worker/隔离边界；fail-closed | signature freshness、blocked path、资源峰值 |
 | MiniMax text/vision | LLM OCR、复杂表格/公式补救 | `APPROVED_PILOT / BLOCKED` | 自动平台处理；最少页；凭据已在聊天暴露，轮换前不得调用 vision | 仅 AI Gateway；`openscience-ocr-v1` route 已实现但默认 disabled + external-policy deny；生产 worker 当前有变量注入，文档不记录值 | locator 复验、页成本、数据外发、错误率、审计 |
 | MiniMax image/video | 代表性 RO 展示资产 | `APPROVED_PILOT / BLOCKED` | 仅管理员；逐项批准公开；凭据轮换前阻断 | 外部 API，经 AI Gateway；不在 CPU 服务器部署模型 | 科学真实性、成本、prompt/source provenance、可撤回 |
-| ChatGPT web image/science review | 内容驱动生图与原PDF独立科学复核 | `PRODUCTION` | 使用已授权服务器浏览器会话；不计入Codex调用；精确canonical续取、禁止重发，最终确认仍由用户完成 | 当前release/provider `4b4e365c…`；图片与科学审阅独立锁；附件仅经受限OpenAI域名；科学审阅1800秒、持锁期间15秒heartbeat；science-v4合同 | 已回传真实PNG；Deep-sub-cycle task `1e324308…` / attempt `6cc0a17c…`六字段非空、无补证。候选可按SourceMap复用，网页答复仍要求候选hash+合同版本完全相同 |
+| ChatGPT web image/science review | 内容驱动生图与原PDF独立科学复核 | `PRODUCTION` | 使用已授权服务器浏览器会话；不计入Codex调用；精确canonical续取、禁止重发，最终确认仍由用户完成 | 当前image runner `11494323`、science runner `501da7a3`、helper `d369ccc2`、broker `b78fb94d`；应用 `a1a5f30d`（独立部署）；图片与科学审阅独立锁；附件仅经受限OpenAI域名；科学审阅1800秒、持锁期间15秒heartbeat；science-v4合同 | 已回传真实PNG；Deep-sub-cycle task `1e324308…` / attempt `6cc0a17c…`六字段非空、无补证。候选可按SourceMap复用，网页答复仍要求候选hash+合同版本完全相同 |
 | Tavily MCP/API | 通用网页发现 | `PRODUCTION / BLOCKED` | 生产 Secret 已注入；四个授权 key 的最小探测均返回供应商套餐/单 key 额度耗尽 | `source.retrieve` discovery-only adapter；不得成为唯一来源 | quota 恢复前稳定 `unavailable/rate_limited`；source precision、成本、隐私 |
 | Semantic Scholar MCP/API | 论文、作者、引用关系 | `PRODUCTION` | 有效 Secret 由既有本地 Secret 安全注入；真实 Hermes 任务返回 3 sources，连续请求仍可能 429 | `source.retrieve` native-fetch adapter；provider schema 不越过 Domain | metadata/OA/rights accuracy、1 req/s、429 显式降级 |
 | ScanSci PDF | 全文发现/下载 | `PRODUCTION` | 官方 MCP；浙江大学认证作为平台持久 session；管理员在普通浏览器认证后以官方 `cookie_import` 导入，不部署第二 browser/auth 服务。官方来源策略默认不覆盖，17 tools 均保留 | release `b32d81c…` / rollback `0aaf52f…`；`scansci-pdf==1.13.1`，CPU-only、固定 Squid、持久 `scansci-data`、瞬态 `scansci-papers` | MCP 版本/17 tools/Worker、24,671,920-byte OA、1,873,303-byte ZJU subscription-only Nature、四入口、72h/600s/one-use 全通过；ScienceDirect 等待官方 entitlement |

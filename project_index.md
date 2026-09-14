@@ -4,7 +4,7 @@
 
 | 本轮文件 | 用途 |
 |---|---|
-| `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | 图片风格首批已交付：41ae/v2三张真实私有候选及工作台轮播已看，公开v1保持；v3信息结构/坐标域/标签强化候选，后续技能检索与边界见Hermes台账及CURRENT |
+| `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | 图片风格首批已交付：41ae/v2三张真实私有候选及工作台轮播已看，公开v1保持；v3信息结构/坐标域/标签强化a1a5f30d已部署，后续技能检索与边界见Hermes台账及CURRENT |
 | `apps/web/app/dashboard/dashboard.module.css` | 6504c004已部署实看：收回Hermes遗留跨三行布局，首行等高、后续整行及紧凑导入；桌面/手机无横溢出 |
 | `infra/private-cleanup/{runner.mjs,install.sh}` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 已交付f8：Node符号链接精确身份、正常排空退出、安装等锁、回收站自动刷新；原4项已实际清除。独立Codex仅090文件补丁、base1ad运行环境保留 |
 | `apps/web/components/public/ClaimNarrative.tsx` / `apps/web/components/hermes/{HermesRail.tsx,hermes-state.ts}` / `apps/web/app/dashboard/page.tsx` | 已部署f8实读：整块证据默认关闭约59px，个人空间只展示处理中任务，建议/失败和历史集中Hermes对话；后台状态未改 |
@@ -17,7 +17,7 @@
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：两篇22/v1与23/v1均DHL署名、允许原PDF下载；原科学内容/证据/图与许可保持。另4项用户已确认私有内容完成永久清除；应用41ae8902/rollback6504c004，独立image runner11494323，branch codex/onchip-video-release；同论文三风格私有候选已交付，v3强化候选待部署。视频/批量暂停，无测试/新迁移；唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> CURRENT 2026-09-14：两篇22/v1与23/v1均DHL署名、允许原PDF下载；原科学内容/证据/图与许可保持。另4项用户已确认私有内容完成永久清除；应用a1a5f30d/rollback41ae8902，独立image runner11494323，branch codex/onchip-video-release；同论文三风格私有候选已交付，v3通用强化已部署；skill来源与未接入绘图库边界见Hermes台账。视频/批量暂停，无测试/新迁移；唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
@@ -627,11 +627,11 @@
 
 - DEPLOYED infra/chatgpt-browser/{Dockerfile,start.sh,relay.mjs,host.mjs,install.sh,seccomp.json} / docs/runbooks/chatgpt-browser.md：服务器交互浏览器与生产 `chatgpt-web` provider；真实Hermes图片已回传，真实PDF完成6 Pro初审与补证；区域附件子域、图片/科学审阅独立锁、30分钟窗口、15秒science heartbeat、协议版本化幂等和逐字段保留部署于`36e6a8c4`；infra/scripts/ssh-run.sh固定browser-tunnel。
 
-- CURRENT docs/runbooks/server-capabilities.md：应用f8e44815/rollback9a36c1e0；清理与整块折叠/单一Hermes核对入口已实读，Codex runner090补丁/base1ad，浏览器执行器未变；见CURRENT。
+- CURRENT docs/runbooks/server-capabilities.md：应用a1a5f30d/rollback41ae8902；三风格实际私有候选已看、v3通用强化已部署；Codex runner090/base1ad，image runner11494323/science501/helperd369/brokerb78；见CURRENT。
 
 - `infra/scripts/browser-tunnel.ps1`：Windows隐藏SSH隧道断线重连；固定localhost6081，复用ssh-run.sh，2026-09-09本机页面恢复HTTP200。
 
-- `infra/chatgpt-browser/runner.cjs` / `review-runner.cjs` / `page-lifecycle.cjs`：DEPLOYED runners501da7a3/helperd369ccc2；精确任务输入/原图回收/只下载恢复/连接前自有target清理，共享生命周期模块随install.sh安装。实际5260回收与边界见CURRENT handoff。
+- `infra/chatgpt-browser/runner.cjs` / `review-runner.cjs` / `page-lifecycle.cjs`：DEPLOYED image runner11494323/science runner501da7a3/helperd369ccc2；精确任务输入/原图回收/只下载恢复/连接前自有target清理，共享生命周期模块随install.sh安装。实际5260回收与边界见CURRENT handoff。
 
 | `apps/web/components/research/ArtifactViewer.tsx` / `scripts/archive-legacy-showcase.mjs` | 附件预览与可恢复旧演示归档；关联完整旅程计划 | 2026-09-09已部署c2d11326，34条归档；真实流程状态见CURRENT handoff |
 

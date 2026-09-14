@@ -1,6 +1,6 @@
 # 服务器能力与复用清单
 
-- 2026-09-14当前应用41ae8902/rollback6504c004；art-direction v2三风格真实私有图已生成并看图，工作台轮播可达，公开23/v1完整JSON不变。image runner11494323有界就绪与安全子阶段记录按三锁单文件安装；science501/helperd369/brokerb78保持，无新后端/依赖/认证/浏览器重启。前两次发送前错误根因未定，后两次实际成功；v3通用规则候选待必要部署，详细收据与skill来源见CURRENT和Hermes台账。
+- 2026-09-14当前应用a1a5f30d/rollback41ae8902；art-direction v2三风格真实私有图已生成并看图，工作台轮播可达，公开23/v1完整JSON不变。image runner11494323有界就绪与安全子阶段记录按三锁单文件安装；science501/helperd369/brokerb78保持，无新后端/依赖/认证/浏览器重启。前两次发送前错误根因未定，后两次实际成功；v3通用规则High GO及必要build/start完成exit0，公网release200实读，详细收据与skill来源见CURRENT和Hermes台账。
 
 - 2026-09-14历史应用6504c004/rollback f8e44815：仅个人空间CSS重排，首行等高双卡、后续整行和紧凑导入；必要build/start exit0，桌面/窄屏已实看。没有新增能力、依赖或运行器代码，Codex仍runner090/base1ad，受限清理代码沿用f8；不重跑生成或清除。当前状态见唯一CURRENT handoff。
 
@@ -84,7 +84,7 @@
 
 | 能力 | 已有位置 / 入口 | 状态与复用方式 |
 |---|---|---|
-| 生产应用 | `/opt/openscience`；`openscience-prod-{web,api,agent-worker}-1` | application `0931cf12…` / compatible rollback `02d67ddf…`；已解决带图草稿保存500，回退会恢复此故障；当前图文与剩余范围见CURRENT |
+| 生产应用 | `/opt/openscience`；`openscience-prod-{web,api,agent-worker}-1` | application `a1a5f30d…` / compatible rollback `41ae8902…`；艺术指导v3已部署；三风格真实私有图在v2批次完成，独立runner114保持；当前结果/限制见CURRENT |
 | 主机资源 | ECS 16 CPU、30 GiB RAM、无 NVIDIA GPU | 盘点时约22 GiB可用；CPU解析器必须有界并发。Marker/MinerU等GPU高质量模式不能按GPU吞吐数据推断本机效果 |
 | 完整图形 Chrome | 宿主 `/opt/openscience-tool-cache/playwright/chromium-1234/chrome-linux64/chrome`；ScanSci镜像内 `/opt/scansci-browsers/chromium-1234/chrome-linux64/chrome` | 已静态确认完整二进制。可复用现有镜像与配套资源；不是只存在 headless shell |
 | 无头 Chromium | 宿主 `/root/.cache/ms-playwright/chromium_headless_shell-1234/` 与共享缓存同名目录；ScanSci镜像 `/opt/scansci-browsers/chromium_headless_shell-1234/` | 现成截图/渲染资源；不能用“仅此目录存在”的旧记录推断没有完整浏览器 |

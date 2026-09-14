@@ -1,5 +1,7 @@
 # Runbook: 部署（Deployment）
 
+2026-09-14图片批次：a1a5f30d已部署，rollback41ae8902；复用clean发布树.worktrees/art-direction-release-41ae8902（现HEAD a1a5），deploy.sh --confirm --no-tests --skip-migrate --reuse-unchanged-capability-images。High GO、必要build/start exit0、公网release200精确一致，收据tmp/art-direction-v3-deploy.log与style-batch-release-read.log。独立image runner11494323先前按三锁/cmp/备份/原子替换安装，应用回滚不撤此补丁。三张私有图已真实生成/审看和工作台切换，公开v1保持；v3新通用规则未重跑生成，不能称跨论文验证。
+
 ## 2026-09-14 个人空间布局补修6504c004
 
 前提：线上实读f8e44815且服务健康，候选仅dashboard CSS与同步文档。执行：既有deploy.sh使用精确6504c004、--no-tests --skip-migrate及未变能力镜像复用，必要服务器build/start完成exit0。回滚：精确f8e44815，保留原数据与独立Codex runner。观察：真实账号桌面/窄屏截图已看，首行双卡稳定同高、后续工具整行，无横溢出；公网release一致，收据tmp/dashboard-layout-*，无测试/预检/科研写入或新清除请求。
