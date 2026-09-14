@@ -20,7 +20,7 @@ if [[ ! -e $root/runner.lock ]]; then install -o root -g root -m 0600 /dev/null 
 if [[ ! -e $root/paused.units ]]; then install -o root -g root -m 0600 /dev/null "$root/paused.units"; fi
 [[ -f $root/runner.lock && -f $root/paused.units ]] || exit 67
 exec 6<"$root/runner.lock"
-/usr/bin/flock -n 6 || { echo 'Cleanup is active; installation deferred without interrupting it'; exit 75; }
+/usr/bin/flock -w 75 6 || { echo 'Cleanup is still active; installation deferred without interrupting it'; exit 75; }
 if [[ -e $bundle ]]; then
   for file in runner.mjs run.sh; do
     [[ -f $bundle/$file && ! -L $bundle/$file ]] && cmp -s -- "$source_dir/infra/private-cleanup/$file" "$bundle/$file" || { echo 'Existing cleanup bundle differs; it was not overwritten'; exit 66; }
