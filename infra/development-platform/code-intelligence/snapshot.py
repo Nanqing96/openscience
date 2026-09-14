@@ -5,6 +5,7 @@ dependencies, index code, test code, or load repository Serena/TS configuration.
 """
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -68,7 +69,7 @@ def main():
     # verification command, recreate hashes or import a Git bundle.
     marker = read_regular(source_release, ".release-source").decode().strip()
     release_manifest = json.loads(read_regular(source_release, ".release-inputs.sha256"))
-    if marker != revision or release_manifest.get("sourceSha") != revision:
+    if marker != revision or release_manifest.get("sourceSha") != revision or release_manifest.get("schemaVersion") != 2:
         raise ValueError("The selected release identity does not match --revision")
     destination = Path(arguments.output).absolute()
     if destination.exists():
@@ -87,6 +88,11 @@ def main():
         if not selected_source(path) and not is_manifest:
             continue
         blob = read_regular(source_release, raw_path)
+        # Reuse the deployment manifest's digest for the files being copied;
+        # a modified release file must not acquire a false source revision.
+        expected = entry.get("sha256", "")
+        if not re.fullmatch(r"[a-f0-9]{64}", expected) or hashlib.sha256(blob).hexdigest() != expected:
+            raise ValueError("Selected source differs from the recorded release")
         if is_manifest:
             package = json.loads(blob)
             name = package.get("name")

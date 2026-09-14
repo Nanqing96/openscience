@@ -22,17 +22,50 @@ if [[ "$(id -u)" != 0 || -z "$source_release" || ! "$revision" =~ ^[0-9a-f]{40}$
   exit 1
 fi
 export SERENA_IMAGE_TAG="${SERENA_IMAGE_TAG:-$revision}"
+[[ $SERENA_IMAGE_TAG =~ ^[a-f0-9]{40}$ ]] || exit 64
 export SERENA_SNAPSHOT_DIR="$install_root/snapshots/$revision"
 export SERENA_STATE_DIR="$install_root/state/$revision"
-install -d -m 0755 "$install_root/snapshots" "$install_root/build" "$install_root/upstream"
+safe_directory() {
+  local target=$1
+  if [[ -e $target || -L $target ]]; then
+    [[ ! -L $target && -d $target && $(stat -c %u "$target") == 0 ]] || { printf 'Unexpected installation directory.\n' >&2; exit 1; }
+  else
+    install -d -m 0755 "$target"
+  fi
+}
+for target in /opt/openscience-development "$install_root" "$install_root/snapshots" "$install_root/build" "$install_root/upstream" "$install_root/state" "$SERENA_STATE_DIR"; do
+  safe_directory "$target"
+done
 
-if [[ ! -d "$SERENA_SNAPSHOT_DIR" ]]; then
+if [[ ! -e "$SERENA_SNAPSHOT_DIR" && ! -L "$SERENA_SNAPSHOT_DIR" ]]; then
   python3 "$source_dir/snapshot.py" --source-release "$source_release" \
     --revision "$revision" --output "$SERENA_SNAPSHOT_DIR"
+else
+  safe_directory "$SERENA_SNAPSHOT_DIR"
+  python3 - "$SERENA_SNAPSHOT_DIR" "$revision" <<'PY'
+import json, os, stat, sys
+from pathlib import Path
+snapshot = Path(sys.argv[1])
+marker = snapshot / 'snapshot.json'
+metadata = marker.lstat()
+if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != 0 or metadata.st_mode & 0o222:
+    raise SystemExit('Unexpected snapshot metadata')
+if json.loads(marker.read_text()).get('revision') != sys.argv[2] or snapshot.stat().st_mode & 0o222:
+    raise SystemExit('Unexpected snapshot revision or permissions')
+PY
 fi
-install -d -m 0750 -o 1000 -g 1000 "$SERENA_STATE_DIR/cache" "$SERENA_STATE_DIR/logs"
+for target in "$SERENA_STATE_DIR/cache" "$SERENA_STATE_DIR/logs"; do
+  if [[ -e $target || -L $target ]]; then
+    [[ ! -L $target && -d $target && $(stat -c '%u:%g:%a' "$target") == 1000:1000:750 ]] || exit 1
+  else
+    install -d -m 0750 -o 1000 -g 1000 "$target"
+  fi
+done
 
 upstream_archive="$install_root/upstream/$upstream_revision.tar.gz"
+if [[ -e $upstream_archive || -L $upstream_archive ]]; then
+  [[ ! -L $upstream_archive && -f $upstream_archive && $(stat -c '%u:%h' "$upstream_archive") == 0:1 ]] || exit 1
+fi
 if [[ ! -f "$upstream_archive" ]]; then
   download_file="$(mktemp "$install_root/upstream/$upstream_revision.partial.XXXXXX")"
   with-proxy curl --fail --location --silent --show-error \
