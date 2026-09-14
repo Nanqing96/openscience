@@ -23,7 +23,7 @@ if [[ ${#scopes[@]} == 0 ]]; then scopes=(apps/agent-worker/src/presentation pac
 for scope in "${scopes[@]}"; do
   [[ $scope =~ ^(apps|packages)/[a-z0-9_-]+/src(/[a-zA-Z0-9_/-]+)?$ && $scope != *..* ]] || exit 64
 done
-if [[ "$output" != /* || "$output" != *.json || -e "$output" || -e "$output.source.json" ]]; then
+if [[ "$output" != /* || "$output" != *.json || -e "$output" || -e "$output.source.json" || -e "$output.tsconfig.json" ]]; then
   printf '%s\n' 'Supply --output with a new absolute .json path in an existing output directory.' >&2
   exit 1
 fi
@@ -36,6 +36,25 @@ fi
 cd -- "$source_release"
 scope_pattern=$(IFS='|'; printf '%s' "${scopes[*]}")
 export XGS_GRAPH_SCOPE_PATTERN="^($scope_pattern)(/|$)"
+export XGS_GRAPH_TSCONFIG="$output.tsconfig.json"
+node - "$source_release" "$XGS_GRAPH_TSCONFIG" <<'NODE'
+const fs = require('node:fs');
+const path = require('node:path');
+const [sourceDirectory, configPath] = process.argv.slice(2);
+// dependency-cruiser supports TypeScript paths through tsConfig; its own
+// enhancedResolveOptions schema intentionally does not accept an alias map.
+const config = {
+  extends: path.join(sourceDirectory, 'tsconfig.base.json'),
+  compilerOptions: {
+    baseUrl: sourceDirectory,
+    paths: {
+      '@openscience/*': ['packages/*/src/index.ts'],
+      '@/*': ['apps/web/*'],
+    },
+  },
+};
+fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n', { flag: 'wx', mode: 0o444 });
+NODE
 /opt/openscience/node_modules/.bin/depcruise \
   "${scopes[@]}" \
   --config "$script_dir/module-graph.config.cjs" --output-type json > "$output"
