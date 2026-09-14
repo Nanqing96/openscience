@@ -1,6 +1,8 @@
 # 服务器能力与复用清单
 
-- 2026-09-14当前应用9a36c1e0/rollback1f7032a3：首页/Explore科学公式及内部编号、公开和工作台的同版本结构化折叠证据已统一；22六字段默认关闭、23四原章节，原Claim/Evidence/图保留。22指定行政勘误已执行为首发v1/DHL并授予原PDF下载，audit6c93436f，原日期/发行收据保持；旧v10临时307/no-store，未来正式v10优先。两端来源200/PDF原件一致，最终双卡/六字段/展开/窄屏截图已看。两次必要服务器build/start exit0，无测试/预检/新服务/模型/迁移；源码通用，人工历史数据勘误不冒称自动科学审校。详细状态与限制见唯一CURRENT handoff。
+- 2026-09-14当前应用f8e44815/rollback9a36c1e0：回收站Node符号链接身份修复、安装有界等锁、前端自动更新；原4项已purged，旧RO/两会话不存在、笔记清空，共享对象保留。Codex仅runner090补丁/base1ad54c72运行环境，正常SIGTERM退出0，精确信号自然排空切换，原unit与配置保留；受限清理bundle f8。整块证据关闭约59px，Dashboard只显示处理中任务，已实看空回收站/公共/工作台/窄屏；两公开v1科研字段/证据/图同原数据。必要build/start exit0，无测试/新模型/迁移；细节及自动刷新未动态观察边界见CURRENT。
+
+- 2026-09-14历史应用9a36c1e0/rollback1f7032a3：首页/Explore科学公式及内部编号、公开和工作台的同版本结构化折叠证据已统一；22六字段默认关闭、23四原章节，原Claim/Evidence/图保留。22指定行政勘误已执行为首发v1/DHL并授予原PDF下载，audit6c93436f，原日期/发行收据保持；旧v10临时307/no-store，未来正式v10优先。两端来源200/PDF原件一致，最终双卡/六字段/展开/窄屏截图已看。两次必要服务器build/start exit0，无测试/预检/新服务/模型/迁移；源码通用，人工历史数据勘误不冒称自动科学审校。详细状态与限制见唯一CURRENT handoff。
 - 2026-09-14应用6af9c984/rollback59c8cebf：证据主张/原文统一科学Markdown，40来源按文件页码分组，原记录不变；API文档复用公开视觉，线上原文curl/Python已执行成功。原Python默认UA被Cloudflare1010拒绝，示例显式应用User-Agent修复；无防护/权限/模型/依赖变更。主张57式源码全等、来源按钮200及桌面/窄屏已实际查看。服务器必要build/start完成，无测试/预检/迁移/科研写入；详细证据见CURRENT。
 - 2026-09-14历史应用a7214fc9/rollbacke7f95180：外部AI可按公开文章ID读取最新完整JSON或固定公开版；/developers提供中英文档/导航，统一OpenAPI3.1描述8个GET，HTML JSON alternate及API Link/Content-Location完成发现。复用原权限/冻结记录/限流，无新模型/服务/依赖/迁移/科研写入；High静态PASS及必要服务器build/start exit0。匿名文档/规范/23最新与v1/22v10/来源均200，内容保留；web工具域名安全拒绝未作网络根因结论，客户端兼容边界见CURRENT。
 - 2026-09-14历史应用e7f95180/rollback0931cf12：公开附件授权及单结论发布修复已部署，服务器完整build/start exit0，独立High PASS，无测试/预检/新服务/模型/依赖/迁移。第二篇真实公开23/v1，DHL、文字/数据CC-BY-4.0、代码MIT，匿名页面/API/PDF200，原PDF568765字节/hash24d11cc8保持；40来源/原图保留。原context.request绕Chrome代理EAI_AGAIN改页面fetch后成功，不是产品登录故障。具体收据与尚未观察范围见CURRENT。
@@ -91,7 +93,7 @@
 | BGE-M3 | `openscience-prod-embedding-worker-1`；模型卷 `bge-m3-5617a9f61b028005a4858fdac845db406aefb181-08cc5a668e89` | 容器运行；既有模型卷复用。BGE生成向量，实际存储由现有检索/数据库链路负责 |
 | ScanSci | `openscience-prod-scansci-mcp-1`；项目 `apps/scansci-mcp` | 容器运行；复用MCP取文献，不另装一份；认证状态不读取或打印 |
 | Hermes / MiniMax | 生产agent-worker及AI Gateway；另有 `/opt/hermes-agent` 源码目录 | 源码目录存在不等于独立服务已启用；经现有Worker/Gateway调用，限额以实际供应商响应为准 |
-| Codex订阅生图 | `/opt/openscience-codex`；独立runner bundle `1ad54c72` | 已有runner/预设skill；最新真实任务报usage limit，无新图。不得重新安装或重新登录当作额度恢复 |
+| Codex订阅生图 | `/opt/openscience-codex`；runtime base `1ad54c72` / runner补丁 `09058847` | 已有runner/预设skill；最新真实任务报usage limit，无新图。不得重新安装或重新登录当作额度恢复 |
 | DB / 缓存 / 对象存储 / 文件扫描 | `openscience-prod-{postgres,redis,object-storage,malware-scanner}-1` | 本次列表显示运行；复用内部服务，不暴露公网，不读取环境变量凭据 |
 | 历史非生产容器 | `openscience-dev-{postgres,redis}-1`；`xgs-hermes-migration-a72b5e1c` | 2026-09-12未在docker ps运行列表出现；停止/删除状态未另查。不得据旧条目称仍在运行，也不因名称直接删除 |
 | 出网与访问 | 宿主Squid `127.0.0.1:7891`；项目SSH wrapper；Cloudflare Tunnel | 既有出网仍依赖本机上游（CURRENT研究记录）；远程浏览器界面仅SSH localhost6081。服务器驻留不等于出口已独立 |

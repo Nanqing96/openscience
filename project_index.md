@@ -1,11 +1,11 @@
 # OpenScience (XGS) 项目文件索引
 
-> 当前任务2026-09-14续作完成：列表公式、既有22首发v1/DHL、两篇结构化折叠证据及工作台同步已部署实读。production9a36c1e0/rollback1f7032a3；指定行政勘误已执行，不是新发布。Explore/六字段/展开/窄屏截图已看，原内容与文件保留；唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> 当前任务2026-09-14完成：production f8e44815/rollback9a36c1e0；回收站4项原请求已实际清除，整块证据默认关闭、Dashboard重复核对移回Hermes。空回收站/公共与工作台折叠/窄屏已看，两篇公开v1/DHL正文证据图保持。独立Codex runner090补丁/base1ad、清理bundle f8，不能混作同一runtime版本；唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮文件 | 用途 |
 |---|---|
-| `infra/private-cleanup/runner.mjs` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 当前修复候选：Node符号链接精确身份、正常排空退出、回收站自动刷新；不扩大已确认清除范围，生产仍9a36c1e0 |
-| `apps/web/components/public/ClaimNarrative.tsx` / `apps/web/components/hermes/{HermesRail.tsx,hermes-state.ts}` / `apps/web/app/dashboard/page.tsx` | 当前修复候选：整块证据默认关闭，个人空间只展示处理中任务，建议和历史集中Hermes对话 |
+| `infra/private-cleanup/{runner.mjs,install.sh}` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 已交付f8：Node符号链接精确身份、正常排空退出、安装等锁、回收站自动刷新；原4项已实际清除。独立Codex仅090文件补丁、base1ad运行环境保留 |
+| `apps/web/components/public/ClaimNarrative.tsx` / `apps/web/components/hermes/{HermesRail.tsx,hermes-state.ts}` / `apps/web/app/dashboard/page.tsx` | 已部署f8实读：整块证据默认关闭约59px，个人空间只展示处理中任务，建议/失败和历史集中Hermes对话；后台状态未改 |
 | `infra/scripts/correct-deep-sub-cycle-publication.mjs` | 用户指定的首次发布行政勘误已执行：唯一22/v10→v1、DHL署名和原PDF下载，既有Serializable锁/审计保留原值；audit6c93436f，勿重跑发布；状态见CURRENT |
 | `apps/web/components/research/WorkbenchClaimReader.tsx` / `apps/web/components/public/evidence-display.ts` / `apps/web/components/public/ClaimNarrative.tsx` | DEPLOYED9a36c1e0；保存版本的原字段/章节/引用关系共享折叠阅读，六字段默认关闭、来源按需读取，科学数据不重生成 |
 | `apps/web/components/explore/ResearchCard.tsx` / `apps/web/components/content/ScientificText.tsx` | DEPLOYED1f7032a3并含于9a36；首页/Explore共用科学公式和完整数学token截取，阅读隐藏内部来源编号 |
@@ -15,13 +15,13 @@
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：两篇真实公开记录22/v1与23/v1均DHL署名、允许原PDF下载；22由用户指定行政更正，原发行时间/科学内容保留。23正文/40来源/图与原许可保持。视频/批量暂停，唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，应用9a36c1e0 / rollback1f7032a3；无删除/测试/迁移。
+> CURRENT 2026-09-14：两篇22/v1与23/v1均DHL署名、允许原PDF下载；原科学内容/证据/图与许可保持。另4项用户已确认私有内容完成永久清除；应用f8e44815/rollback9a36c1e0，branch codex/onchip-video-release。视频/批量暂停，无测试/新迁移；唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
 | `docs/specs/2026-09-13-draft-publication-trash-design.md` | 用户逐项确认的草稿、公开版本、历史入口、个人空间删除与30天回收站方案；ef9已部署，实际观察边界见CURRENT |
 | `packages/domain/src/commit/{version-history,restore-draft,carry-media}.ts` / `packages/domain/src/publish/publication-metadata.ts` / `infra/migrations/20260913010000_publication_identity/` | 私有历史恢复、完整图文快照、独立公开序号与旧公开元数据兼容；候选未部署 |
-| `packages/domain/src/trash/` / `apps/api/src/routes/trash.ts` / `infra/migrations/20260913020000_private_trash/` | 回收站、公开依赖保留、可重试清除与共同写锁；ef9已部署，无真实删除操作 |
+| `packages/domain/src/trash/` / `apps/api/src/routes/trash.ts` / `infra/migrations/20260913020000_private_trash/` | 回收站、公开依赖保留、可重试清除与共同写锁；本轮领域/API无改动，宿主修复后原4项已清除、共享对象保留 |
 | `apps/web/components/research/{EditHistory,ResearchContentManager,TrashActionButton}.tsx` / `apps/web/app/trash/` | 编辑历史、内容管理与回收站；分析操作并入Hermes；02d最终桌面/窄屏、冻结正文与80项管理列表已实读 |
 | `apps/web/components/research/{useVersionLabels,useContentLabels}.ts` | 历史摘要及内容/删除确认/回收站的已知机器标签本地化；保留原数据与未知用户标题 |
 | `packages/domain/src/commit/carry-media.ts` | 2026-09-14真实草稿保存500：复合关联改同事务createMany，High静态PASS，093已部署；同一真实整理201，正文/来源/已批图继承已实读 |
@@ -31,7 +31,7 @@
 | `packages/domain/src/artifact/public-artifact-download.ts` / `packages/domain/src/commit/research-record-snapshot.ts` / `apps/api/src/routes/research.ts` / `apps/web/components/research/ResearchPublication.tsx` | e7f95180已部署：显式授权全部附件，权限冻结到公开版本；23/v1原PDF匿名200/568765字节/hash与原件一致，旧版默认不开放；High PASS，证据见CURRENT |
 | `packages/domain/src/research-intelligence/claim-graph.ts` / `docs/specs/2026-09-07-open-research-publication-prd.md` §3.2 | e7f95180已部署：允许一条主要结论，3–7仅为建议；结构/证据/资源数量限制保留。High PASS，真实第二篇1Claim/40来源review通过并首发v1 |
 
-> **最近部署实读 2026-09-14:** e7f95180 build/start exit0，第二篇23/v1发布201、匿名页面/API/PDF均200，DHL与许可一致；40来源/原配图保留、1280×720/0公式错误/0内部S标记，PDF原始568765字节与hash保持。历史/管理/回收站有效证据复用；恢复写入、真实清除、30天到期仍未操作，不冒称完整运行验收。
+> **历史部署实读 2026-09-14:** e7f95180 build/start exit0，第二篇23/v1发布201、匿名页面/API/PDF均200，DHL与许可一致；40来源/原配图保留、1280×720/0公式错误/0内部S标记，PDF原始568765字节与hash保持。历史/管理/回收站有效证据复用；恢复写入、真实清除、30天到期仍未操作，不冒称完整运行验收。
 > 最新质量推进：867方法笔记与3f68d30b结果/边界笔记均经服务器来源绑定修订及独立High科学/引用PASS，后者1745字符/19引用、实际Markdown20620字符完整。0685已修复Markdown改变TeX间距，实读26/26公式源逐字相等、6处间距保留，正文/引用/导出不变。通用来源机制已固化，具体指导与独立科学复核仍由本会话承担；六字段全自动仍失败，跨论文质量尚未确认，未采用/发布。
 > 唯一入口：docs/handoff/2026-09-10-hermes-web-image-handoff.md。当前自动agent d5c6f699真实字段审校仍失败；4bedbb4b具体方法回读核心科学PASS，但多问与局部共编仍丢条件。a8修复笔记漏路由/科学共编推理配置，10799ba3实产仍经High原文复核拒绝；停止重试，保留人工审校流程。
 > 私有92cafb82人工原文审校稿1118字符/17引用：1e627修复指定任务被较新失败63e正文覆盖，实际打开/只读编辑/回阅读/展开来源/截图均成功，正文和全部引用逐字等保存API与此前复核稿，user_edited保留；原40e23948、公开v10与已批图保留，尚未采用新稿/发布，视频/批量暂停。
@@ -625,7 +625,7 @@
 
 - DEPLOYED infra/chatgpt-browser/{Dockerfile,start.sh,relay.mjs,host.mjs,install.sh,seccomp.json} / docs/runbooks/chatgpt-browser.md：服务器交互浏览器与生产 `chatgpt-web` provider；真实Hermes图片已回传，真实PDF完成6 Pro初审与补证；区域附件子域、图片/科学审阅独立锁、30分钟窗口、15秒science heartbeat、协议版本化幂等和逐字段保留部署于`36e6a8c4`；infra/scripts/ssh-run.sh固定browser-tunnel。
 
-- CURRENT docs/runbooks/server-capabilities.md：应用9a36c1e0 / rollback1f7032a3；双卡公式、结构化折叠证据、22首发v1/DHL已部署实读，独立浏览器执行器版本未变；见CURRENT。
+- CURRENT docs/runbooks/server-capabilities.md：应用f8e44815/rollback9a36c1e0；清理与整块折叠/单一Hermes核对入口已实读，Codex runner090补丁/base1ad，浏览器执行器未变；见CURRENT。
 
 - `infra/scripts/browser-tunnel.ps1`：Windows隐藏SSH隧道断线重连；固定localhost6081，复用ssh-run.sh，2026-09-09本机页面恢复HTTP200。
 

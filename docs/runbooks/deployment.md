@@ -1,6 +1,6 @@
 # Runbook: 部署（Deployment）
 
-## 2026-09-14 回收站已确认清除卡住：修复准备
+## 2026-09-14 回收站已确认清除卡住：已修复
 
 实际原因：宿主 `/usr/bin/node` 为 `node-22` 符号链接，精确进程识别原以未解析路径比较而拒绝正确进程；Codex runner 正常 SIGTERM 还返回 1，导致系统自动重启争抢清理锁。修复保留原 argv/config/cgroup 约束，比较可信 Node 的真实路径；只有真实运行/心跳故障才返回失败。
 
@@ -8,7 +8,7 @@
 
 回滚：恢复保存的旧 unit 前，候选亦须精确信号自然排空；不能退出则保留现场，不强杀。临时 override 移至备份并 daemon-reload，恢复之前启用的清理 timer。应用可退9a36c1e0，但旧清理器/旧 runner 恢复会重新引入阻塞；已完成的永久清除不能用应用回滚恢复。
 
-实际观察尚待执行：原4项最终状态、回收站页面自动移除、公开22/23 v1原文和附件仍可访问。只续用户已确认的队列，不运行测试、演练或新生图。
+实际执行：独立Codex runner补丁09058847/base1ad54c72已自然排空切换，保留配置及其他runtime；tmp/trash-runner-install-09058847.log exit0。应用首次090必要build完成，但清理安装的非阻塞lock在切换前exit75；f8e44815仅补flock有界等待75秒，随后部署完成，rollback9a36c1e0。受限清理bundle为f8。原4项均purged，旧RO/两会话不存在、笔记内容清空，共享对象按既有引用保留；tmp/trash-final-state.log。回收站空页、Dashboard和两公开/工作台折叠、窄屏均实读；公开正文/证据/原图与修改前同值。打开回收站时已清空，未实际观察自动刷新状态过渡；不新建删除样本。临时脚本已经执行，禁止重复应用相同bundle；未运行测试、演练或新生图。
 
 > 状态：**CURRENT 操作手册**。实际 production/application source、rollback 与未完成验收以 `docs/handoff/2026-09-10-hermes-web-image-handoff.md` 和服务器精确 release 核验为准；下方阶段记录保留历史版本，不能据此恢复旧 release 或跳过当前验收。
 > 格式遵循 `.agents/skills/infra-runbook/SKILL.md` 四节强制要求。
