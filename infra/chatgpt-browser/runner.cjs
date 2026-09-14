@@ -242,6 +242,7 @@ async function imageModeActive(composer) {
   return await marker.count() === 1 && await marker.isVisible().catch(() => false);
 }
 async function activateImageMode(page, composer, deadlineAt) {
+  stage = 'image_mode_plus';
   if (await imageModeActive(composer)) return true;
   const form = composer.locator('xpath=ancestor::form[1]');
   const plus = form.getByTestId('composer-plus-btn');
