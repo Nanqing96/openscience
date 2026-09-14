@@ -1,6 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 当前新任务进行中：用户批准同一已审论文的学术机制图/封面插画/淡彩三张私有候选；先落实，再检索生图/绘图/构图skills。选用23/v1的已审内容恢复私有工作草稿，旧公开v1/原图保留；不启动视频或第三篇批量。候选art-direction v2与图片wrapper已静态High GO，待部署和真实生成/视觉科学复核，不先声称成图质量通过。
+- 当前风格任务进行中：art-direction v2应用41ae8902已部署，rollback6504c004。23/v1恢复为私有草稿e77dc3c7/revision9，原科学内容/40证据继承；不修改公开v1。三份初稿科学复核未过，经服务器修订后获准生成；淡彩真实图已接受为私有候选，封面光晕易误读为真实场须修订。学术图8aea8fcc发送前IMAGE_MODE_NOT_READY；runner仅共享有界30秒就绪等待修复High GO，安装与新实际生成待做。收据tmp/style-batch-*；完成三张后再检索skills，不安装、不启动视频/第三篇。
 - 当前布局反馈已完成：6504c004已部署，rollback f8e44815。仅dashboard.module.css调整：Hermes与继续研究首行等高并排，后续工具整行，桌面导入说明/操作紧凑分栏、窄屏单列。独立High GO、必要服务器build/start exit0，无测试/预检/迁移/数据或生成操作。
 - 当前反馈已完成：f8e44815已部署；Node符号链接识别、Codex正常信号退出及清理安装等待锁修复。用户原4项purge_pending已全部purged：旧RO66已删除、两会话不存在、笔记内容清空；共享对象仍有引用而保留。整块证据默认关闭，Dashboard仅显示排队/上传/解析任务，核对建议和失败/历史保留Hermes，未伪造确认或重跑科学分析。
 - 2026-09-14最新续作完成：9a36c1e0已部署，卡片科学文本、同版本结构化折叠证据、工作台作者/公开号已实读；第一篇六字段默认折叠、第二篇四原章节分层。22已行政勘误v1/DHL并允许原PDF下载，audit6c93436f-3c2e-40fe-82ad-d0c751c32f73；不是新发布，禁止重跑旧publish或按旧文档恢复v10。scope见已审infra/scripts/correct-deep-sub-cycle-publication.mjs。
@@ -9,8 +9,8 @@
 - 两篇真实论文现均公开v1、DHL署名及原PDF允许下载；22原dataCC0/23dataCC-BY4、文字CC-BY4/代码MIT保留。本轮仅指定22行政元数据与下载授权写入，无新论文发布或模型/图像生成；视频/批量仍暂停。
 - 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。仅必要服务器build/start和用户明确要求的实际页面/教程读取。自动首稿科学质量仍不稳定，不把人工审校或展示修复称为自动正确。
 ## Version and workspace
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码HEAD/origin 6504c004已部署，随后仅补交接文档；实际HEAD从Git读取，不等于应用release。
-- 当前ECS release 6504c0045b5d559257b1e5373026acabdf73d224 / rollback f8e448157480ae9972459ac1385d9e27ac71ffcf；/__release实读一致。clean发布树.worktrees/dashboard-layout-release-6504c004，tmp/dashboard-layout-deploy-6504c004.log exit0。上一轮历史：clean发布树.worktrees/trash-install-release-f8e44815，tmp/trash-reader-deploy-f8e44815.log exit0；090首次build完成但在切换前清理lock忙而exit75，f8只改安装有界等待75秒后部署成功，未强停清理。
+- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；当前应用代码41ae8902已部署，随后runner修复候选及文档；实际HEAD从Git读取，不等于应用release。
+- 当前ECS release 41ae8902c245e191e34e09969d6d57d81a64fdd6 / rollback6504c0045b5d559257b1e5373026acabdf73d224；clean发布树.worktrees/art-direction-release-41ae8902，tmp/art-direction-deploy-41ae8902.log exit0。无测试/预检/CI/迁移；仅必要build/start及真实生成。
 - Codex独立runner仅补09058847的runner.mjs，base bundle仍1ad54c72，source-id保留原值、runner-source-id登记090；tmp/trash-runner-install-09058847.log exit0，旧unit/heartbeat及短时Restart=no override归档于/opt/openscience-codex/trash-drain-before-0905884780c56aafb7ee507450d2c38fc70e7a2e。受限清理bundle随应用release，代码仍为原f8修复，其他供应商/浏览器/认证未改。不可重跑tmp/install-trash-runner-fix.sh；无新生成请求。
 - 首轮59c8及补修6af均独立High静态PASS，必要服务器build/start完成，--no-tests --skip-migrate；tmp/claims-api-deploy-59c8cebf.log与claims-quotes-deploy-6af9c984-resume.log exit0。6af首试在cloud-sync准备阶段SSH reset，实读59仍healthy且无部署进程后原候选续跑成功；没有手动停服务/改生产记录。
 - 根目录dirty main不是生产基线；交付树无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。应用rollback9a不撤行政v1更正，不能恢复已永久清除内容；独立runner回退须先自然排空，旧runner/清理器会重引入故障。

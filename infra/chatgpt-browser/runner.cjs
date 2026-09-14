@@ -245,16 +245,25 @@ async function activateImageMode(page, composer, deadlineAt) {
   if (await imageModeActive(composer)) return true;
   const form = composer.locator('xpath=ancestor::form[1]');
   const plus = form.getByTestId('composer-plus-btn');
+  // Composer hydration, the menu and its mode pill share one bounded readiness window.
+  // Do not click twice or submit while the requested image tool is still unconfirmed.
+  while (Date.now() < deadlineAt) {
+    if (await imageModeActive(composer).catch(() => false)) return true;
+    if (await plus.count() === 1 && await plus.isVisible().catch(() => false)) break;
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
+  if (Date.now() >= deadlineAt) return false;
   if (await plus.count() !== 1 || !await plus.isVisible().catch(() => false)) return false;
-  await plus.click();
+  await plus.click({ timeout: Math.max(1, deadlineAt - Date.now()) });
   const choice = page.getByText('Create image', { exact: true });
-  const choiceDeadline = Math.min(deadlineAt, Date.now() + 5000);
+  const choiceDeadline = deadlineAt;
   while (Date.now() < choiceDeadline) {
     if (await choice.count() === 1 && await choice.isVisible().catch(() => false)) break;
     await new Promise(resolve => setTimeout(resolve, 250));
   }
   if (await choice.count() !== 1 || !await choice.isVisible().catch(() => false)) return false;
-  await choice.click();
+  if (Date.now() >= deadlineAt) return false;
+  await choice.click({ timeout: Math.max(1, deadlineAt - Date.now()) });
   while (Date.now() < deadlineAt) {
     if (await imageModeActive(composer).catch(() => false)) return true;
     await new Promise(resolve => setTimeout(resolve, 250));
@@ -391,7 +400,7 @@ let stage = 'request';
   // Put it after the prompt, otherwise the editor can insert its spacer mid-sentence.
   await composer.press('Control+End');
   stage = 'image_mode';
-  if (!await activateImageMode(page, composer, Math.min(request.deadlineAt, Date.now() + 10000))) throw Error('IMAGE_MODE_NOT_READY');
+  if (!await activateImageMode(page, composer, Math.min(request.deadlineAt, Date.now() + 30000))) throw Error('IMAGE_MODE_NOT_READY');
   stage = 'send_readiness';
   const normalize = value => value.replace(/\s+/g, ' ').trim();
   const send = page.getByRole('button', { name: 'Send prompt', exact: true });
