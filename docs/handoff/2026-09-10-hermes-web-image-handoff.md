@@ -1,73 +1,33 @@
 # Hermes / Workbench CURRENT Handoff
-## Goal and constraints
-- 当前风格任务进行中：art-direction v2应用41ae8902已部署，rollback6504c004。23/v1恢复为私有草稿e77dc3c7/revision9，原科学内容/40证据继承；不修改公开v1。三份初稿科学复核未过，经服务器修订后获准生成；淡彩真实图已接受为私有候选，封面光晕易误读为真实场须修订。学术图8aea8fcc发送前IMAGE_MODE_NOT_READY；runner3dc98140共享有界30秒等待已按三锁安装；新8ee965ae约6秒再次发送前失败(error=Error)，非超时证据。相同简报仅控件观察正常，未重现/未发送；正在补安全子阶段诊断，不宣称根因已解。收据tmp/style-batch-*；完成三张后再检索skills，不安装、不启动视频/第三篇。
-- 当前布局反馈已完成：6504c004已部署，rollback f8e44815。仅dashboard.module.css调整：Hermes与继续研究首行等高并排，后续工具整行，桌面导入说明/操作紧凑分栏、窄屏单列。独立High GO、必要服务器build/start exit0，无测试/预检/迁移/数据或生成操作。
-- 当前反馈已完成：f8e44815已部署；Node符号链接识别、Codex正常信号退出及清理安装等待锁修复。用户原4项purge_pending已全部purged：旧RO66已删除、两会话不存在、笔记内容清空；共享对象仍有引用而保留。整块证据默认关闭，Dashboard仅显示排队/上传/解析任务，核对建议和失败/历史保留Hermes，未伪造确认或重跑科学分析。
-- 2026-09-14最新续作完成：9a36c1e0已部署，卡片科学文本、同版本结构化折叠证据、工作台作者/公开号已实读；第一篇六字段默认折叠、第二篇四原章节分层。22已行政勘误v1/DHL并允许原PDF下载，audit6c93436f-3c2e-40fe-82ad-d0c751c32f73；不是新发布，禁止重跑旧publish或按旧文档恢复v10。scope见已审infra/scripts/correct-deep-sub-cycle-publication.mjs。
-- 2026-09-14最新截图反馈已完成：公开Claim复用Hermes科学Markdown，概要/完整推导/适用条件/原文证据分层；不再整篇h3直出。来源按文件/页码分10组保留40条，去重复标题、制作前言、笔记UUID、内部[S]和机器locator；原quote/source也用Markdown与公式显示，原始数据不改。
-- /developers复用公开产品rp颜色/字体/共享标题；curl前置。线上原文教程实跑发现原Python默认UA被Cloudflare403/1010拒绝，显式真实客户端User-Agent后成功；不放宽防护或伪装浏览器。现在页面curl/Python均已逐字执行exit0，六字段/固定URL/下载URL与API一致。
-- 两篇真实论文现均公开v1、DHL署名及原PDF允许下载；22原dataCC0/23dataCC-BY4、文字CC-BY4/代码MIT保留。本轮仅指定22行政元数据与下载授权写入，无新论文发布或模型/图像生成；视频/批量仍暂停。
-- 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。仅必要服务器build/start和用户明确要求的实际页面/教程读取。自动首稿科学质量仍不稳定，不把人工审校或展示修复称为自动正确。
-## Version and workspace
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；当前应用代码41ae8902已部署，随后runner修复候选及文档；实际HEAD从Git读取，不等于应用release。
-- 当前ECS release 41ae8902c245e191e34e09969d6d57d81a64fdd6 / rollback6504c0045b5d559257b1e5373026acabdf73d224；clean发布树.worktrees/art-direction-release-41ae8902，tmp/art-direction-deploy-41ae8902.log exit0。无测试/预检/CI/迁移；仅必要build/start及真实生成。
-- Codex独立runner仅补09058847的runner.mjs，base bundle仍1ad54c72，source-id保留原值、runner-source-id登记090；tmp/trash-runner-install-09058847.log exit0，旧unit/heartbeat及短时Restart=no override归档于/opt/openscience-codex/trash-drain-before-0905884780c56aafb7ee507450d2c38fc70e7a2e。受限清理bundle随应用release，代码仍为原f8修复，其他供应商/浏览器/认证未改。不可重跑tmp/install-trash-runner-fix.sh；无新生成请求。
-- 首轮59c8及补修6af均独立High静态PASS，必要服务器build/start完成，--no-tests --skip-migrate；tmp/claims-api-deploy-59c8cebf.log与claims-quotes-deploy-6af9c984-resume.log exit0。6af首试在cloud-sync准备阶段SSH reset，实读59仍healthy且无部署进程后原候选续跑成功；没有手动停服务/改生产记录。
-- 根目录dirty main不是生产基线；交付树无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。应用rollback9a不撤行政v1更正，不能恢复已永久清除内容；独立runner回退须先自然排空，旧runner/清理器会重引入故障。
-## Latest actual reading
-- 布局实际阅读：tmp/dashboard-layout-reading.json/log确认线上6504、桌面1140CSS/手机363CSS均无横溢出，导入148px、桌面竖排入口无残余竖线。三张dashboard-layout-{desktop,mobile,mobile-tools}.png已看；tmp/dashboard-layout-stable-read.log在任务加载完成后实读两张首行卡片均267.325px高、顶边相同。首次几何记录在加载结束前采集，不能用作卡片最终高度；截图与后续稳定读数相符。无新增测试，复用上一轮未变业务证据。
-- tmp/trash-final-state.log：4项purged且lastError为空、RO66不存在、两会话不存在、笔记payload/result清空；一个共享对象retained。tmp/trash-reader-actual.json/log：回收站API200空、Dashboard无等待核对/旧历史、两公开v1/DHL的core/claims/evidence/images与修改前全等；证据均DETAILS/open=false/约59px，实际展开成功；工作台同样关闭，356CSS无横溢出。
-- 空回收站/Dashboard/手机及最终公共关闭/展开、工作台关闭截图均已看：tmp/trash-reader-{after-cleanup,dashboard,evidence-mobile,final-public-closed,final-public-open,final-workbench-closed}.png。首次桌面截图在字体加载前滚动导致目标出画面，仅重读目标、等字体并居中捕获，见trash-reader-visual-final.log。打开页面时清除已完成，自动刷新代码已部署但本次未观察到pending→empty动态转换；不再创建删除样本验证。
-- 最终9a实读tmp/ro-feedback-final-visual.json/log：Explore双卡无裸TeX/S、均DHL/v1；22六字段均DETAILS/default closed，实际展开/收起成功，12Claim/102Evidence完整，368CSS宽度等scrollWidth。Explore/六字段/展开/手机截图均已看（tmp/ro-feedback-{explore-zh,six-fields,field-open,six-fields-mobile}.png）。本补修仅4个UI文件，独立High静态GO；复用下方未变科研/API/工作台/下载证据，不重跑整链路。
-- tmp/ro-feedback-reading.json/resume.log：22/23两篇core/claims/evidence/图/发行时间与hash均等修改前；22首发v1/DHL/仅1条发布历史，PDF匿名200/3770010字节/hashbb517f00与原件一致。两端来源200；私有工作台标题DHL+公开v1，读取精确f4/72记录。22六字段12Claim/102Evidence、23四原章节1Claim/40Evidence，默认关闭、内部assessment0，23公式57/0错误，368CSS无横溢出。截图已看。首次读页脚本误把桌面来源侧栏当dialog，改正确selector后成功，非产品失败。
-- tmp/claims-api-reading.json/log：匿名记录与a721深度同值，40证据/10文件页组保留，来源点击200。主张展开后内部S/制作前言/笔记UUID均0；tmp/claims-math-source-comparison.json：57/57公式与保存TeX逐字全等，0公式错误。
-- tmp/claims-api-developers-{desktop,mobile}.png已看：统一冷白rp背景/36px标题，1152/380CSS视口无横溢出。tmp/api-tutorial-final.log：从线上页面逐字提取的curl/Python两者exit0；23/v1六项正文、固定URL和下载URL匹配。原失败收据api-tutorial-execute.log、api-python-error.txt保留。
-- 最终6af实际阅读tmp/evidence-final-reading.json/log：来源Markdown正常呈现，段落/粗体/斜体可见、原星号消失、0公式错误，来源按钮200且机器locator不显示，380CSS窄屏无横溢出；claims-api-evidence-final{,-mobile}.png已看。主张/完整推导/窄屏截图claims-api-{claim-desktop,formulas,claim-mobile}.png已看，API和科学内容未在补修改变，复用上述有效证据。
-- 滚动截图注意：服务器Chrome现有125%zoom使Playwright截图产生scrollY×0.25空白；用现有CDP Page.captureScreenshot(fromSurface:false)获取实际视口，不改网页或图片。展开后等document.fonts.ready再截图，否则未下载字体会短暂缺字。最小DOM/截图记录tmp/claims-visual-reading.{sh,log}，服务器/jobs同名。
-- 本轮完成，下一步按用户实际阅读反馈继续；不自动启动第三篇/视频/批量。特定外部AI工具域名接入限制仍未证明解决，见下方历史API观察。
-## Public API observation
-- tmp/public-api-reading.json/log（服务器/jobs同名）：匿名/developers、OpenAPI、23/latest、23/v1、22/v10及冻结来源均200；latest除兼容latestVersion字段外与exact深度同值，固定links.self/Content-Location正确；23正文/Claim/原配图与上轮数据同值，40来源保留，下载URL授权保持。HTML中固定JSON alternate和开发者导航可发现，旧引用区技术链接0。tmp/public-api-developers.png已视觉查看。
-- 公开接入：https://openscience.428312321.xyz/developers；规范/api/research-record/openapi；最新完整/api/research/OSR-2026-000023；固定/api/research/OSR-2026-000023/v/1。原PDF下载字节证据复用e7f，不重复下载。
-- 客户端限制：本轮web工具对已公开API返回not safe to open(non-retryable)，未提供HTTP状态，未重试/放宽策略，不推断Cloudflare/登录/DNS根因；记录tmp/public-api-external-client.txt。服务器匿名浏览器沿既有代理读取成功，不冒称所有外部AI客户端均已兼容。
-## Lifecycle delivered and observation
-- 公开序号publicationNo独立于内部versionNo；发布时分配，冻结公开元数据/图谱/来源/媒体。一般旧URL保留，22旧误号现按用户指定行政勘误与临时别名处理。私有草稿权限单独判断，历史恢复创建新私有草稿并沿用冻结图文。
-- 主页面分析记录收进Hermes；无公开记录不显示发布历史。更多内编辑历史按日期/摘要、可查看再恢复；个人空间和内容项删除、会话默认保留产物、30天回收站/恢复/清除、公开聚合长期归档。
-- 共享存储/公开媒体保留，共同核心锁协调发布、删除及后台回写；搜索物理独立，以核心存续状态过滤且已有TrashEntry重试同步。生产spool提交也在该锁内校验并原子发布，防止清除漏掉迟到副本。
-- 受限宿主清理服务/定时器已安装到/opt/openscience-private-cleanup；结果目录只读挂载、Parser隔离保持。API清除未完成返回202，Worker收到精确complete才记purged；不声称外部ChatGPT历史已被删除。
-- 独立High在精确6b9f5a06上静态PASS。首次服务器构建因retained数组隐式any失败（迁移前），ef9补类型后完整构建、两项核心迁移、镜像与启动成功。无测试/预检/CI。
-- 旧API/Worker停止阻塞：只读确认running AgentTask为空后仅stop两旧容器，原部署事务继续成功；未触发内容变更。根本信号处理问题未证实修复。
-- 实际第二篇object/history/record/media均200，core与reader-clean-before逐字同值，private/revision6、四条历史publicationNo=null，10式/0错误、图1280×720、368CSS窄屏无横溢出；截图已看。
-- 历史生命周期验收时22/v10正常，现已行政勘误v1（见上方最新实读）。Hermes来源可展开、管理内容80项、回收站空状态可读。
-- 02d最后实读：编辑历史四条时间/摘要，无内部笔记UUID/机器英文；桌面/移动截图已看，窄屏dialog354/scroll354/viewport380CSS。打开冻结正文1617字符，恢复入口可用但未点击；管理80项最新在前，已知内部标题0，列表与确认/回收站共用标签。证据tmp/lifecycle-final-reading.{sh,log,json}及四截图，服务器/jobs同名。
-- 历史证据tmp/lifecycle-*保留；本轮已观察用户4项提前永久清除，未重生成原图/正文。历史恢复写入、30天到期及备份轮转到期仍未实际操作，不冒称完整生命周期均已观察。
-## Protected second paper and next action
-- 本轮先实测0931/rollback02d，再保存DHL/完整原题/许可三个写入均200；review132699b5曾唯一阻于claim_graph_invalid。e7f去除旧机械3–7配额（符合已授权出版PRD§3.2），保留至少1core/图结构/500总量及来源验证；独立High PASS，未拆写科学内容。
-- e7f实现本次发布明确允许全部附件下载，默认false；授权/安全MIME/版本限定URL冻结到已有researchRecord.dto.manifest。匿名端严格匹配公开Version/Publication/唯一冻结附件/活Artifact/workspace/blobSha，NO-DOWNLOAD冲突同事务拒绝。旧版不追溯开放；独立High PASS，无新表/hash/测试。
-- 实际发布：review132699b5变passed、under_review/approved各200、publish201，版本72c315af→OSR-2026-000023-v1，publicationNo=1（内部6），公开时间2026-09-13T17:17:14.002Z，contentSha d0b6c47953f71209d69d405ff004895c332eaa0d8a3f5515c4ffb28e463b9699。收据/jobs/quantization-publish-selected-version.json及本地同名.log。已完成，不得重跑该写入脚本。
-- 匿名实际阅读：页面/API200，DHL、完整题名及CC-BY-4.0/MIT/CC-BY-4.0一致，core保留、1Claim/40Evidence/1图，原图hash保持/1280×720，公式错误0、内部S标记0。PDF匿名200/application/pdf/568765字节，SHA24d11cc8与上传原件相同；下载链接DOM可见且名称正常。tmp/quantization-public-reading-download.json、*-via-browser.log、quantization-public-download-view.log；identity/image截图已看，下载局部截图受既有浏览器缩放裁切影响，不作视觉证据。
-- 读页脚本首次APIRequestContext直连绕过Chrome代理导致EAI_AGAIN，产品页面本身成功；改用同一匿名页面fetch沿用Chrome代理后API/下载均200。不要将此误报产品登录/代理故障，也不要再用context.request做服务器公网阅读。没有重启浏览器或重复发布。
-- 真实整理操作：保留4b的来源引用，当前附件列表合一并以文件名展示，不删除任何文件；POST commits(version6)返回500 req-n7，Prisma在carryVersionMedia.create拒绝researchObjectId。随后GET实测revision6、core/history/record/media与此前全等，事务已回滚。收据/jobs/quantization-attachment-deduplicate-20260914.json（原幂等键保留），本地tmp/quantization-draft-save-error.log（很大，只解析err结尾）、quantization-draft-failure-state.log。不得盲重发或改DB绕过保存。
-- 根因/修复：Prisma嵌套CreateWithoutPresentationAssetInput仅接受claimId；093改为同一tx内asset.create→presentationAssetClaim.createMany四个范围字段→原requireValidVersionHistoryCopy，权限/来源/批准判定不变。独立High静态PASS，服务器build/start完成，未测试/迁移；原幂等键续保存返回201，commitd74979fb-9440-416f-8692-df2e829f5e47，没有重复草稿。
-- Quantization RO9067a2d5-42ad-4c06-b234-753728b71064；RO visibility public、工作revision8；Version72c315af-cd76-452a-8bbb-6e1284612114已published且冻结，禁止原地改写。完整题名Quantization of a Deep-Subwavelength-Aperture-Confined Optical Near Field。旧已审快照4266e4ed-9a89-45d8-8c0e-c6393bbc503d保留。
-- 实际72读取：core逐字等已审稿、Claim正文不变、40Evidence内容/locator/核对状态保留；只有新证据/Claim ID与版本来源URL改变，抽取新旧来源接口均200且响应相同。manifest仅4b94c626、正常PDF文件名；新继承图a6f51e93-4ce0-4438-b18f-bbe82ed00bfa approved、原hash4ee0df4c/1280×720。0公式错误，预览/工作台截图已看。证据tmp/quantization-deduplicate-{reading,source-reading}.log/json、preview/edit.png，服务器/jobs同名；原始reading.evidenceUnchanged=false因新ID/URL，已用后续逐字段比较解释，不能误报来源丢失。
-- 当前公开入口：https://openscience.428312321.xyz/research/OSR-2026-000023/v/1；工作台/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?hermesTask=f34d8ee2-5120-4ca1-a22b-a98f3473117a；后续正文变更须新私有草稿/再次公开产生v2。
-- 六项笔记f34d8ee2-5120-4ca1-a22b-a98f3473117a：1523字符/23引用、user_edited、独立High科学/来源PASS；六字段111/251/364/325/210/175字符、10式。人工纠正后经既有无模型save与SDF写入，不能冒称自动正确。
-- 长笔记71ed6fae-21c3-49d2-bfff-e394bf307323：3643字符/40引用/57式；来源指导服务器e758→918→b66→71后独立High PASS，原文/导出实读一致。自动初稿及后续60d/4c45六字段稿仍未通过，均保留。
-- 来源ingestioncee71443-ae46-4ed1-b4e4-6c5b59e674ef、source agent960ffcc1-75f6-4418-b9a6-8bf413f4e18d、artifact4b94c626-1748-4c5a-934b-2bb94585bd9c；15页SourceMap已完整，不重解析。08ed仅压缩重复来源元数据，2201片段/53954全文完整。
-- 正确快照Claim18bbfa21-4099-49be-9f55-21e0fda960ef/40Evidence；已批图56e58572-705b-4182-b064-a9df30f1060f，原字节652786B/hash4ee0df4c、原图1672×941/产品1280×720。
-- 图56经admin_reviewed_import复用原图86ffe202-928e-49fd-8877-7ec0787b69f6；原generator/version与importRun来源保留，非重生成。旧version58a45cb5-758f-4d6f-9e94-533b460e8b06科学正文有误，绝不发布；stagingc8e625c4-39cb-4a6c-a0d1-3129c48558f8冻结内容有历史差异，恢复只用冻结记录。
-- 本轮任务完成：许可选择/署名/下载/第二篇发布已落实。下一步由用户在公开页或Hermes提出具体质量反馈，再决定第三篇/视频；先保留2篇真实交付，不自动启动批量。自动首稿科学质量仍未稳定，不把人工审校及本轮发布审核冒充通用自动审校通过。
-## Protected first paper
-- ROc896802c-35dd-4b59-8db1-5f374f83a6d8、草稿revision11；f4e2dc71-1fe8-406f-8c19-e1849503d698内部10保留，公开现为OSR-2026-000022/v/1（用户2026-09-14行政更正已执行）。DHL署名非通讯作者；原发布时间2026-09-11T14:39:38.371Z与收据e0a8bd97保持。原PDF7bb96cc1公开授权，原图b19a65bd保持；许可textCC-BY4/codeMIT/dataCC0不改。旧v10仅307/no-store临时兼容，未来真实v10优先；规范链接v1。
-- 保护已审92cafb82-73bc-4937-bb9c-bf1228b23dd3（1118字/17引用）、40e23948-4b41-4440-a3a1-49dd9acb8824（2696字/41引用/57式）、方法867ce8b9-1e48-4412-b1bf-1800a5d64dc9（1605字/19引用）、结果3f68d30b-5cab-44f9-9623-2f057aada7ff（1745字/19引用）。均独立原文PASS/真实页面与下载一致；后两稿未采用SDF。
-- ingestion2fdb78de-b52b-40f6-832f-faa3fdd9f4e2/agent1e324308-fd26-4cc1-8612-8a1c269909a9保护；1bf自动review仍误批d5c6f699，4b46/63e/10799未采用。旧失败不能覆盖上述已审稿。
-## Existing execution and scientific boundaries
-- 应用与浏览器执行器版本分开：browser base d1630135/rollback92cc416e；image/review runner501da7a3、helperd369ccc2、brokerb78fb94d；video0df87c9b/browser image8aa21251。TTSa2158409/rendererff6042f6/qwen3-tts-customvoice-0c0e305保留，无新媒体任务。
-- 生图已修键盘输入/picture_v2、唯一主图同源原图下载、late completed结果恢复、自有target清理及三锁安装；未知归属页受保护，不保证任意Chrome卡死自动恢复。5260已回收；86ffe于09-13单次生成成功（attempt1/retry0），真实图质量已独立看图。
-- 7891→Squid→7890代理/登录此前实读有效；浏览器09-13自行重启后保留登录，旧target失效。不得按整页关键词误判活动、重复重启或因本机浏览器桥失败断言服务器Chat不可用。
-- 科学写作handleScientificWriting→resolveScientificWritingSource绑定基稿/全文SourceMap与原quote，writingSource选择已实传；普通editorDraft缺全文来源，不走无来源自省循环。源码通用，但具体指导与High核对仍由本会话承担，未形成产品自动科学审校闭环。
-- TeX保护/渲染与隐藏[S数字]仅阅读层处理，原文、后台引用和数学源保留；平台实渲染不保证外部Markdown阅读器。历史证据在Git及tmp/reader-clean-*、quantization-version-*，不重跑已验证流程。
-- 长综述ROaa450f1e旧任务163815字符超120k失败，24页完整SourceMap已在服务器；未实现新续跑能力，勿重解析或仅增limit。
-## Read first
-- 本文 → docs/OpenScience_Kimi_Development_Spec.md §2.2/相关章节 → docs/specs/2026-09-13-draft-publication-trash-design.md、ADR-014 → docs/runbooks/server-capabilities.md及deployment.md相关条目。
-- project_index只定向检索；已有GitHub方法与真实调用对照见hermes-capability-registry。无新第三方安装；历史日志由Git保留，不恢复旧MVP next action。
+## Current task and result
+- 用户顺序：先同一已审论文的学术图、封面、淡彩三张私有候选；落实后检索现有生图/绘图/构图skill。三张已实际生成、独立看图接受、画廊与工作台轮播均可达；尚未公开或在产品审批为approved。水墨指导已配置但本批不生第四张。
+- 学术图dc216a9f-2683-47d5-8aec-eef55b88aa2a；封面d4ffa9d0-2ad6-417e-9593-6b437a91f269；淡彩aa41a018-b2ff-4ffb-9557-19ecabe104bc。均1280×720/draft，来源同一reviewed Claim93416292/40Evidence。旧误导光晕封面249a5536标rejected并保留文件；旧成功资产未删除。
+- 研究RO9067a2d5-42ad-4c06-b234-753728b71064；本轮通过restore API从已审72c315af恢复私有草稿e77dc3c7-95cb-4269-ac3c-24276fea74e7，内部versionNo8/RO revision9。正文core全等、40证据继承。不能再次运行tmp/style-batch-restore.sh。
+- 工作台：https://openscience.428312321.xyz/research-objects/9067a2d5-42ad-4c06-b234-753728b71064/edit?stage=media&version=e77dc3c7-95cb-4269-ac3c-24276fea74e7 。独立画廊同RO/presentation?version=e77dc3c7-95cb-4269-ac3c-24276fea74e7。
+- 公开23/v1完整JSON与本轮修改前深度全等，发行信息/原图/正文/来源未变；工作台轮播含原继承approved图557c3db6和新3图，4张均实际点击可达；1140CSS无横溢出，三画廊截图已看。收据tmp/style-batch-final-reading.json/final-read.log及gallery-{academic,editorial,watercolor}.png。
+## Versions and deployment
+- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release。应用41ae8902c245e191e34e09969d6d57d81a64fdd6 / rollback6504c0045b5d559257b1e5373026acabdf73d224，/__release实读一致。随后提交独立runner11494323及文档；HEAD从Git读取，不能等同于应用release。
+- 应用41ae：art-direction v2与图片wrapper，clean发布树.worktrees/art-direction-release-41ae8902；tmp/art-direction-deploy-41ae8902.log exit0。当前新增v3候选仅通用信息结构/坐标域/可见标签计数与冗余编码规则，源于本批问题及后续skill调研；High审阅与必要部署待完成，不重新生成已通过三图来冒称v3验证。
+- ChatGPT image runner当前11494323文件补丁（完整SHA从Git读取），science review仍501da7a3、helperd369ccc2、brokerb78fb94d/base d163。安装记录tmp/style-mode-{install,diagnostic-install}.log exit0；按image→science→shared三锁、cmp完整基线、备份、同目录root:11040/0440原子替换；无浏览器/服务重启。
+- runner备份及source-id：/opt/openscience-chatgpt-browser/mode-ready-<source SHA>/。最初3dc98140从41ae原runner安装，最终11494323从3dc安装；ddb054b0未安装。回退同三锁原子恢复before.cjs，不覆盖漂移、不重发旧任务。
+- 独立Codex仍runner09058847/base1ad54c72，受限清理代码f8，未因本批更改。根目录dirty main非生产基线；交付树无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
+## Scientific and transport limits
+- 初次三份方案科学复核未过（实空间与波矢域混合、固定偶极方向、互斥z区等），通过服务器来源指导修订为058d/4528/854a后才生成；封面4528实际图有光晕，再修订4be676be并重新生成。不能把人工指导后的结果称为自动首稿正确。
+- 学术前两任务8aea8fcc与8ee965ae均在发送前失败，无submitted/conversation/output；前者IMAGE_MODE_NOT_READY，后者约6秒即error=Error。30秒等待不足以解释第二次故障。相同prompt的最小控件观察可用，未发送模型请求；间歇根因未定。114增加安全子阶段/异常类别，后续dc/d4真实生成与下载成功，仅证明这两次链路可用。
+- 原普通agent retry API对presentation图像显示canRetry=true但复用task.id；handler禁止无completed-result的第二次image执行，既有terminal failed spool也不可作为pre-submission重置。静态确认契约不一致，未为验证点击；本批用既有generation API的新task/幂等key续作，旧失败保留。下一稳定性修复应区分保存结果恢复与显式新生成，不能清spool或盲重发。
+- 三图可作私有候选，非期刊发表审核；学术/封面有限画幅色块仍有被过读为谱截止的小风险，未标第二阈值，核心分类正确；淡彩底部次要字较淡。v3部署后的跨论文首稿效果未观察。
+## Skill research after this batch
+- 已通过GitHub原仓库读取baoyu-article-illustrator/cover-image、K-Dense scientific-schematics/scientific-visualization，及Anthropic canvas-design和许可；选择与链接记录在docs/runbooks/hermes-capability-registry.md“图片风格批次与技能选择”。未安装任何第三方skill、插件、依赖或新后端。
+- 优先吸收信息结构×风格×配色、内容焦点、可见标签/坐标语义和冗余编码；科学数值图应走有数据与可编辑图元的确定性绘图，现有生图PNG不能承诺矢量/精确字体。原生图方案保留服务器ChatGPT路径，不能以本机imagegen替代。
+- 不照搬上游自动评分分数作为科学验收、默认批量重试/新OpenRouter依赖；本地旧Gemini skill示例λ<100fs量纲错误，不能作科学可信来源。绘图后端接入与新的第三方安装未授权/未实施。
+## Protected previous delivery
+- 两篇真实公开研究：22/v1 deep-sub-cycle（ROc896802c，Versionf4e2dc71）与23/v1 Quantization（RO9067，Version72c315af），均DHL署名、原PDF允许下载；22数据CC0/23数据CC-BY4、文字CC-BY4、代码MIT保持。
+- 22旧v10已按用户指定行政勘误为首次v1，audit6c93436f；不能恢复误号/重跑correct-deep-sub-cycle-publication或旧publish脚本。公开API支持固定及最新版本，/developers原文curl/Python已实跑；特定web工具域名安全拒绝未证明解决。
+- 已完成正文/卡片公式、S内部引用与制作信息隐藏、同版本结构化证据整块折叠、作者/公开号、个人空间布局。6504首行双卡等高/后续整行，桌面与窄屏实际看过；本轮复用不重做。
+- 用户此前4项purge已完成：旧RO66、两会话、笔记；共享对象保留。不得重跑tmp/install-trash-runner-fix.sh或旧purge脚本，不新增删除样本。无当前待清理任务。
+## Execution constraints and next action
+- 无测试、预检、CI、本机构建/Docker/迁移。仅本机静态编辑/Git/传输；服务器必要build/start及当前具体故障最小诊断/实际产品阅读。禁止无授权安装、删除、读取打印.env/Secret。
+- SSH只用Git Bash显式C:/Program Files/Git/bin/bash.exe调用项目ssh-run.sh及id_ed25519_xgs；页面fetch继承服务器浏览器认证/代理，context.request曾绕代理EAI_AGAIN，不当作登录失效。
+- 浏览器截图：Chrome125%zoom，使用CDP Page.captureScreenshot(fromSurface:false)，等待fonts后居中。关闭自建page，不动其它用户页面。导出结果仅自身研究scope，不导出Cookie。
+- 下一步：完成v3必要部署与版本记录后交付三图入口；按用户实际反馈提升构图/精确绘图，优先修复上述重试契约与观测到的具体故障。视频、第三篇与批量冷启动仍暂停，不自动公开。
+- Read-first：本handoff → docs/OpenScience_Kimi_Development_Spec.md §18.2 → 精确目标代码；服务器先读server-capabilities和deployment相关条目。历史完整证据在Git history及tmp/style-batch-*与服务器/jobs同名；不要扫描旧档案恢复过期next action。

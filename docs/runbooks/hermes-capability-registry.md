@@ -1,6 +1,6 @@
 # Hermes Capability Registry
 
-- 2026-09-14当前应用f8e44815/rollback9a36c1e0：整块证据默认关闭，个人空间仅显示正在排队/上传/解析任务；核对建议、失败详情与历史集中Hermes，未伪造确认。回收站4项原请求已完成清除，共享对象保留，两篇公开v1科研字段/证据/图不变。Node符号链接身份、正常排空退出与清理安装等锁已修复；独立Codex runner090文件补丁/base1ad54c72，原运行环境/认证复用；受限清理bundle f8，浏览器runner未改。空回收站/Dashboard/公共/工作台/窄屏已实看，必要build/start exit0，无测试/新模型/迁移；完整收据与限制见CURRENT。
+- 2026-09-14历史应用f8e44815/rollback9a36c1e0：整块证据默认关闭，个人空间仅显示正在排队/上传/解析任务；核对建议、失败详情与历史集中Hermes，未伪造确认。回收站4项原请求已完成清除，共享对象保留，两篇公开v1科研字段/证据/图不变。Node符号链接身份、正常排空退出与清理安装等锁已修复；独立Codex runner090文件补丁/base1ad54c72，原运行环境/认证复用；受限清理bundle f8，浏览器runner未改。空回收站/Dashboard/公共/工作台/窄屏已实看，必要build/start exit0，无测试/新模型/迁移；完整收据与限制见CURRENT。
 - 2026-09-14应用6af9c984/rollback59c8cebf：证据主张/原文统一科学Markdown，40来源按文件页码分组，原记录不变；API文档复用公开视觉，线上原文curl/Python已执行成功。原Python默认UA被Cloudflare1010拒绝，示例显式应用User-Agent修复；无防护/权限/模型/依赖变更。主张57式源码全等、来源按钮200及桌面/窄屏已实际查看。服务器必要build/start完成，无测试/预检/迁移/科研写入；详细证据见CURRENT。
 - 2026-09-14历史应用a7214fc9/rollbacke7f95180：外部AI可按公开文章ID读取最新完整JSON或固定公开版；/developers提供中英文档/导航，统一OpenAPI3.1描述8个GET，HTML JSON alternate及API Link/Content-Location完成发现。复用原权限/冻结记录/限流，无新模型/服务/依赖/迁移/科研写入；High静态PASS及必要服务器build/start exit0。匿名文档/规范/23最新与v1/22v10/来源均200，内容保留；web工具域名安全拒绝未作网络根因结论，客户端兼容边界见CURRENT。
 - 2026-09-14历史应用e7f95180/rollback0931cf12：用户确认原创/DHL/允许下载及委托选许可后，第二篇真实首发OSR-2026-000023/v/1。Hermes和独立发布页均支持显式开放本次全部附件；权限冻结到本版本，旧版默认不开放。单结论发布按新版PRD落实，结构/来源验证保留；High PASS。匿名PDF200/原件568765字节及hash一致，40来源/已审图/正文保持、公式0错误。无新模型生成/依赖/迁移/测试，非自动科学审校能力证明。
@@ -13,7 +13,22 @@
 - 2026-09-13图解质量推进：同一已审71正文/40引用/Claim848，方案aa05→2a1（未批）→606b99fc（已批）；真实新版图片86ffe202-928e-49fd-8877-7ec0787b69f6于09:05:56Z→09:07:13Z单次自动succeeded100%/draft，retry0、attempt1，无人工恢复或新部署。原图1672×941，产品1280×720完整可见且不横向溢出；独立看图PASS为用户审阅候选，无必要修正，未批准/公开。上轮生图稳定性修复在本次真实任务生效。
 - 2026-09-13生图稳定性：原5260任务单次提交已生成并回收，产品succeeded100%/draft，实读1280×720；b78修复原图下载及旧late marker跳过已完成结果，501部署自有target连接前回收/三锁安装，d369补Chrome异步关闭确认。image/review runner501、helperd369、brokerb78，base bundle d163；应用08ed/rollback df94不变。独立High PASS，无测试/预检/新依赖，具体图片质量/操作证据见CURRENT handoff。
 
-## 当前状态（2026-09-13）
+## 图片风格批次与技能选择（2026-09-14）
+
+本批先完成服务器真实三图，再做以下源码检索。原稿经来源指导修订及独立看图；三图均draft，公开23/v1完整JSON与原先全等。实际产物和失败记录见CURRENT handoff、tmp/style-batch-final-reading.json；并非仅配置完成，也不是跨论文自动质量证明。
+
+| 来源 | 读到的能力与许可标注 | 本项目选择 |
+|---|---|---|
+| [baoyu-article-illustrator](https://github.com/JimLiu/baoyu-skills/blob/main/skills/baoyu-article-illustrator/SKILL.md) / [cover-image](https://github.com/JimLiu/baoyu-skills/blob/main/skills/baoyu-cover-image/SKILL.md) | 内容结构、风格、调色分开；封面按主视觉/概念/极简等构图，记录简报；仓库[MIT](https://github.com/JimLiu/baoyu-skills/blob/main/LICENSE)。读取blob87e27e6d、构图参考c741ec8e。 | 方法值得吸收，用自写规则融入原Hermes planner；不安装整套、不照搬默认并行/自动重试/反复确认或改换后端。 |
+| [K-Dense scientific-visualization](https://github.com/K-Dense-AI/scientific-agent-skills/blob/main/skills/scientific-visualization/SKILL.md) | Matplotlib/Seaborn/Plotly、真实数据语义、冗余编码、字体及最终尺寸；skill标注MIT，blob13f3ae9b。 | 优先借鉴标签、颜色语义和版面准确性；后续确定性科学绘图候选，尚未安装或接入绘图执行器，不能说PNG已具备矢量能力。 |
+| [K-Dense scientific-schematics](https://github.com/K-Dense-AI/scientific-agent-skills/blob/main/skills/scientific-schematics/SKILL.md) | 简报→生图→有上限视觉反馈；skill标注MIT，blob9df42190。实际是OpenRouter生成/审阅、PNG输出，非矢量，不能精确控制DPI/字体。 | 保留候选与定向改错的方法可借鉴；不引入新供应商，不把模型评分或“publication-ready”描述当科学正确证明。 |
+| [Anthropic canvas-design](https://github.com/anthropics/skills/blob/main/skills/canvas-design/SKILL.md) | 主体、留白、构图与字体层次；[Apache-2.0](https://github.com/anthropics/skills/blob/main/skills/canvas-design/LICENSE.txt)。 | 构图参考优先级次于科学语义；不能将其创作自由原则套在来源约束上，也不需要独立生成“设计哲学”文档。 |
+| 现有本地imagegen / Gemini image-generation | 前者明确生成/编辑边界和精确标签；后者有科学/光学示例，但存在λ<100fs量纲错误。 | 保留既有工具，不将其当科研证据；服务器链路继续复用ChatGPT executor，未用Codex手工图替代产品生成。 |
+
+v3候选自写三项规则：信息结构与艺术处理分开；每幅图明确实空间/时间/频率/波矢/参数域，装饰边缘不暗示额外截止；实际统计可见标签，并以文字/线形等补充颜色编码。不加新模型调用、依赖、API或schema。三图是在v2和具体修订简报下得到的，不能记为v3自动验证。
+
+未解决：普通Agent“重试”与image handler保留结果恢复合同不一致；间歇image_mode未提交错误尚未定根因。runner11494323有界就绪及安全子阶段记录已安装，后两次实际图成功。后续按具体故障修复，不清空spool、不盲重复提交。
+## 历史状态（2026-09-13）
 - 第二篇Quantization复用已解析SourceMap（15页/2201 excerpts/53954正文字符）；任务eda892b4及c4f3ce06均模型前budget失败。08ed仅共享kind/parser、每片段保留confidence/id/text/部分range，来源JSON由353628降到143941字符，完整locator与180k预算保留。服务器只读量测及High复核完成；e758f33f实产2374字符/14引用、来源960ffcc1准确，UI等API；High发现S3–S14重编号误绑和基底/亚1nm/功率公式错误，NOT ACCEPTED；e758→918→b66→71ed6fae来源指导修订后，最终3643字符/40引用、独立High科学/引用PASS；真实UI正文/quotes等API、57/57 TeX源一致/0错误，Markdown27609字符完整，RO仍private/draft/version3。无人工正文替换；sourceStatus仍grounded_with_unresolved_review，外部High未冒充内部自动审校。
 - 第一篇既有质量证据：方法稿867ce8b9与结果/边界稿3f68d30b均经服务器来源指导修订和独立High科学/引用PASS，后者1745字符/19引用。实读发现Markdown吞TeX转义，0685已修复；同一3f68正文/引用等API、26/26公式源逐字相等、6处间距正确，Markdown20620字符完整且未变。没有人工正文替换或新依赖/OCR，不能据此称六字段全自动或跨论文质量可靠。
 - 该路径从服务端基稿精确绑定sourceTaskId，回查同用户/RO/artifact/hash/quote，再复用完整packet与citation remap/materialize；不同于旧editorDraft的手工goal片段。纯文本draftChanges目前无字段证据回写；基稿修订不走latest，602首次写作已接显式ingestion来源，多artifact未选择时先提示，所选未就绪不回退其它原文。runtime scientific-writing v3与research-note-formatting在真实调用中复用。
@@ -33,7 +48,7 @@
 | 3 | 科学写作与引用 | 既有SourceMap、基稿血缘与精确引用重映射是通用实现；867方法稿与3f68结果稿来源指导修订后科学/引用PASS。具体指导和独立复核未自动产品化；editorDraft缺同等来源；602首次writing显式来源已实际传递，第二篇来源指导修订71科学/引用PASS，自动首稿失败保留。 |
 | 4 | 精美笔记 | 既有research-note-formatting、阅读/编辑、折叠来源与Markdown下载；0685已保护数学原文经过Markdown后逐字还原，复用splitMath与安全KaTeX。同一真实稿26式全部匹配；多格式导出按需补齐。 |
 | 5 | 多格式附件 | XLSX/PPTX/HTML已生产，派生副本清洗、原件保留；真实多样样本兼容未观察。复用已有解析器，未另装MarkItDown全套。 |
-| 6 | 艺术图片与视频 | 既有艺术指导/构图、locale/style及服务器网页生图已接通，23原图已实际生成并公开。2026-09-14开始新批次：v2具体机制/封面/淡彩/水墨指导，三张私有候选待部署后实际制作；视频仍暂停。技能增强不等于成图质量通过，最新状态见CURRENT。 |
+| 6 | 艺术图片与视频 | 既有艺术指导/构图、locale/style及服务器网页生图已接通，23原图已实际生成并公开。2026-09-14批次：v2应用41ae已产3张1280×720私有候选并实际看图/工作台轮播；学术dc216、封面d4ff、淡彩aa41。水墨未生成，v3通用强化候选待部署；自动首稿和间歇就绪限制见CURRENT。 |
 
 用户流程：一句话或附件开始同一私有研究 → Hermes理解整理 → 用户少量修改/确认 → 图片或视频 → 审核发布。主屏标题/贡献→核心媒体→六字段→文末资料；长笔记独立阅读。
 
@@ -235,7 +250,7 @@
 
 日志出现 `wsl: Failed to translate` 代表误用了 WSL，不代表 SSH key 失效。详细根因与禁令见 `docs/runbooks/deployment.md` §1.1。
 
-## CURRENT 2026-09-11 — Chat网页图解与产品回传
+## HISTORICAL 2026-09-11 — Chat网页图解与产品回传
 - production9b97522f/providerf4832487：Deep-sub-cycle来源及方案已确认，两张1280×720 PNG已由Hermes/chatgpt-web入产品draft，尚缺四个场景；原会话明确USAGE_LIMIT。没有切换API或重跑全文分析。已通过产品入口单次继续五个未完成场景，POST202/run version8；五项在网页提交前失败后，provider已修正图片模式误要求6Pro文本的条件。真实产品单图8b0ca4c9成功回传并自动展示，原批量run仍failed/version9。
 - 原图有内部制作指令外露，不能精选发布。已部署prompt把内部规则与可见标签分开，支持注明非按比例的概念图；新scene0未见原图的重复禁止文案，但科学细节仍需审核；旧scene4仍保留draft。
 - 继续使用既有API、队列、版本/权限和人工审核；未来真实并发增长后再引入API生图，不扩建恢复框架。

@@ -1,6 +1,8 @@
 # 服务器能力与复用清单
 
-- 2026-09-14当前应用6504c004/rollback f8e44815：仅个人空间CSS重排，首行等高双卡、后续整行和紧凑导入；必要build/start exit0，桌面/窄屏已实看。没有新增能力、依赖或运行器代码，Codex仍runner090/base1ad，受限清理代码沿用f8；不重跑生成或清除。当前状态见唯一CURRENT handoff。
+- 2026-09-14当前应用41ae8902/rollback6504c004；art-direction v2三风格真实私有图已生成并看图，工作台轮播可达，公开23/v1完整JSON不变。image runner11494323有界就绪与安全子阶段记录按三锁单文件安装；science501/helperd369/brokerb78保持，无新后端/依赖/认证/浏览器重启。前两次发送前错误根因未定，后两次实际成功；v3通用规则候选待必要部署，详细收据与skill来源见CURRENT和Hermes台账。
+
+- 2026-09-14历史应用6504c004/rollback f8e44815：仅个人空间CSS重排，首行等高双卡、后续整行和紧凑导入；必要build/start exit0，桌面/窄屏已实看。没有新增能力、依赖或运行器代码，Codex仍runner090/base1ad，受限清理代码沿用f8；不重跑生成或清除。当前状态见唯一CURRENT handoff。
 
 - 2026-09-14历史应用f8e44815/rollback9a36c1e0：回收站Node符号链接身份修复、安装有界等锁、前端自动更新；原4项已purged，旧RO/两会话不存在、笔记清空，共享对象保留。Codex仅runner090补丁/base1ad54c72运行环境，正常SIGTERM退出0，精确信号自然排空切换，原unit与配置保留；受限清理bundle f8。整块证据关闭约59px，Dashboard只显示处理中任务，已实看空回收站/公共/工作台/窄屏；两公开v1科研字段/证据/图同原数据。必要build/start exit0，无测试/新模型/迁移；细节及自动刷新未动态观察边界见CURRENT。
 

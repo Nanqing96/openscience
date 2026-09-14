@@ -4,7 +4,7 @@
 
 | 本轮文件 | 用途 |
 |---|---|
-| `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | 图片风格批次候选：具体四类艺术指导、统一科学内容和清晰标签、按批准方案出图；High GO，部署/三张私有产物待落实，详见CURRENT |
+| `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | 图片风格首批已交付：41ae/v2三张真实私有候选及工作台轮播已看，公开v1保持；v3信息结构/坐标域/标签强化候选，后续技能检索与边界见Hermes台账及CURRENT |
 | `apps/web/app/dashboard/dashboard.module.css` | 6504c004已部署实看：收回Hermes遗留跨三行布局，首行等高、后续整行及紧凑导入；桌面/手机无横溢出 |
 | `infra/private-cleanup/{runner.mjs,install.sh}` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 已交付f8：Node符号链接精确身份、正常排空退出、安装等锁、回收站自动刷新；原4项已实际清除。独立Codex仅090文件补丁、base1ad运行环境保留 |
 | `apps/web/components/public/ClaimNarrative.tsx` / `apps/web/components/hermes/{HermesRail.tsx,hermes-state.ts}` / `apps/web/app/dashboard/page.tsx` | 已部署f8实读：整块证据默认关闭约59px，个人空间只展示处理中任务，建议/失败和历史集中Hermes对话；后台状态未改 |
@@ -17,7 +17,7 @@
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：两篇22/v1与23/v1均DHL署名、允许原PDF下载；原科学内容/证据/图与许可保持。另4项用户已确认私有内容完成永久清除；应用6504c004/rollback f8e44815，branch codex/onchip-video-release。视频/批量暂停，无测试/新迁移；唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> CURRENT 2026-09-14：两篇22/v1与23/v1均DHL署名、允许原PDF下载；原科学内容/证据/图与许可保持。另4项用户已确认私有内容完成永久清除；应用41ae8902/rollback6504c004，独立image runner11494323，branch codex/onchip-video-release；同论文三风格私有候选已交付，v3强化候选待部署。视频/批量暂停，无测试/新迁移；唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
