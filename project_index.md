@@ -1,10 +1,10 @@
 # OpenScience (XGS) 项目文件索引
 
-> 当前任务2026-09-14完成：production f8e44815/rollback9a36c1e0；回收站4项原请求已实际清除，整块证据默认关闭、Dashboard重复核对移回Hermes。空回收站/公共与工作台折叠/窄屏已看，两篇公开v1/DHL正文证据图保持。独立Codex runner090补丁/base1ad、清理bundle f8，不能混作同一runtime版本；唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> 当前任务2026-09-14完成：production6504c004/rollback f8e44815。个人空间首行双卡等高、后续整行、导入紧凑分栏，桌面/窄屏已实看；原右侧大块空白消除。之前四项清除和公开v1阅读修复保留；仅改页面样式，无科研或生成操作。唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮文件 | 用途 |
 |---|---|
-| `apps/web/app/dashboard/dashboard.module.css` | 2026-09-14新增反馈：收回Hermes遗留跨三行布局，首行并排、后续整行及紧凑导入；候选待部署，当前线上f8e44815 |
+| `apps/web/app/dashboard/dashboard.module.css` | 6504c004已部署实看：收回Hermes遗留跨三行布局，首行等高、后续整行及紧凑导入；桌面/手机无横溢出 |
 | `infra/private-cleanup/{runner.mjs,install.sh}` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 已交付f8：Node符号链接精确身份、正常排空退出、安装等锁、回收站自动刷新；原4项已实际清除。独立Codex仅090文件补丁、base1ad运行环境保留 |
 | `apps/web/components/public/ClaimNarrative.tsx` / `apps/web/components/hermes/{HermesRail.tsx,hermes-state.ts}` / `apps/web/app/dashboard/page.tsx` | 已部署f8实读：整块证据默认关闭约59px，个人空间只展示处理中任务，建议/失败和历史集中Hermes对话；后台状态未改 |
 | `infra/scripts/correct-deep-sub-cycle-publication.mjs` | 用户指定的首次发布行政勘误已执行：唯一22/v10→v1、DHL署名和原PDF下载，既有Serializable锁/审计保留原值；audit6c93436f，勿重跑发布；状态见CURRENT |
@@ -16,7 +16,7 @@
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：两篇22/v1与23/v1均DHL署名、允许原PDF下载；原科学内容/证据/图与许可保持。另4项用户已确认私有内容完成永久清除；应用f8e44815/rollback9a36c1e0，branch codex/onchip-video-release。视频/批量暂停，无测试/新迁移；唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> CURRENT 2026-09-14：两篇22/v1与23/v1均DHL署名、允许原PDF下载；原科学内容/证据/图与许可保持。另4项用户已确认私有内容完成永久清除；应用6504c004/rollback f8e44815，branch codex/onchip-video-release。视频/批量暂停，无测试/新迁移；唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |

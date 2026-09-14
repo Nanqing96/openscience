@@ -1,6 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 当前新增反馈进行中：用户指出个人空间右栏大块空白。已实读线上仍f8e44815、api/worker等健康；仅修改dashboard.module.css，Hermes不再跨三行、后续区块整行并压紧导入布局。待必要服务器构建部署和桌面/窄屏实际查看；不是重复执行上一轮清除。
+- 当前布局反馈已完成：6504c004已部署，rollback f8e44815。仅dashboard.module.css调整：Hermes与继续研究首行等高并排，后续工具整行，桌面导入说明/操作紧凑分栏、窄屏单列。独立High GO、必要服务器build/start exit0，无测试/预检/迁移/数据或生成操作。
 - 当前反馈已完成：f8e44815已部署；Node符号链接识别、Codex正常信号退出及清理安装等待锁修复。用户原4项purge_pending已全部purged：旧RO66已删除、两会话不存在、笔记内容清空；共享对象仍有引用而保留。整块证据默认关闭，Dashboard仅显示排队/上传/解析任务，核对建议和失败/历史保留Hermes，未伪造确认或重跑科学分析。
 - 2026-09-14最新续作完成：9a36c1e0已部署，卡片科学文本、同版本结构化折叠证据、工作台作者/公开号已实读；第一篇六字段默认折叠、第二篇四原章节分层。22已行政勘误v1/DHL并允许原PDF下载，audit6c93436f-3c2e-40fe-82ad-d0c751c32f73；不是新发布，禁止重跑旧publish或按旧文档恢复v10。scope见已审infra/scripts/correct-deep-sub-cycle-publication.mjs。
 - 2026-09-14最新截图反馈已完成：公开Claim复用Hermes科学Markdown，概要/完整推导/适用条件/原文证据分层；不再整篇h3直出。来源按文件/页码分10组保留40条，去重复标题、制作前言、笔记UUID、内部[S]和机器locator；原quote/source也用Markdown与公式显示，原始数据不改。
@@ -8,12 +8,13 @@
 - 两篇真实论文现均公开v1、DHL署名及原PDF允许下载；22原dataCC0/23dataCC-BY4、文字CC-BY4/代码MIT保留。本轮仅指定22行政元数据与下载授权写入，无新论文发布或模型/图像生成；视频/批量仍暂停。
 - 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。仅必要服务器build/start和用户明确要求的实际页面/教程读取。自动首稿科学质量仍不稳定，不把人工审校或展示修复称为自动正确。
 ## Version and workspace
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码HEAD/origin f8e44815已部署，随后仅补交接文档；实际HEAD从Git读取，不等于应用release。
-- 当前ECS release f8e448157480ae9972459ac1385d9e27ac71ffcf / rollback9a36c1e06931d44ddc8b750c32427e081db56bf6；/__release实读一致。clean发布树.worktrees/trash-install-release-f8e44815，tmp/trash-reader-deploy-f8e44815.log exit0；090首次build完成但在切换前清理lock忙而exit75，f8只改安装有界等待75秒后部署成功，未强停清理。
-- Codex独立runner仅补09058847的runner.mjs，base bundle仍1ad54c72，source-id保留原值、runner-source-id登记090；tmp/trash-runner-install-09058847.log exit0，旧unit/heartbeat及短时Restart=no override归档于/opt/openscience-codex/trash-drain-before-0905884780c56aafb7ee507450d2c38fc70e7a2e。受限清理bundle随应用f8，其他供应商/浏览器/认证未改。不可重跑tmp/install-trash-runner-fix.sh；无新生成请求。
+- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码HEAD/origin 6504c004已部署，随后仅补交接文档；实际HEAD从Git读取，不等于应用release。
+- 当前ECS release 6504c0045b5d559257b1e5373026acabdf73d224 / rollback f8e448157480ae9972459ac1385d9e27ac71ffcf；/__release实读一致。clean发布树.worktrees/dashboard-layout-release-6504c004，tmp/dashboard-layout-deploy-6504c004.log exit0。上一轮历史：clean发布树.worktrees/trash-install-release-f8e44815，tmp/trash-reader-deploy-f8e44815.log exit0；090首次build完成但在切换前清理lock忙而exit75，f8只改安装有界等待75秒后部署成功，未强停清理。
+- Codex独立runner仅补09058847的runner.mjs，base bundle仍1ad54c72，source-id保留原值、runner-source-id登记090；tmp/trash-runner-install-09058847.log exit0，旧unit/heartbeat及短时Restart=no override归档于/opt/openscience-codex/trash-drain-before-0905884780c56aafb7ee507450d2c38fc70e7a2e。受限清理bundle随应用release，代码仍为原f8修复，其他供应商/浏览器/认证未改。不可重跑tmp/install-trash-runner-fix.sh；无新生成请求。
 - 首轮59c8及补修6af均独立High静态PASS，必要服务器build/start完成，--no-tests --skip-migrate；tmp/claims-api-deploy-59c8cebf.log与claims-quotes-deploy-6af9c984-resume.log exit0。6af首试在cloud-sync准备阶段SSH reset，实读59仍healthy且无部署进程后原候选续跑成功；没有手动停服务/改生产记录。
 - 根目录dirty main不是生产基线；交付树无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。应用rollback9a不撤行政v1更正，不能恢复已永久清除内容；独立runner回退须先自然排空，旧runner/清理器会重引入故障。
 ## Latest actual reading
+- 布局实际阅读：tmp/dashboard-layout-reading.json/log确认线上6504、桌面1140CSS/手机363CSS均无横溢出，导入148px、桌面竖排入口无残余竖线。三张dashboard-layout-{desktop,mobile,mobile-tools}.png已看；tmp/dashboard-layout-stable-read.log在任务加载完成后实读两张首行卡片均267.325px高、顶边相同。首次几何记录在加载结束前采集，不能用作卡片最终高度；截图与后续稳定读数相符。无新增测试，复用上一轮未变业务证据。
 - tmp/trash-final-state.log：4项purged且lastError为空、RO66不存在、两会话不存在、笔记payload/result清空；一个共享对象retained。tmp/trash-reader-actual.json/log：回收站API200空、Dashboard无等待核对/旧历史、两公开v1/DHL的core/claims/evidence/images与修改前全等；证据均DETAILS/open=false/约59px，实际展开成功；工作台同样关闭，356CSS无横溢出。
 - 空回收站/Dashboard/手机及最终公共关闭/展开、工作台关闭截图均已看：tmp/trash-reader-{after-cleanup,dashboard,evidence-mobile,final-public-closed,final-public-open,final-workbench-closed}.png。首次桌面截图在字体加载前滚动导致目标出画面，仅重读目标、等字体并居中捕获，见trash-reader-visual-final.log。打开页面时清除已完成，自动刷新代码已部署但本次未观察到pending→empty动态转换；不再创建删除样本验证。
 - 最终9a实读tmp/ro-feedback-final-visual.json/log：Explore双卡无裸TeX/S、均DHL/v1；22六字段均DETAILS/default closed，实际展开/收起成功，12Claim/102Evidence完整，368CSS宽度等scrollWidth。Explore/六字段/展开/手机截图均已看（tmp/ro-feedback-{explore-zh,six-fields,field-open,six-fields-mobile}.png）。本补修仅4个UI文件，独立High静态GO；复用下方未变科研/API/工作台/下载证据，不重跑整链路。
