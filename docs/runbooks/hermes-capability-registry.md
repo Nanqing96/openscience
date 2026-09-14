@@ -15,23 +15,16 @@
 
 ## 图片风格批次与技能选择（2026-09-14）
 
-最新反馈已落实：用户认可淡彩aa41，认为学术dc216与封面d4ff平庸；旧两图已rejected但保留文件。v4已部署dd4c935a/rollback a1a5f30d，仅替换现有艺术指导两条：同科学内容下以构图/字体/材质区分风格；局部修改保持未受影响及已认可元素，用户否定构图时允许重排，不恢复拒绝特征。新学术cdce6087/编辑1a1d716b各单次生成成功，真实原图/画廊/工作台已看；独立High科学可用，编辑改善明显，学术仍克制且右下较空，只作比较候选。用户未评价新图；淡彩字节及公开v1未变。无新调用链/依赖/runner/安装/测试；收据tmp/art-feedback-*，CURRENT记录真实范围。
+用户已否定新学术cdce6087与编辑1a1d716b，认可淡彩aa41；前一轮“改善明显”是内部评价，不能写成用户认可。此前只吸收方法到media-direction.ts，没有安装完整上游技能。本轮明确授权安装，停止重复出图。
 
-本批先完成服务器真实三图，再做以下源码检索。原稿经来源指导修订及独立看图；三图均draft，公开23/v1完整JSON与原先全等。实际产物和失败记录见CURRENT handoff、tmp/style-batch-final-reading.json；并非仅配置完成，也不是跨论文自动质量证明。
+实际安装三个原版技能包：[article-illustrator](https://github.com/JimLiu/baoyu-skills/tree/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-article-illustrator)、[cover-image](https://github.com/JimLiu/baoyu-skills/tree/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-cover-image)、[infographic](https://github.com/JimLiu/baoyu-skills/tree/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-infographic)，共122个原始Markdown文件。上游commit1567581c26ec29f4216c6e6835415bf30343b0e3，MIT/2026 Jim Liu，原LICENSE随每包保留。项目路径.agents/skills/<id>/；本机Codex路径C:/Users/Mac/.codex/skills/<id>/，新技能下一轮可自动发现。未执行上游脚本或安装新provider/二进制。
 
-| 来源 | 读到的能力与许可标注 | 本项目选择 |
-|---|---|---|
-| [baoyu-article-illustrator](https://github.com/JimLiu/baoyu-skills/blob/main/skills/baoyu-article-illustrator/SKILL.md) / [cover-image](https://github.com/JimLiu/baoyu-skills/blob/main/skills/baoyu-cover-image/SKILL.md) | 内容结构、风格、调色分开；封面按主视觉/概念/极简等构图，记录简报；仓库[MIT](https://github.com/JimLiu/baoyu-skills/blob/main/LICENSE)。读取blob87e27e6d、构图参考c741ec8e。 | 方法值得吸收，用自写规则融入原Hermes planner；不安装整套、不照搬默认并行/自动重试/反复确认或改换后端。 |
-| [K-Dense scientific-visualization](https://github.com/K-Dense-AI/scientific-agent-skills/blob/main/skills/scientific-visualization/SKILL.md) | Matplotlib/Seaborn/Plotly、真实数据语义、冗余编码、字体及最终尺寸；skill标注MIT，blob13f3ae9b。 | 优先借鉴标签、颜色语义和版面准确性；后续确定性科学绘图候选，尚未安装或接入绘图执行器，不能说PNG已具备矢量能力。 |
-| [K-Dense scientific-schematics](https://github.com/K-Dense-AI/scientific-agent-skills/blob/main/skills/scientific-schematics/SKILL.md) | 简报→生图→有上限视觉反馈；skill标注MIT，blob9df42190。实际是OpenRouter生成/审阅、PNG输出，非矢量，不能精确控制DPI/字体。 | 保留候选与定向改错的方法可借鉴；不引入新供应商，不把模型评分或“publication-ready”描述当科学正确证明。 |
-| [Anthropic canvas-design](https://github.com/anthropics/skills/blob/main/skills/canvas-design/SKILL.md) | 主体、留白、构图与字体层次；[Apache-2.0](https://github.com/anthropics/skills/blob/main/skills/canvas-design/LICENSE.txt)。 | 构图参考优先级次于科学语义；不能将其创作自由原则套在来源约束上，也不需要独立生成“设计哲学”文档。 |
-| 现有本地imagegen / Gemini image-generation | 前者明确生成/编辑边界和精确标签；后者有科学/光学示例，但存在λ<100fs量纲错误。 | 保留既有工具，不将其当科研证据；服务器链路继续复用ChatGPT executor，未用Codex手工图替代产品生成。 |
+Hermes通过installed-media-skills.ts读取release只读目录中的原始设计章节及白名单风格/布局文件；image storyboard和scene-image两处消费，资产既有provenance.designSkills保存实际ID、上游commit、文件与章节。不是把整个第三方操作流程拼进system：科学事实/已批方案/用户要求/现有Gateway和审核权限优先，忽略模板强制默认及上游工具、确认、批次、重试、删除操作。文件缺失明确失败；已有生成结果恢复不伪报新技能消费。视频规划未扩展。部署与一次真实私有方案收据见CURRENT handoff。
 
-v3自写三项规则已随应用a1a5f30d部署（rollback41ae8902，High GO，必要build/start exit0，公网release200实读；无测试/预检/迁移）：信息结构与艺术处理分开；每幅图明确实空间/时间/频率/波矢/参数域，装饰边缘不暗示额外截止；实际统计可见标签，并以文字/线形等补充颜色编码。不加新模型调用、依赖、API或schema。三图是在v2和具体修订简报下得到的，不能记为v3自动验证。
+能力范围：文内插图的结构/风格拆分，封面的主视觉/字体/配色/材质组合，信息图的21种结构与22种风格参考。目录是可选择的设计知识，不是每种风格已获用户验收，也不是确定性科研绘图执行器。K-Dense scientific-visualization/schematics仍只调研，未安装或接通执行器。
 
-确定性绘图代码实读：`generateClaimChartSvg()`目前只是固定SVG图元与text/tspan的Claim卡片，没有坐标、数值曲线或数学排版。成熟科学绘图库尚未接入；下一步先复用服务器已有工具，再选择绘图库，不能把旧chart资产名称当成已有科学绘图能力。
+Figma只读结果：本机figma-temp、figma-primary均enabled=false，当前会话无可调用方法；本轮不启用/修改。GitHub、skills.sh和官方MCP Registry可检索，但市场可访问不等于任意服务已经连接。
 
-未解决：普通Agent“重试”与image handler保留结果恢复合同不一致；间歇image_mode未提交错误尚未定根因。runner11494323有界就绪及安全子阶段记录已安装，后两次实际图成功。后续按具体故障修复，不清空spool、不盲重复提交。
 ## 历史状态（2026-09-13）
 - 第二篇Quantization复用已解析SourceMap（15页/2201 excerpts/53954正文字符）；任务eda892b4及c4f3ce06均模型前budget失败。08ed仅共享kind/parser、每片段保留confidence/id/text/部分range，来源JSON由353628降到143941字符，完整locator与180k预算保留。服务器只读量测及High复核完成；e758f33f实产2374字符/14引用、来源960ffcc1准确，UI等API；High发现S3–S14重编号误绑和基底/亚1nm/功率公式错误，NOT ACCEPTED；e758→918→b66→71ed6fae来源指导修订后，最终3643字符/40引用、独立High科学/引用PASS；真实UI正文/quotes等API、57/57 TeX源一致/0错误，Markdown27609字符完整，RO仍private/draft/version3。无人工正文替换；sourceStatus仍grounded_with_unresolved_review，外部High未冒充内部自动审校。
 - 第一篇既有质量证据：方法稿867ce8b9与结果/边界稿3f68d30b均经服务器来源指导修订和独立High科学/引用PASS，后者1745字符/19引用。实读发现Markdown吞TeX转义，0685已修复；同一3f68正文/引用等API、26/26公式源逐字相等、6处间距正确，Markdown20620字符完整且未变。没有人工正文替换或新依赖/OCR，不能据此称六字段全自动或跨论文质量可靠。

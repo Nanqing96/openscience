@@ -647,3 +647,5 @@
 | .agents/skills/frontend-design/SKILL.md | 科研阅读入口统一公式渲染、内部核查留后台、Hermes反馈规则 | 2026-09-13用户纠偏已固化；无新增工具或测试门禁 |
 
 | apps/web/components/content/ScientificMarkdown.tsx / public/evidence-display.ts / public/{ClaimNarrative,EvidenceDisclosure,EvidenceRail}.tsx / public/PublicReadingProduct.module.css | 共用Hermes已有Markdown与公式保护；长主张分层、证据按文件页码组织、阅读隐藏机器信息 | DEPLOYED6af9c984；主张57式原文保持、40证据/10页组，最终来源按钮200与桌面/窄屏截图已看；CURRENT |
+
+| .agents/skills/baoyu-article-illustrator/、baoyu-cover-image/、baoyu-infographic/；apps/agent-worker/src/skills/installed-media-skills.ts | 三个原版MIT设计技能及Hermes只读原文章节加载；消费写入既有资产provenance | 2026-09-14用户授权安装；commit1567581c；部署/真实消费状态以CURRENT handoff为准 |

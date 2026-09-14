@@ -11,6 +11,7 @@ import { generateClaimInteractiveHtml } from './interactive-html';
 import { requirePresentationMediaGenerator, type PresentationMediaGenerator } from './minimax-admin';
 import { HostVideoSpool } from './host-video-spool';
 import { Prisma } from '@prisma/client';
+import { loadInstalledMediaSkills, type DesignSkillUsage } from '../skills/installed-media-skills';
 
 function presentationClaimContent(claims: readonly PresentationClaim[]): string {
   return JSON.stringify(canonicalPresentationClaims(claims).map(({ id, kind, statement, assessment, conditions, limitations, extractionStatus }) => ({
@@ -157,6 +158,7 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
     let imageProvider: string | null = null;
     let videoOutput: { filePath: string; size: number; contentHash: string } | undefined;
     let videoProvenance: Record<string, unknown> | undefined;
+    let designSkills: DesignSkillUsage[] | undefined;
     if (payload.video && videoParents) {
       const user = await deps.prisma.user.findUnique({ where: { id: scope.userId }, select: { platformRole: true } });
       if (user?.platformRole !== 'platform_admin' && !await requireHermesAuthority(deps.prisma)) throw new Error('[blocked] isolated video generation is unavailable');
@@ -199,8 +201,11 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       const user = await deps.prisma.user.findUnique({ where: { id: scope.userId }, select: { platformRole: true } });
       if (user?.platformRole !== 'platform_admin' && !await requireHermesAuthority(deps.prisma)) throw new Error('[blocked] presentation media generation requires a platform administrator');
       if (!options.gateway?.generateImage) throw new Error('[blocked] scene image gateway unavailable');
+      const installedSkills = completedProviderRecovery ? undefined
+        : loadInstalledMediaSkills(sceneParent.view.style, sceneParent.view.document.scenes[payload.sceneImage.sceneIndex]!.visualAction);
       const prompt = completedProviderRecovery ? null
-        : await planSceneImagePrompt(options.gateway, claims, sceneParent.view, payload.sceneImage.sceneIndex);
+        : await planSceneImagePrompt(options.gateway, claims, sceneParent.view, payload.sceneImage.sceneIndex, installedSkills);
+      designSkills = installedSkills?.usage;
       await requirePresentationWriteScope(deps.prisma, scope);
       const currentUser = await deps.prisma.user.findUnique({ where: { id: scope.userId }, select: { platformRole: true } });
       if (currentUser?.platformRole !== 'platform_admin' && !await requireHermesAuthority(deps.prisma)) throw new Error('[blocked] presentation media authority changed');
@@ -218,6 +223,7 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       if (!options.gateway) throw new Error('[blocked] storyboard planner unavailable');
       const planned = await generateStoryboard(options.gateway, claims, payload.storyboard, base?.view);
       storyboardDocument = planned.document; promptHash = planned.promptHash;
+      designSkills = planned.designSkills;
       bytes = renderStoryboard(planned.document, payload.storyboard); extension = 'html'; contentType = 'text/html; charset=utf-8';
       generator = 'OpenScience Hermes storyboard planner'; generatorVersion = '1';
     } else if (payload.kind === 'chart') {
@@ -264,7 +270,7 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       const created = await tx.presentationAsset.create({ data: {
         id: task.id, researchObjectId: payload.researchObjectId, versionId: payload.versionId, kind: payload.kind,
         objectKey, contentHash, generator, generatorVersion, promptHash, label: PRESENTATION_ASSET_LABEL,
-        provenance: { ...(scientificMedia ? { sourceEvidenceIdentity, sourceEvidenceIds: sourceEvidence.map((row) => row.id) } : {}), source: payload.sceneImage ? 'approved_storyboard_scene' : payload.video ? 'approved_storyboard_video' : 'verified_claims', ...(payload.sceneImage && sceneParent ? { subtype: 'storyboard_scene_image', sceneImage: { ...payload.sceneImage }, parentIdentity: sceneParent.identity, storyboardContentHash: sceneParent.contentHash } : {}), ...(videoProvenance ?? {}), taskId: task.id, sourceClaimIds: payload.sourceClaimIds, contentType, ...(storyboardDocument && payload.storyboard ? { subtype: 'sourced_storyboard', storyboardDocument: JSON.parse(JSON.stringify(storyboardDocument)), storyboardSettings: JSON.parse(JSON.stringify(payload.storyboard)) } : {}) },
+        provenance: { ...(scientificMedia ? { sourceEvidenceIdentity, sourceEvidenceIds: sourceEvidence.map((row) => row.id) } : {}), source: payload.sceneImage ? 'approved_storyboard_scene' : payload.video ? 'approved_storyboard_video' : 'verified_claims', ...(payload.sceneImage && sceneParent ? { subtype: 'storyboard_scene_image', sceneImage: { ...payload.sceneImage }, parentIdentity: sceneParent.identity, storyboardContentHash: sceneParent.contentHash } : {}), ...(videoProvenance ?? {}), ...(designSkills ? { designSkills } : {}), taskId: task.id, sourceClaimIds: payload.sourceClaimIds, contentType, ...(storyboardDocument && payload.storyboard ? { subtype: 'sourced_storyboard', storyboardDocument: JSON.parse(JSON.stringify(storyboardDocument)), storyboardSettings: JSON.parse(JSON.stringify(payload.storyboard)) } : {}) },
       } });
       await tx.presentationAssetClaim.createMany({ data: payload.sourceClaimIds.map((claimId) => ({ presentationAssetId: created.id, claimId, researchObjectId: payload.researchObjectId, versionId: payload.versionId })) });
       if (storyboardDocument) await deps.audit?.record({ actorId: scope.userId, action: 'presentation_asset.generated', workspaceId: researchObject.workspaceId, targetType: 'presentation_asset', targetId: created.id, metadata: { taskId: task.id, researchObjectId: payload.researchObjectId, versionId: payload.versionId, subtype: 'sourced_storyboard', baseAssetId: payload.storyboard?.baseAssetId ?? null } }, tx);

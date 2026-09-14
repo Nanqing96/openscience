@@ -3,6 +3,7 @@ import { AiGatewayError, type AiGateway } from '@openscience/ai-gateway';
 import { STORYBOARD_IMAGE_VISUAL_ACTION_MAX, STORYBOARD_VIDEO_VISUAL_ACTION_GENERATION_MAX, parseStoryboardDocument, requireAnimationSourceSupport, type StoryboardDocument, type StoryboardRequest, type StoryboardView } from '@openscience/domain';
 import type { PresentationClaim } from './chart-generator';
 import { SCIENTIFIC_ART_DIRECTION_SKILL, SCIENTIFIC_VIDEO_DIRECTION_SKILL } from '../skills/media-direction';
+import { loadInstalledMediaSkills } from '../skills/installed-media-skills';
 export async function generateStoryboard(gateway: Pick<AiGateway, 'completeStructured'>, claims: readonly PresentationClaim[], settings: StoryboardRequest, base?: StoryboardView) {
     const quoteLookup = new Map<string, string>();
     const groundedClaims = claims.map(({ id, kind, statement, assessment, conditions, limitations, sourcePassages: reviewedPassages }) => {
@@ -83,7 +84,8 @@ Each action has EXACT keys {kind,target,start,end,meaning,basis}; ONLY translate
 CONTENT: ${contentSceneRule} Never invent geometry, mechanisms, trajectories, measurements, numbers, or unsupported results. Preserve attribution, conditions, limitations, units and physical-quantity distinctions. Method-only evidence needs no results illustration. Artwork is conceptual, not measured or simulated.
 OUTPUT: Only JSON with EXACT keys {schemaVersion:1,title,scenes}. Each illustration has EXACT keys {title,narration,visualAction,sourceClaimIds}. Do not include durationSeconds or animation. Title 1–120 characters; narration 1–120 characters; visualAction 1–${STORYBOARD_IMAGE_VISUAL_ACTION_MAX} characters; sourceClaimIds are 1–12 unique supplied UUIDs. All text is single-line without control characters.
 ${outputDiscipline}` : videoSystemPrompt;
-    const direction = [SCIENTIFIC_ART_DIRECTION_SKILL.instructions, ...(imageOutput ? [] : [SCIENTIFIC_VIDEO_DIRECTION_SKILL.instructions])].join('\n');
+    const designSkills = imageOutput ? loadInstalledMediaSkills(settings.style, settings.instruction) : undefined;
+    const direction = [SCIENTIFIC_ART_DIRECTION_SKILL.instructions, ...(designSkills ? [designSkills.instructions] : []), ...(imageOutput ? [] : [SCIENTIFIC_VIDEO_DIRECTION_SKILL.instructions])].join('\n');
     const messages = [{ role: 'system' as const, content: `${systemPrompt}\n${direction}` }, { role: 'user' as const, content: input },
         { role: 'user' as const, content: `Apply this requested scope and revision to the source-grounded plan, subject to the system's scientific constraints:\n${settings.instruction}` }];
     let lastValidationCode = 'not_validated';
@@ -119,7 +121,7 @@ ${outputDiscipline}` : videoSystemPrompt;
         throw new Error(`[blocked] Storyboard output rejected: ${lastValidationCode}`, { cause: error });
     }
     const document = parseStoryboardDocument(materialize(output), ids, settings.output);
-    return { document, promptHash: createHash('sha256').update(JSON.stringify(messages)).digest('hex') };
+    return { document, promptHash: createHash('sha256').update(JSON.stringify(messages)).digest('hex'), designSkills: designSkills?.usage };
 }
 function escape(value: string) { return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }
 export function renderStoryboard(document: StoryboardDocument, settings: StoryboardRequest): Buffer {
