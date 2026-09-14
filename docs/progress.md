@@ -1,4 +1,5 @@
 # CURRENT Progress Window
+- 2026-09-14实施中：参考Crossref/OpenAlex的ID寻址REST JSON与OpenAPI3.1，补齐公开latest完整信息、/developers文档及导航、HTML JSON alternate、API发现头和统一规范；无测试/预检/新服务/依赖/科研写入。交付分支codex/onchip-video-release基线3700e4ae；启动实读production e7f95180/rollback0931cf12，部署候选待High终审与必要服务器build/start。细节及受保护论文见CURRENT。
 - 2026-09-14已部署e7f95180/rollback0931cf12，完整服务器build/start及独立High静态PASS，无测试/预检/迁移。修复与新版PRD冲突的3–7核心Claim机械配额；发布时显式允许附件下载，权限冻结在已有版本manifest，旧版默认不开放。真实第二篇review passed→状态200→publish201，生成OSR-2026-000023/v/1（72c315af，内部6），完整原题/DHL署名、文字和数据CC-BY-4.0/代码MIT。正文/1Claim/40来源/已审图保留；不得重新发布或原地修改72。
 - 匿名实际页面/API200，公式错误0、内部S标记0、原图1280×720/hash保持，身份和图截图已看。PDF匿名下载200/application/pdf/568765字节、SHA与原件24d11cc8全等，正常文件名链接DOM可见。收据tmp/quantization-publish-selected-version.log、quantization-public-reading-download.json及*-via-browser.log；本轮已完成，两篇真实公开记录22/v10和23/v1均保留。后续根据用户质量反馈推进，视频/批量暂停。首次读取脚本context.request绕过Chrome代理EAI_AGAIN，改同匿名页fetch即成功，未重启/重发发布。
 - 2026-09-14此前0931cf12/rollback02d67ddf：真实带图草稿保存500来自Prisma复合关联嵌套创建不接受范围字段；改为同一事务asset.create→link.createMany→原来源校验，独立High静态PASS。服务器build/start exit0，无测试/预检/迁移。原失败事务全回滚后，以原幂等键续附件整理201，形成当时private/revision7、快照72c315af，旧4266快照不变；该72现已首次公开。

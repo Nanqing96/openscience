@@ -9,7 +9,10 @@ import { researchRecordSchema, researchRecordOpenApi } from './research-record-s
 const params = z.object({ id: z.string().uuid(), versionId: z.union([z.literal('latest'), z.string().uuid()]) });
 export function registerResearchRecordRoutes(app: FastifyInstance, deps: CommitRouteDeps) {
   app.get('/research-record/schema', async () => researchRecordSchema);
-  app.get('/research-record/openapi', async () => researchRecordOpenApi);
+  app.get('/research-record/openapi', async (_req, reply) => reply
+    .type('application/vnd.oai.openapi+json')
+    .header('Link', '</api/research-record/openapi>; rel="service-desc"; type="application/vnd.oai.openapi+json", </developers>; rel="service-doc"; type="text/html"')
+    .send(researchRecordOpenApi));
   const base = '/research-objects/:id/versions/:versionId/record';
   for (const suffix of ['', '/export']) app.get(`${base}${suffix}`, async (req, reply) => {
     reply.header('Cache-Control', 'private, no-store').header('Vary', 'Cookie');

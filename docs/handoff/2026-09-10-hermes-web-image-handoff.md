@@ -1,11 +1,12 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
+- 2026-09-14新授权正在实施：外部AI按公开文章ID/版本直接GET JSON；latest与exact共用既有公开读取，提供links/Content-Location/Link、完整OpenAPI、/developers导航/文档与HTML JSON alternate。不需导出、不新装服务/依赖。改动尚未部署；下一步独立High终审→服务器必要build/start→匿名真实文档/论文读取。
 - 2026-09-14第二篇已真实发布OSR-2026-000023/v/1，作者DHL、完整原题、文字/数据CC-BY-4.0、代码MIT，原PDF允许匿名下载。用户确认原创/昵称/下载并委托选许可；两篇真实论文已公开，等待用户对产品质量反馈，视频/批量暂停。
 - 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/migrate/start与真实页面阅读已执行，不通过删除/发布受保护论文验证功能。
 - 服务器MiniMax-M3。自动生成、引导共编、人工校正分别记录；独立High审核不能冒称产品自动审校。
 ## Version and workspace
 - 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；代码HEAD/origine7f95180643a852951cfcfb4f7cc8dd65fac58d5，随后仅文档补记；实际文档HEAD从Git读取，不等于应用release。
-- 当前ECS releasee7f95180643a852951cfcfb4f7cc8dd65fac58d5 / rollback0931cf122c93fb9730926771bfe9739d9a87e108。093保留生命周期/媒体保存修复，但回退将暂时失去公开附件下载及单结论发布；c0bc及以前不兼容，禁止回退。tmp/public-download-deploy-e7f95180.log exit0，--no-tests --skip-migrate，服务器完整build/start、精确release切换完成；无迁移/新服务/依赖。
+- 当前ECS releasee7f95180643a852951cfcfb4f7cc8dd65fac58d5 / rollback0931cf122c93fb9730926771bfe9739d9a87e108；本轮git fetch后重新只读.release-id/.rollback-id与Nginx /__release一致，API/Worker健康、Web运行。093回退暂失公开下载/单结论；c0bc及以前不兼容，禁止回退。本轮API候选未部署，预定兼容回滚为e7f；无迁移/新服务/依赖。
 - clean发布树.worktrees/public-download-release-e7f95180；先前各发布树保留。根目录dirty main不是生产基线，未合并main；无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
 ## Lifecycle delivered and observation
 - 公开序号publicationNo独立于内部versionNo；发布时分配，旧公开v10/URL保留；冻结公开元数据/图谱/来源/媒体。私有草稿权限单独判断，历史恢复创建新私有草稿并沿用冻结图文。

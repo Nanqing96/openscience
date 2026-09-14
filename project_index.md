@@ -1,5 +1,15 @@
 # OpenScience (XGS) 项目文件索引
 
+> 当前任务 2026-09-14：公开文章标准API与发现入口实施中，最新版本完整JSON、固定版链接、统一OpenAPI和/developers接入文档。候选基线3700e4ae，生产实读e7f95180/rollback0931cf12；无新科研写入/依赖/测试。最终部署及读取证据以唯一CURRENT handoff为准。
+
+| 本轮文件 | 用途 |
+|---|---|
+| `apps/api/src/routes/research.ts` / `apps/api/src/routes/research-record.ts` / `apps/api/src/routes/research-record-schema.ts` | latest/exact统一公开读取、版本固定及机器发现头，描述全部8个真实GET的OpenAPI3.1 |
+| `apps/web/app/developers/page.tsx` / `apps/web/app/developers/developers.module.css` / `apps/web/messages/zh.json` / `apps/web/messages/en.json` | 统一中英API文档、可点击实际JSON示例、curl/Python、权限/限流/返回字段 |
+| `apps/web/components/landing/SiteHeader.tsx` / `apps/web/app/layout.tsx` / `apps/web/app/research/[publicId]/page.tsx` / `apps/web/app/research/[publicId]/v/[versionNo]/page.tsx` | 导航与OpenAPI发现、真实公开版本的HTML JSON alternate |
+| `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
+| `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
+
 > CURRENT 2026-09-14：第二篇已公开OSR-2026-000023/v/1（72c315af），完整原题/DHL署名/CC-BY-4.0文字与数据许可、MIT代码许可。已审正文/40来源/图保留，匿名PDF下载200且原件字节一致；已完成两篇真实发布，视频/批量暂停。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，代码HEAD/origin/应用e7f95180 / rollback0931cf12，随后仅文档补记；无删除/测试/迁移。
 
 | 本轮路径 | 用途与状态 |

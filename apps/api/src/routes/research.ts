@@ -1,5 +1,5 @@
 import { sendPresentationAssetContent } from './presentation-asset-content';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import type { AuthDeps } from '@openscience/auth';
 import type { StorageAdapter } from '@openscience/storage';
@@ -112,32 +112,18 @@ function orderPublicClaims<T extends { id: string; parentClaimId: string | null;
 export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRouteDeps): void {
   app.get('/research/:publicId', async (req, reply) => {
     const { publicId } = roParams.parse(req.params);
-    const ro = await deps.prisma.researchObject.findUnique({ where: { publicId } });
-    if (!ro || ro.visibility !== 'public') {
-      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '未找到' } });
-    }
-    const latestVersion = await deps.prisma.version.findFirst({
-      where: {
-        researchObjectId: ro.id,
-        publications: { some: {} },
-      },
-      orderBy: { publicationNo: 'desc' },
-    });
-    if (!latestVersion) {
-      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '未找到' } });
-    }
-    return reply.send({
-      research: {
-        publicId,
-        title: readPublicationMetadata(latestVersion.researchRecord).title,
-        url: `/research/${publicId}/v/${publicVersionNumber(latestVersion)}`,
-        latestVersion: publicVersionNumber(latestVersion),
-      },
-    });
+    return sendResearch(publicId, undefined, reply);
   });
 
   app.get('/research/:publicId/v/:versionNo', async (req, reply) => {
     const { publicId, versionNo } = versionParams.parse(req.params);
+    return sendResearch(publicId, versionNo, reply);
+  });
+
+  // Resolve latest once, then use the same publication-scoped reader as exact versions.
+  async function sendResearch(publicId: string, requestedVersionNo: number | undefined, reply: FastifyReply) {
+    reply.header('Cache-Control', 'no-store')
+      .header('Link', '</api/research-record/openapi>; rel="service-desc"; type="application/vnd.oai.openapi+json", </developers>; rel="service-doc"; type="text/html"');
     const ro = await deps.prisma.researchObject.findUnique({ where: { publicId } });
     if (!ro || ro.visibility !== 'public') {
       return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '未找到' } });
@@ -145,9 +131,10 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     const version = await deps.prisma.version.findFirst({
       where: {
         researchObjectId: ro.id,
-        publicationNo: versionNo,
+        ...(requestedVersionNo === undefined ? {} : { publicationNo: requestedVersionNo }),
         publications: { some: {} },
       },
+      orderBy: { publicationNo: 'desc' },
       include: {
         manifest: { include: { entries: true } },
         publications: { orderBy: { publishedAt: 'desc' }, take: 1 },
@@ -157,6 +144,12 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     if (!version) {
       return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '版本未找到' } });
     }
+    const versionNo = requestedVersionNo ?? publicVersionNumber(version);
+    if (versionNo === null) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '版本未找到' } });
+    }
+    const publicPath = `/research/${encodeURIComponent(publicId)}/v/${versionNo}`;
+    reply.header('Content-Location', `/api${publicPath}`);
     const publication = version.publications[0] ?? null;
     const metadata = readPublicationMetadata(version.researchRecord);
     const contentAvailable = version.status === 'published' || version.status === 'revised';
@@ -185,9 +178,16 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     return reply.send({
       research: {
         publicId,
+        ...(requestedVersionNo === undefined ? { latestVersion: versionNo } : {}),
+        links: {
+          self: `/api${publicPath}`,
+          latest: `/api/research/${encodeURIComponent(publicId)}`,
+          human: publicPath,
+          openapi: '/api/research-record/openapi',
+        },
         recordUrl: `/api/research-objects/${ro.id}/versions/${version.id}/record`,
         title: metadata.title ?? 'Research object (title not recorded)',
-        url: `/research/${publicId}/v/${versionNo}`,
+        url: publicPath,
         visibility: ro.visibility,
         version: {
           versionNo,
@@ -242,7 +242,7 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
         }),
       },
     });
-  });
+  }
 
   app.get('/research/:publicId/v/:versionNo/artifacts/:artifactId/download', async (req, reply) => {
     if (!deps.storage) throw new PublicEvidenceSourceError('SOURCE_UNAVAILABLE', 'Published attachment is temporarily unavailable');

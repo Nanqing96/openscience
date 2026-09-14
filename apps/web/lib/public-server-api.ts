@@ -27,10 +27,8 @@ export function getServerPublicEvidenceSource(publicId: string, versionNo: numbe
   );
 }
 
-export async function getLatestPublicResearchVersion(publicId: string) {
-  const overview = await serverRequest<{ research: { latestVersion: number | null } }>(`/research/${encodeURIComponent(publicId)}`);
-  if (!overview.research.latestVersion) throw new PublicServerApiError(404, 'No public version');
-  return getServerPublicResearchVersion(publicId, overview.research.latestVersion);
+export function getLatestPublicResearchVersion(publicId: string) {
+  return serverRequest<{ research: PublicResearchVersion }>(`/research/${encodeURIComponent(publicId)}`);
 }
 
 export function getPublicEditorialCollection(slug: string) {

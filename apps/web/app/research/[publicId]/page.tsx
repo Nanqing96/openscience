@@ -17,6 +17,7 @@ export async function generateMetadata({ params }: { params: { publicId: string 
     return {
       title: `${r.title} | OpenScience`,
       description: `${withoutInternalSourceMarkers(r.version.core.problem ?? '').substring(0, 160)}`,
+      alternates: { types: { 'application/json': `/api/research/${encodeURIComponent(r.publicId)}/v/${r.version.versionNo}` } },
       openGraph: {
         title: r.title,
         description: withoutInternalSourceMarkers(r.version.core.problem ?? '').substring(0, 160),

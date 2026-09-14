@@ -90,15 +90,19 @@ Claim 必须同时支持“这项研究主张什么”和“这份材料为何�
 
 ### 3.4 每个 RO 的 AI 友好 API
 
-以下为目标接口形态，不是已有实现声明。M0 应审计并复用现有 API；具体路由可调整，但对象身份、版本语义、权限和返回合同必须一致。
+2026-09-14 用户确认：外部 AI 用公开文章 ID 和版本参数直接调用标准 HTTP API，用户不必先导出文件。复用既有 `/api/research` 和研究记录接口；以下为本次确定的入口，部署及实读状态见 CURRENT handoff。
 
 | 示例接口 | 内容与用途 |
 |---|---|
-| `GET /api/ros/{id}` | 研究身份、作者、来源、许可、可访问版本索引及固定版本链接 |
-| `GET /api/ros/{id}/versions/{version}` | 一个精确快照的研究叙述、关系索引、引用信息和完整性状态 |
-| `GET /api/ros/{id}/versions/{version}/claims` | 主要结论、条件、局限、推理及支持/反驳/限定的证据引用 |
-| `GET /api/ros/{id}/versions/{version}/evidence` | 原文、图表、数据和代码的获准元数据、定位及可用性 |
-| `GET /api/ros/{id}/versions/{version}/manifest` | 文件清单、内容哈希、分项许可及授权获取入口 |
+| `GET /api/research/{publicId}` | 最新已公开版本的完整阅读数据，保留 `latestVersion` 并返回固定版 `links.self` |
+| `GET /api/research/{publicId}/v/{versionNo}` | 固定公开版的作者、许可、六栏研究内容、结论、证据、附件和媒体；沿用 `research` 响应结构 |
+| `GET /api/research/{publicId}/v/{versionNo}/evidence/{evidenceId}/source` | 对应冻结证据原文片段及定位，不等同整篇 PDF 全文 |
+| `GET /api/research/{publicId}/v/{versionNo}/artifacts/{artifactId}/download` | 发布时已明确允许下载的原附件；以返回的 `downloadUrl` 为准 |
+| `GET /api/research-record/openapi` | 统一 OpenAPI 3.1 描述、绝对基础地址、参数、数据结构及错误响应 |
+
+站点 `/developers` 提供中英接入文档、实际调用链接及 curl/Python 示例，首页及公开页导航可达。论文引用区不再显示技术入口；论文 HTML 通过 `rel=alternate` 指向 JSON，API 通过 `Link: rel=service-desc/service-doc` 指向规范与文档。链接可根路径相对表达，客户端相对网站 origin 解析。公开读取不要求 API Key；现有私有 record 仍需会话及工作区授权，不因公开入口开放而放宽。
+
+方法借鉴而非新依赖：[Crossref REST API](https://www.crossref.org/documentation/retrieve-metadata/rest-api/) 的统一基础地址、标识查询及 JSON；[OpenAlex 单实体查询](https://help.openalex.org/api/get-single-entities/) 的 ID 寻址；[OpenAPI 3.1](https://spec.openapis.org/oas/v3.1.0) 的机器可读服务说明。保留既有 Redis 限流和 `Retry-After`，不新增 API Key 系统、MCP 服务或第三方安装。
 
 API 最低合同：
 
@@ -110,7 +114,7 @@ API 最低合同：
 6. 获准公开内容支持匿名只读访问并受合理限流；私有内容采用可撤销、最小权限的应用授权。读取权限不包含修改、发布或扩大可见性的权限。
 7. Manifest 只返回获准公开的材料信息和稳定获取入口，不暴露存储内部路径或凭据。需要鉴权的文件在实际获取时重新检查权限；短期下载链接不作为永久引用。
 8. 固定版本内容不可原地修改；访问策略、撤回/限制状态及临时交付信息可以变化，须与内容快照区分。缓存须遵守权限和撤回策略，私有响应不得进入共享公开缓存。
-9. 发布机器可读的 OpenAPI 描述、响应 Schema、鉴权说明、错误码、分页/限流说明和最小调用样例；RO 页面提供“API / 机器可读数据”入口，避免要求调用方猜地址。
+9. 发布机器可读的 OpenAPI 描述、响应 Schema、鉴权说明、错误码、分页/限流说明和最小调用样例；统一导航提供“API / 开发者”，RO HTML 提供 JSON alternate，避免技术信息挤占论文阅读区或要求调用方猜地址。
 10. 只读 GET 不触发模型生成、草稿写入或收费任务。错误响应包含稳定错误码与是否可重试；限流提供重试指引。破坏性合同变更须升级接口或 Schema 并提供迁移说明。
 
 后续操作 API：阶段三支持经授权创建修改建议及查询异步任务，阶段四支持提交评审或复现记录。写入必须复用身份、幂等、版本冲突和审批机制，不允许外部 AI 绕过作者确认直接改写正式版本或公开研究。MCP 可作为后续适配层，不替代首期 HTTP API，也不另存研究事实。

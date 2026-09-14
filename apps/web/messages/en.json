@@ -1,4 +1,61 @@
 {
+  "developers": {
+    "title": "Developer API",
+    "intro": "Read public articles, sources and fixed-version citations from external AI tools, research software and scripts using standard HTTP and JSON.",
+    "contents": "API documentation contents",
+    "baseUrl": "Base URL",
+    "authentication": "Authentication",
+    "anonymous": "No API key or login required.",
+    "openJson": "Read a real article as JSON ↗",
+    "openArticle": "Read the corresponding article ↗",
+    "openSchema": "Open the OpenAPI definition ↗",
+    "relativeExample": "JavaScript example resolving a relative URL",
+    "field": "Field",
+    "meaning": "Content and purpose",
+    "curlExample": "curl example reading a fixed version",
+    "pythonTitle": "Python standard library",
+    "pythonExample": "Python article reader with bounded retries",
+    "start": {
+      "title": "Start reading",
+      "body": "Send a GET request to the public API and accept application/json. The real example below is public v1 of OSR-2026-000023. The OpenAPI JSON describes endpoints, parameters and responses for standard clients and AI tools."
+    },
+    "versions": {
+      "title": "Choose a citation version",
+      "latest": "Returns the complete research JSON for the latest public version. Reading does not create a version or change the article.",
+      "fixed": "Returns a specific public version. versionNo is the publication number; the example uses v1 of OSR-2026-000023.",
+      "reference": "The latest version can change after another publication. For citations, caching or reproducibility, save the returned links.self address for the fixed version, rather than only the latest address. A fixed address remains subject to withdrawal and access restrictions.",
+      "relative": "links.self, links.latest, links.human, links.openapi and download addresses are relative paths starting at the site root. Resolve them against the site origin, for example with new URL(path, baseOrigin). Do not prepend /api again."
+    },
+    "fields": {
+      "title": "Understand the response",
+      "body": "The article is in the response's research object. All field paths below are relative to research; use OpenAPI for the complete field types.",
+      "core": "Six fields of structured text: problem, insight, method, results, reproducibility and limitations.",
+      "authors": "Author names, affiliations and corresponding-author information.",
+      "licenses": "Licenses for text, data, code and other content. Follow the license applicable to your use.",
+      "claims": "Research claims and their associations with evidence.",
+      "evidence": "Evidence, sources and location information supporting or contextualizing claims.",
+      "artifacts": "Original attachments. Only attachments available for anonymous download include downloadUrl. Read the original PDF or other file from that address; do not guess internal file addresses when it is absent.",
+      "media": "Images, video or interactive presentations available in this public version.",
+      "history": "Up to 100 public-version records and their links, ordered by publication number descending. History pagination is not currently available.",
+      "record": "A separate research-record JSON endpoint, when available.",
+      "links": "self is this fixed-version JSON, latest is the latest public JSON, human is the corresponding reading page, and openapi is the API definition.",
+      "original": "The research JSON contains the public object's structured content. It is not a full transcription of the original PDF. For the original paper, use an authorized downloadUrl and retain the authors, licenses, version and sources."
+    },
+    "examples": {
+      "title": "Request examples",
+      "body": "Select and copy the code directly. These examples send no login cookies and require no third-party Python packages.",
+      "retry": "The Python example makes at most 3 attempts and retries only 429 responses, following Retry-After. If the server asks for more than 60 seconds, this execution stops so the caller can try again later. Other errors are returned to the caller."
+    },
+    "access": {
+      "title": "Status and access",
+      "ok": "The request succeeded. Check the publication status and available text as well.",
+      "invalid": "Invalid parameters. Correct the public identifier or version number.",
+      "missing": "The article or version does not exist, or has not been published.",
+      "limited": "Too many requests. Follow Retry-After, limit retries and avoid duplicate parallel requests.",
+      "status": "Withdrawn or restricted content retains only identity, status and empty text. This API does not expose private drafts. Empty text is not a reason to retry with a logged-in identity.",
+      "cookie": "Do not send or share private login cookies when external AI reads public content. If an attachment has no downloadUrl, this API has not provided anonymous download access."
+    }
+  },
   "trash": {
     "title": "Trash", "manageContent": "Manage content", "manageBody": "Remove conversations, notes and materials you no longer need. Adopted work and published dependencies are retained.",
     "delete": "Delete", "archive": "Archive", "archiveBody": "Archive this research from your work list. Published versions and links remain available. Restore it from Trash and archives.",
@@ -687,6 +744,8 @@
   "landing": {
     "nav": {
       "explore": "Explore",
+      "developers": "API",
+      "developersLabel": "Developer API documentation",
       "create": "Create",
       "about": "About",
       "login": "Log in",

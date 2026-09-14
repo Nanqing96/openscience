@@ -79,6 +79,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       lang={locale === "zh" ? "zh-CN" : "en"}
       className={`${displayGrotesk.variable} ${editorialSerif.variable} ${readingSerif.variable} ${dataMono.variable} ${cjkSerif.variable}`}
     >
+      <head><link rel="service-desc" type="application/vnd.oai.openapi+json" href="/api/research-record/openapi" title="OpenScience Research API" /></head>
       <body>
         {/* Task 9：JS 可用性标记，CSS 滚动进入动效以 html.js 门控（无 JS 时内容始终可见） */}
         <script

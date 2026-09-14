@@ -1,4 +1,61 @@
 {
+  "developers": {
+    "title": "开发者 API",
+    "intro": "通过标准 HTTP 与 JSON，让外部 AI、研究工具和脚本读取公开文章、来源与固定版本引用。",
+    "contents": "API 文档目录",
+    "baseUrl": "基础地址",
+    "authentication": "身份验证",
+    "anonymous": "无需 API key，无需登录。",
+    "openJson": "读取真实文章 JSON ↗",
+    "openArticle": "阅读对应文章 ↗",
+    "openSchema": "查看 OpenAPI 定义 ↗",
+    "relativeExample": "将相对链接解析为完整地址的 JavaScript 示例",
+    "field": "字段",
+    "meaning": "内容与用途",
+    "curlExample": "curl 读取固定版本示例",
+    "pythonTitle": "Python 标准库",
+    "pythonExample": "Python 读取文章与有限重试示例",
+    "start": {
+      "title": "开始读取",
+      "body": "向公开接口发送 GET 请求，并接受 application/json。下方真实例子是 OSR-2026-000023 的公开 v1；OpenAPI JSON 描述接口、参数和返回结构，可供标准客户端与 AI 工具解析。"
+    },
+    "versions": {
+      "title": "选择引用版本",
+      "latest": "返回这项研究最新公开版本的完整 research JSON。读取不会创建版本或更改文章。",
+      "fixed": "返回指定公开版本。versionNo 是公开版本号；示例为 OSR-2026-000023 的 v1。",
+      "reference": "最新版本可能随后续发布而变化。需要引用、缓存或复现时，保存返回的 links.self 固定版本地址，而不是只保存 latest 地址。固定地址仍受撤回状态与访问权限约束。",
+      "relative": "links.self、links.latest、links.human、links.openapi 及下载地址使用从站点根目录开始的相对路径。请以站点 origin 解析，例如 new URL(path, baseOrigin)；不要再拼接一次 /api。"
+    },
+    "fields": {
+      "title": "理解返回内容",
+      "body": "文章位于响应的 research 对象中。以下字段路径均相对于 research；完整字段类型以 OpenAPI 为准。",
+      "core": "六栏结构化正文：problem、insight、method、results、reproducibility、limitations。",
+      "authors": "作者署名、机构与通讯作者信息。",
+      "licenses": "文字、数据和代码等内容的许可信息；使用前按对应许可判断。",
+      "claims": "研究论断及其与证据的关联。",
+      "evidence": "支持或说明论断的证据、来源与定位信息。",
+      "artifacts": "原始附件列表。仅允许匿名下载的附件才包含 downloadUrl；从该地址读取原 PDF 或其他文件。没有下载地址时，不要猜测内部文件地址。",
+      "media": "本公开版本允许展示的图片、视频或互动图文。",
+      "history": "最多 100 条公开版本记录及各版链接，按公开版本号倒序返回；当前不提供历史分页接口。",
+      "record": "独立研究记录 JSON 的入口（如可用）。",
+      "links": "self 为本次返回的固定版 JSON，latest 为最新公开 JSON，human 为对应阅读页，openapi 为接口定义。",
+      "original": "research JSON 提供公开研究对象的结构化内容，不等于原 PDF 的全文转录。需要论文原文时，请读取获准提供的 downloadUrl；同时保留作者、许可、版本与来源。"
+    },
+    "examples": {
+      "title": "请求示例",
+      "body": "代码可直接选取复制。示例不发送登录 cookie，不依赖第三方 Python 包。",
+      "retry": "Python 示例最多尝试 3 次，仅对 429 按 Retry-After 等待。若服务要求等待超过 60 秒，本次执行停止，交由调用方稍后再试；其他错误直接返回调用方。"
+    },
+    "access": {
+      "title": "状态与访问范围",
+      "ok": "请求成功。仍需检查公开状态与可用正文。",
+      "invalid": "参数无效，请修正公开标识或版本号。",
+      "missing": "文章或版本不存在，或尚未公开。",
+      "limited": "请求过于频繁。遵循 Retry-After，限制重试次数，避免并行重复请求。",
+      "status": "已撤回或受限内容只保留身份、状态和空正文，不会通过该接口暴露私有草稿。空正文不代表需要换用登录身份再次抓取。",
+      "cookie": "外部 AI 读取公开内容时，请勿发送或分享私有登录 cookie。附件没有 downloadUrl 时，该接口未提供匿名下载权限。"
+    }
+  },
   "trash": {
     "title": "回收站", "manageContent": "管理内容", "manageBody": "清理不再需要的会话、笔记和材料。已采用的成果与公开版所需材料会保留。",
     "delete": "删除", "archive": "归档", "archiveBody": "从工作列表归档这项研究。公开版本和链接保持有效，可在回收站与归档中恢复。",
@@ -687,6 +744,8 @@
   "landing": {
     "nav": {
       "explore": "探索",
+      "developers": "API",
+      "developersLabel": "开发者 API 文档",
       "create": "创建",
       "about": "关于",
       "login": "登录",

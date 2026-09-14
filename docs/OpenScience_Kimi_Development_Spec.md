@@ -635,6 +635,8 @@ openscience/
 
 ## 16. API 与事件
 
+2026-09-14 用户确认：外部 AI 使用公开文章 ID 和公开版本号直接通过 HTTP GET 读取 JSON，无需用户导出。复用 `/api/research/{publicId}`（最新已公开版完整信息）及 `/api/research/{publicId}/v/{versionNo}`（固定公开版），统一 `/developers` 接入文档和 `/api/research-record/openapi` 机器说明；站点导航及论文 HTML 提供发现入口。沿用公开只读、私有授权、附件下载授权与限流边界。具体字段及外部方法参考见出版 PRD §3.4，实施与部署状态见 CURRENT handoff。
+
 API 以模块化 REST/JSON 为主，长任务使用任务 ID + SSE/WebSocket 进度。关键资源必须有幂等键和乐观锁。
 
 核心模块：

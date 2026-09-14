@@ -1402,6 +1402,7 @@ export interface PublicEvidenceSource {
 
 export interface PublicResearchVersion {
   recordUrl?: string;
+  links?: { self: string; latest: string; human: string; openapi: string };
   publicId: string;
   title: string;
   url: string;
