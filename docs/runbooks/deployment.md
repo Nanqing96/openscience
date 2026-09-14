@@ -16,6 +16,8 @@
 
 实际观察：读取首页/工作台/公开v1和旧v10跳转，展开两篇主张/来源，确认作者、版本、公式、原始正文与PDF。OpenAPI描述307只属临时误号兼容：未来真实v10优先；canonical始终使用返回的v1链接。命令收据与精确release见CURRENT，不触发测试/预检。
 
+已执行：2026-09-14在1f7032a3上一次成功，audit `6c93436f-3c2e-40fe-82ad-d0c751c32f73`，`tmp/first-publication-correction.log` exit0。`tmp/ro-feedback-reading.json`记录两篇科研字段/证据/原图及收据不变，作者DHL/首发v1、两端来源200、原PDF200/3770010字节/hash与原件相同。旧API/v10实际307、Location=1、no-store；旧网页进入/v1，见`tmp/first-publication-alias-headers.log`。禁止把这份一次性操作当发布命令重跑。
+
 前提：两项新迁移随同一应用候选交付；旧公开URL和受保护论文保持原样。服务器复用既有Node、systemd、存储、Parser及浏览器执行器。`infra/private-cleanup/install.sh`只安装受限副本清理服务，不更改供应商凭据或结果挂载的只读权限。
 
 执行：精确候选先完成服务器构建；部署事务在迁移前停止旧api/web/agent-worker，迁移后统一切到新代码。新版Publication INSERT须先写入公开序号，DB约束拒绝旧写入器。清理服务从ID范围队列处理授权清除，未处理完成返回pending；无队列时不打扰生成服务。核心库与搜索库独立，搜索读取以核心存续状态过滤，异步同步失败由已有TrashEntry重试。

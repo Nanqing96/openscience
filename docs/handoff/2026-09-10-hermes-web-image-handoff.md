@@ -1,16 +1,17 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 2026-09-14最新续作：1f7032a3已部署，卡片科学文本、同版本结构化证据、工作台作者/公开号已实读；六字段默认目录进一步收紧候选待部署。22已行政勘误v1/DHL并允许原PDF下载，audit6c93436f-3c2e-40fe-82ad-d0c751c32f73；不是新发布，禁止重跑旧publish或按旧文档恢复v10。scope见已审infra/scripts/correct-deep-sub-cycle-publication.mjs。
+- 2026-09-14最新续作完成：9a36c1e0已部署，卡片科学文本、同版本结构化折叠证据、工作台作者/公开号已实读；第一篇六字段默认折叠、第二篇四原章节分层。22已行政勘误v1/DHL并允许原PDF下载，audit6c93436f-3c2e-40fe-82ad-d0c751c32f73；不是新发布，禁止重跑旧publish或按旧文档恢复v10。scope见已审infra/scripts/correct-deep-sub-cycle-publication.mjs。
 - 2026-09-14最新截图反馈已完成：公开Claim复用Hermes科学Markdown，概要/完整推导/适用条件/原文证据分层；不再整篇h3直出。来源按文件/页码分10组保留40条，去重复标题、制作前言、笔记UUID、内部[S]和机器locator；原quote/source也用Markdown与公式显示，原始数据不改。
 - /developers复用公开产品rp颜色/字体/共享标题；curl前置。线上原文教程实跑发现原Python默认UA被Cloudflare403/1010拒绝，显式真实客户端User-Agent后成功；不放宽防护或伪装浏览器。现在页面curl/Python均已逐字执行exit0，六字段/固定URL/下载URL与API一致。
 - 两篇真实论文现均公开v1、DHL署名及原PDF允许下载；22原dataCC0/23dataCC-BY4、文字CC-BY4/代码MIT保留。本轮仅指定22行政元数据与下载授权写入，无新论文发布或模型/图像生成；视频/批量仍暂停。
 - 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。仅必要服务器build/start和用户明确要求的实际页面/教程读取。自动首稿科学质量仍不稳定，不把人工审校或展示修复称为自动正确。
 ## Version and workspace
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；已部署代码1f7032a3，六字段目录小修候选准备提交；实际HEAD从Git读取，不等于应用release。
-- 当前ECS release1f7032a342e922fd63b4e4230682e8a6014aff6b / rollback6af9c984a6293582e2e966fa7a540c10c48e5e07；公开/__release实读一致。clean发布树.worktrees/ro-feedback-release-1f7032a3；既有全部发布树保留。
+- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码HEAD/origin9a36c1e0已部署，随后仅补本文等交接文档；实际HEAD从Git读取，不等于应用release。
+- 当前ECS release9a36c1e06931d44ddc8b750c32427e081db56bf6 / rollback1f7032a342e922fd63b4e4230682e8a6014aff6b；公开/__release实读一致。clean发布树.worktrees/ro-fields-release-9a36c1e0；两次服务器build/start及部署exit0，tmp/ro-feedback-deploy-1f7032a3.log与ro-fields-deploy-9a36c1e0.log；既有全部发布树保留。
 - 首轮59c8及补修6af均独立High静态PASS，必要服务器build/start完成，--no-tests --skip-migrate；tmp/claims-api-deploy-59c8cebf.log与claims-quotes-deploy-6af9c984-resume.log exit0。6af首试在cloud-sync准备阶段SSH reset，实读59仍healthy且无部署进程后原候选续跑成功；没有手动停服务/改生产记录。
-- 根目录dirty main不是生产基线；交付树无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。c0bc及以前禁止回退；当前兼容rollback59会仅撤原文Markdown补修，不撤主张/API修复。
+- 根目录dirty main不是生产基线；交付树无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。当前兼容rollback1f仅撤六字段外层折叠与来源文案，不撤卡片/作者/别名修复；行政数据更正不随应用回退，禁止按旧文档恢复v10。
 ## Latest actual reading
+- 最终9a实读tmp/ro-feedback-final-visual.json/log：Explore双卡无裸TeX/S、均DHL/v1；22六字段均DETAILS/default closed，实际展开/收起成功，12Claim/102Evidence完整，368CSS宽度等scrollWidth。Explore/六字段/展开/手机截图均已看（tmp/ro-feedback-{explore-zh,six-fields,field-open,six-fields-mobile}.png）。本补修仅4个UI文件，独立High静态GO；复用下方未变科研/API/工作台/下载证据，不重跑整链路。
 - tmp/ro-feedback-reading.json/resume.log：22/23两篇core/claims/evidence/图/发行时间与hash均等修改前；22首发v1/DHL/仅1条发布历史，PDF匿名200/3770010字节/hashbb517f00与原件一致。两端来源200；私有工作台标题DHL+公开v1，读取精确f4/72记录。22六字段12Claim/102Evidence、23四原章节1Claim/40Evidence，默认关闭、内部assessment0，23公式57/0错误，368CSS无横溢出。截图已看。首次读页脚本误把桌面来源侧栏当dialog，改正确selector后成功，非产品失败。
 - tmp/claims-api-reading.json/log：匿名记录与a721深度同值，40证据/10文件页组保留，来源点击200。主张展开后内部S/制作前言/笔记UUID均0；tmp/claims-math-source-comparison.json：57/57公式与保存TeX逐字全等，0公式错误。
 - tmp/claims-api-developers-{desktop,mobile}.png已看：统一冷白rp背景/36px标题，1152/380CSS视口无横溢出。tmp/api-tutorial-final.log：从线上页面逐字提取的curl/Python两者exit0；23/v1六项正文、固定URL和下载URL匹配。原失败收据api-tutorial-execute.log、api-python-error.txt保留。

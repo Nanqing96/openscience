@@ -1,18 +1,19 @@
 # OpenScience (XGS) 项目文件索引
 
-> 当前任务2026-09-14续作进行中：修复列表TeX/内部编号、既有22首发v1与DHL、两篇结构化折叠证据及工作台同步。启动实读production6af9c984/rollback59c8cebf，候选待部署及指定行政勘误；此前API教程有效证据复用。唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> 当前任务2026-09-14续作完成：列表公式、既有22首发v1/DHL、两篇结构化折叠证据及工作台同步已部署实读。production9a36c1e0/rollback1f7032a3；指定行政勘误已执行，不是新发布。Explore/六字段/展开/窄屏截图已看，原内容与文件保留；唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮文件 | 用途 |
 |---|---|
-| `infra/scripts/correct-deep-sub-cycle-publication.mjs` | 用户指定的首次发布行政勘误：唯一22/v10→v1、DHL署名和原PDF下载，既有Serializable锁/审计保留原值；未运行，状态见CURRENT |
-| `apps/web/components/research/WorkbenchClaimReader.tsx` / `apps/web/components/public/evidence-display.ts` | 基于已保存版本、原栏目/章节/引用关系的共享折叠阅读投影；来源按需读取，科学数据不重生成 |
+| `infra/scripts/correct-deep-sub-cycle-publication.mjs` | 用户指定的首次发布行政勘误已执行：唯一22/v10→v1、DHL署名和原PDF下载，既有Serializable锁/审计保留原值；audit6c93436f，勿重跑发布；状态见CURRENT |
+| `apps/web/components/research/WorkbenchClaimReader.tsx` / `apps/web/components/public/evidence-display.ts` / `apps/web/components/public/ClaimNarrative.tsx` | DEPLOYED9a36c1e0；保存版本的原字段/章节/引用关系共享折叠阅读，六字段默认关闭、来源按需读取，科学数据不重生成 |
+| `apps/web/components/explore/ResearchCard.tsx` / `apps/web/components/content/ScientificText.tsx` | DEPLOYED1f7032a3并含于9a36；首页/Explore共用科学公式和完整数学token截取，阅读隐藏内部来源编号 |
 | `apps/api/src/routes/research.ts` / `apps/api/src/routes/research-record.ts` / `apps/api/src/routes/research-record-schema.ts` | latest/exact统一公开读取、版本固定及机器发现头，描述全部8个真实GET的OpenAPI3.1 |
 | `apps/web/app/developers/page.tsx` / `apps/web/app/developers/developers.module.css` / `apps/web/messages/zh.json` / `apps/web/messages/en.json` | 统一中英API文档与公开产品视觉；Python真实应用User-Agent/403说明，线上curl/Python执行成功、六字段与链接一致，DEPLOYED6af9c984 |
 | `apps/web/components/landing/SiteHeader.tsx` / `apps/web/app/layout.tsx` / `apps/web/app/research/[publicId]/page.tsx` / `apps/web/app/research/[publicId]/v/[versionNo]/page.tsx` | 导航与OpenAPI发现、真实公开版本的HTML JSON alternate |
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：第二篇已公开OSR-2026-000023/v/1（72c315af），完整原题/DHL署名/CC-BY-4.0文字与数据许可、MIT代码许可。已审正文/40来源/图保留，匿名PDF下载200且原件字节一致；已完成两篇真实发布，视频/批量暂停。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，应用6af9c984 / rollback59c8cebf；本篇发布操作历史见CURRENT。无删除/测试/迁移。
+> CURRENT 2026-09-14：两篇真实公开记录22/v1与23/v1均DHL署名、允许原PDF下载；22由用户指定行政更正，原发行时间/科学内容保留。23正文/40来源/图与原许可保持。视频/批量暂停，唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，应用9a36c1e0 / rollback1f7032a3；无删除/测试/迁移。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
@@ -622,7 +623,7 @@
 
 - DEPLOYED infra/chatgpt-browser/{Dockerfile,start.sh,relay.mjs,host.mjs,install.sh,seccomp.json} / docs/runbooks/chatgpt-browser.md：服务器交互浏览器与生产 `chatgpt-web` provider；真实Hermes图片已回传，真实PDF完成6 Pro初审与补证；区域附件子域、图片/科学审阅独立锁、30分钟窗口、15秒science heartbeat、协议版本化幂等和逐字段保留部署于`36e6a8c4`；infra/scripts/ssh-run.sh固定browser-tunnel。
 
-- CURRENT docs/runbooks/server-capabilities.md：应用c0bc653d / rollback871ed702；阅读编号与制作详情修复已部署实读，独立浏览器执行器版本未变；见CURRENT。
+- CURRENT docs/runbooks/server-capabilities.md：应用9a36c1e0 / rollback1f7032a3；双卡公式、结构化折叠证据、22首发v1/DHL已部署实读，独立浏览器执行器版本未变；见CURRENT。
 
 - `infra/scripts/browser-tunnel.ps1`：Windows隐藏SSH隧道断线重连；固定localhost6081，复用ssh-run.sh，2026-09-09本机页面恢复HTTP200。
 
