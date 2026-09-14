@@ -1,10 +1,9 @@
 # syntax=docker/dockerfile:1
-FROM node:22-bookworm-slim AS dependencies
+FROM node:22-bookworm AS dependencies
 WORKDIR /app
 
-# Native SQLite may need compilation when no upstream prebuilt binary matches.
-# These build tools never enter the runtime image.
-RUN apt-get update && apt-get install -y --no-install-recommends python3 g++ make
+# Reuse the cached full Node buildpack image's Python/C++ toolchain for SQLite.
+# Only the installed packages enter the slim runtime stage below.
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 RUN npx --yes pnpm@9.15.0 install --frozen-lockfile --prod
 
