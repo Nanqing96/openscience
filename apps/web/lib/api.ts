@@ -1,4 +1,5 @@
 /** OpenScience web API client：对接 apps/api（同源反代或 dev 直连）。 */
+import type { IngestionClaimSelection as DomainIngestionClaimSelection } from '@openscience/domain';
 
 /** 核心六字段（§5.1，对齐 SDF_CORE_FIELDS）。 */
 export interface SdfCore {
@@ -835,12 +836,9 @@ export interface IngestionClaimPreview {
   artifact: { id: string; logicalPath: string; contentHash: string };
   snapshotToken: string;
   suggestions: IngestionClaimSuggestion[];
+  maxEvidencePerBatch?: number;
 }
-export interface IngestionClaimSelection {
-  clientKey: string; sourceField: IngestionClaimField; kind: PresentationClaim['kind'];
-  parentClientKey?: string; statement: string; conditions?: string[]; limitations?: string[];
-  attachSourceQuote: boolean;
-}
+export type IngestionClaimSelection = DomainIngestionClaimSelection;
 export function listIngestionClaimPreviews(roId: string, versionId: string, signal?: AbortSignal): Promise<{ candidates: IngestionClaimPreview[] }> {
   return request(`${presentationScopePath(roId, versionId)}/ingestion-claim-evidence`, { signal });
 }

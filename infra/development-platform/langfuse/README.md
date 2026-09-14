@@ -47,6 +47,20 @@ The initial installation generated an independent owner password. A server admin
 
 SMTP is not configured, so the displayed password-reset link is not a working recovery channel for this deployment. Credentials or identity integration need a deliberate separate account operation; normal development can use the existing restricted metadata-query helper without signing into the browser UI.
 
+Owner login steps (run in your own PowerShell terminal, not in a chat/tool output):
+
+1. Keep the existing development tunnel open. If it is absent, run the project `infra/scripts/ssh-run.sh --development-tunnel` through `C:/Program Files/Git/bin/bash.exe`; do not start a second tunnel when ports 3130–3132 are already in use.
+2. Privately view the initial login using the existing authenticated SSH entry:
+
+   ```powershell
+   $env:XGS_CONFIG_ROOT = 'E:/Miscellaneous/XGS'
+   & 'C:/Program Files/Git/bin/bash.exe' 'E:/Miscellaneous/XGS/.worktrees/onchip-video-release/infra/scripts/ssh-run.sh' 'cat /etc/openscience-development/langfuse/owner-credentials.txt'
+   ```
+
+3. Open `http://localhost:3130/auth/sign-in` and enter that file's email and password. The password is the initial one; use your current password if you already changed it. Do not paste terminal output back into Codex.
+
+Signing out of the UI does not stop ingestion or the restricted developer queries: they use the existing integration service keys. These steps do not reset credentials, activate SMTP or claim that a browser login has occurred.
+
 ## Server installation
 
 Prerequisites are the already-installed Docker Engine/Compose, Bash, OpenSSL and standard Linux tools. Do not install a second Docker daemon or change production Compose projects. The root delivery task performs its independent review and authorizes execution; this package does not run CI, tests, a rehearsal, or a preflight suite.

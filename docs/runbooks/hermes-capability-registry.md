@@ -34,7 +34,7 @@
 1. **构建阻断**：`illustration-review.ts` 将未收窄的decision写入Prisma JSON，实际服务器构建失败。候选已改为字面量判别；未重新构建，不能称编译已通过。
 2. **共享skill断接**：配图science/review未使用既有critical-thinking。候选接同一runtime常量，并用它替换审阅提示词重叠原则；部署与真实效果仍待观察。
 3. **过重审阅**：候选已收为既有场景的 composition/treatment 局部修正；科学字段、来源、场景顺序不能由末审重写，科学错误回上游。IllustrationBrief v2 分开 encoding 与 composition；v1继续原样读取/编译，v1修订明确要求新建方案，不能静默重画。未构建/部署/运行观察。
-4. **上游结果粒度**：静态核对确认不是漏用一个已审核细粒度结果：`claim-evidence-bridge.ts` 只物化用户选择的 statement、可选conditions/limitations及完整Evidence；`semanticStage`未绑定用户确认，不能提升为事实。最细可安全复用单位仍是Claim及其完整证据。旧bridge将同字段各段均标supports，末审因此保留所选Claim的完整文字/全部证据，并带kind/assessment角色状态；不能仅按basis或relation裁掉限定。后续应在原确认/bridge链路保留用户确认的语义点及限定关系，不另造第二份分析库或直接使用未审stage。
+4. **上游结果粒度**：当前末审仍只产六字段摘要/原文段；未审semanticStage不能提升为事实。本轮修原确认bridge：已有拆分入口可用sourceBindings选择当前快照原文及Claim级关系，旧请求仍为整字段supports。保存Claim的statement/kind/parent/conditions/limitations及独立Evidence，不建分析库。自动atomic suggestions及每条条件的独立来源绑定仍缺；下游继续保留所选Claim完整上下文，不能仅按画面basis丢掉限定。
 5. **BGE的边界**：检索适合在有明确问题时召回来源，不能替代语义审阅；不因安装了模型就增加无必要的调用。保留已兼容v1/v2的Chat接收端，不整体回退或另装供应商。
 
 ### 当前技术债与处理
@@ -53,7 +53,8 @@
 | presentation/handler.ts 在 readReviewedPresentationEvidence 后重验同一批 lineage | 同一来源规则多处维护、后续修订可能分叉 | 已删除重复内存遍历；保留入口逐 Claim 来源/非空约束，以及 provider 前和事务内 evidence/权限重验 |
 | illustration-planner.ts / handler.ts 分别合并 Skill usage | 首次版本元数据与资源合并规则容易分叉 | 已共用 skills/installed-media-skills.ts 的 mergeDesignSkillUsage；保留顺序和首次元数据，复制输入 |
 | 候选 illustration-review.ts 全稿重写，且 composition 接受任意文本；planner 依赖中文分隔符 | 审阅可能改掉科学焦点，丢分隔后下次改图又重走科学分析 | 已静态修正：v2独立encoding字段；corrections仅允许既有场景艺术字段，其余沿用candidate；旧v1可读可直接编译，修订显式说明需新方案；尚未部署 |
-| 上游缺少已确认的细粒度语义点/限定关联（见上一节） | 目前无法安全缩窄长Claim的证据输入 | 待实现；沿现有确认/bridge保存关系；当前保留完整所选Claim上下文，不拿未审semanticStage顶替，不硬套单篇模板 |
+| 拆分Claim仍按整字段挂全部supports，且字段只能挂一条Claim | 已有拆分入口不能保留独立来源/限定，配图被迫读长文本 | 本轮候选用当前snapshot索引存逐Claim关系；两API共用schema，web复用Domain类型及服务器批次上限；planner/review收到父关系。High主路径GO；实际构建/部署及观察见CURRENT |
+| 已审细粒度候选自动预填、逐条condition/limitation来源绑定仍缺 | 用户仍需在现有确认入口拆分/选择；尚不能自动选取可靠原子科学关系 | 最终审阅当前是六字段摘要，后续应扩展该步骤的source-bound atomic suggestions并沿原确认入口采用；不新增模型阶段，不把未审semanticStage当权威 |
 | 只在交接时更新文档，意外中断可能丢状态 | 后续回合不清楚已改/未改或沿用旧待办 | 既有docs-sync补充有变化回合final前同步、关键节点先保存、下轮Git恢复；普通问答不重写，不宣称后台关闭回调或绝对防漂移 |
 
 代码去重及后续v2/局部末审均经独立High静态复核：来源/权限/并发重验保持、v1读取与直接编译兼容，修正范围及Claim/Evidence关联确认。未构建、未部署，不声称运行通过；完整所选Claim上下文仍可能触及既有输入上限。治理和这些重构不能把原有科学质量欠缺变成“已完成”。

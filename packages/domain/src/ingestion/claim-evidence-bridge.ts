@@ -2,12 +2,12 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import type { Prisma } from '@prisma/client';
 import type { AuditContext } from '@openscience/observability';
-import type { SourceLocator, ClaimKind } from '../research-intelligence/types';
-import { CLAIM_KINDS } from '../research-intelligence/types';
+import type { SourceLocator, ClaimKind, ClaimRelation } from '../research-intelligence/types';
+import { CLAIM_KINDS, CLAIM_RELATIONS } from '../research-intelligence/types';
 import { validateSourceLocator } from '../research-intelligence/validation';
 import { parseDocumentSourceMapReference } from '../research-intelligence/source-map-ref';
 import { ClaimEvidenceError } from '../research-intelligence/claim-evidence-errors';
-import { createClaimEvidenceBatch } from '../research-intelligence/claim-evidence-service';
+import { createClaimEvidenceBatch, MAX_INGESTION_BATCH_EVIDENCE } from '../research-intelligence/claim-evidence-service';
 import { authorizeIngestionWrite, type IngestionDeps } from './ingestion-service';
 import { MAX_CANONICAL_EVIDENCE_CHARS, MAX_CANONICAL_EVIDENCE_SEGMENTS } from './canonical-evidence-contract';
 
@@ -32,6 +32,7 @@ export interface IngestionClaimEvidencePreview {
   artifact: { id: string; logicalPath: string; contentHash: string };
   snapshotToken: string;
   suggestions: IngestionClaimEvidenceSuggestion[];
+  maxEvidencePerBatch: number;
 }
 
 export interface IngestionClaimSelection {
@@ -43,6 +44,8 @@ export interface IngestionClaimSelection {
   conditions?: string[];
   limitations?: string[];
   attachSourceQuote: boolean;
+  /** Explicit associations into this preview field's sources; omitted for legacy whole-field attachment. */
+  sourceBindings?: Array<{ sourceIndex: number; relation: ClaimRelation }>;
 }
 
 type BridgeTask = {
@@ -209,7 +212,7 @@ async function loadSnapshot(
     preview: {
       taskId: task.id, researchObjectId: input.researchObjectId, versionId: version.id, commitId: version.commitId,
       artifact: { id: task.artifact.id, logicalPath: entry.logicalPath, contentHash: task.artifact.blobSha256 },
-      snapshotToken, suggestions,
+      snapshotToken, suggestions, maxEvidencePerBatch: MAX_INGESTION_BATCH_EVIDENCE,
     },
   };
 }
@@ -322,24 +325,40 @@ export async function confirmIngestionClaimEvidenceBridge(
       statement, assessment: 'missing' as const, conditions: selection.conditions, limitations: selection.limitations,
     };
   });
-  const attachedFields = input.selections.filter((selection) => selection.attachSourceQuote)
-    .map((selection) => selection.sourceField);
-  if (new Set(attachedFields).size !== attachedFields.length) {
-    throw new ClaimEvidenceError('VALIDATION_ERROR', 'Each extraction field may be attached to only one Claim');
-  }
   const evidence = input.selections.flatMap((selection) => {
-    if (!selection.attachSourceQuote) return [];
+    if (!selection.attachSourceQuote) {
+      if (selection.sourceBindings !== undefined) throw new ClaimEvidenceError('VALIDATION_ERROR', 'Source bindings require quote attachment');
+      return [];
+    }
     const sources = suggestionByField.get(selection.sourceField)?.sources
       ?? (suggestionByField.get(selection.sourceField)?.source ? [suggestionByField.get(selection.sourceField)!.source!] : []);
     if (sources.length === 0) throw new ClaimEvidenceError('ORIGINAL_MISSING', 'Selected extraction quote is unavailable; preview again');
+    const bindings = selection.sourceBindings === undefined
+      ? sources.map((_, sourceIndex) => ({ sourceIndex, relation: 'supports' as const })) : selection.sourceBindings;
+    if (!Array.isArray(bindings) || bindings.length === 0 || bindings.length > MAX_CANONICAL_EVIDENCE_SEGMENTS) {
+      throw new ClaimEvidenceError('VALIDATION_ERROR', 'Source bindings must select available original passages');
+    }
+    const seen = new Set<number>();
+    for (const binding of bindings) {
+      if (!binding || typeof binding !== 'object' || Array.isArray(binding)
+        || Object.keys(binding).some(key => key !== 'sourceIndex' && key !== 'relation')
+        || !Number.isSafeInteger(binding.sourceIndex) || binding.sourceIndex < 0 || binding.sourceIndex >= sources.length
+        || seen.has(binding.sourceIndex) || !CLAIM_RELATIONS.includes(binding.relation)) {
+        throw new ClaimEvidenceError('VALIDATION_ERROR', 'Source binding index or relation is invalid');
+      }
+      seen.add(binding.sourceIndex);
+    }
     const claimId = claimIdByKey.get(selection.clientKey)!;
-    return sources.map((source, segmentIndex) => ({
+    return [...bindings].sort((left, right) => left.sourceIndex - right.sourceIndex).map(({ sourceIndex: segmentIndex, relation }) => ({
       id: stableUuid(`ingestion-evidence:${input.versionId}:${input.taskId}:${idempotencyKey}:${selection.clientKey}:${segmentIndex}`),
       claimId, artifactId: preview.artifact.id, kind: 'passage' as const,
-      title: `${selection.sourceField} extraction quote`, exactQuote: source.quote,
-      relation: 'supports' as const, locator: source.locator,
+      title: `${selection.sourceField} extraction quote`, exactQuote: sources[segmentIndex]!.quote,
+      relation, locator: sources[segmentIndex]!.locator,
     }));
   });
+  if (evidence.length > MAX_INGESTION_BATCH_EVIDENCE) {
+    throw new ClaimEvidenceError('VALIDATION_ERROR', 'Too many source bindings; confirm fewer claims or passages in this batch');
+  }
   const batchDigest = digest({ versionId: input.versionId, taskId: input.taskId, idempotencyKey, claims, evidence });
   const batch = {
     userId: input.userId, researchObjectId: input.researchObjectId, versionId: input.versionId,

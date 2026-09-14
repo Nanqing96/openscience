@@ -374,7 +374,9 @@ export async function confirmHermesSourceReview(
   const reviewIds = input.reviews.map((review) => review.ingestionTaskId);
   const requestedClaimCount = input.reviews.reduce((total, review) => total + review.selections.length, 0);
   if (reviewIds.length === 0 || new Set(reviewIds).size !== reviewIds.length || requestedClaimCount < 1 || requestedClaimCount > 12
-    || input.reviews.some((review) => review.selections.some((selection) => !selection.attachSourceQuote))) {
+    || input.reviews.some((review) => review.selections.some((selection) => !selection.attachSourceQuote
+      || (selection.sourceBindings !== undefined && (!Array.isArray(selection.sourceBindings)
+        || !selection.sourceBindings.some(binding => binding?.relation === 'supports')))))) {
     throw new HermesResearchRunError('VALIDATION_ERROR', 'Hermes source reviews must be unique and non-empty');
   }
   const digest = createHash('sha256').update(JSON.stringify({

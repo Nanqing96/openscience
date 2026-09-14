@@ -16,8 +16,8 @@ import { requireStyleReferenceImage } from '@openscience/domain';
 import { reviewIllustrationStoryboard } from './illustration-review';
 
 function presentationClaimContent(claims: readonly PresentationClaim[]): string {
-  return JSON.stringify(canonicalPresentationClaims(claims).map(({ id, kind, statement, assessment, conditions, limitations, extractionStatus }) => ({
-    id, kind, statement, assessment, conditions, limitations, extractionStatus,
+  return JSON.stringify(canonicalPresentationClaims(claims).map(({ id, parentClaimId, kind, statement, assessment, conditions, limitations, extractionStatus }) => ({
+    id, parentClaimId, kind, statement, assessment, conditions, limitations, extractionStatus,
   })));
 }
 

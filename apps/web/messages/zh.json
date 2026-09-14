@@ -1975,7 +1975,16 @@
     "bounds": "稳定边界"
   },
   "ingestionClaimReview": {
-    "duplicateAssociation": "本批次中，同一组原文只关联一条主张；拆分出的其他主张可先不重复关联原文。",
+    "sources": "来源与关联（{count}）",
+    "relation": "与此主张的关系",
+    "relation_none": "不关联",
+    "relation_supports": "支持主张",
+    "relation_qualifies": "限定适用范围",
+    "relation_contradicts": "提供反证",
+    "relation_context": "提供背景",
+    "runSupportRequired": "用于配图的每条主张至少需有一段支持它的原文；限制、反证和背景可同时保留。",
+    "sourceAssociationRequired": "请在“来源与关联”中为此主张选择原文及关系，或取消关联证据。",
+    "evidenceLimit": "本批关联的原文段落过多，请减少所选主张或段落后再确认。",
     "reviewEvidence": "核对原文段落",
     "evidenceNotice": "以下独立摘录按原文顺序排列，段落可能不连续，省略部分未展示。每段保留独立出处。请核对这些段落是否完整支持建议内容及其条件、局限；定位本身不代表科学结论正确。",
     "sourceReconciliationFailed": "此字段的来源整理尚未完成；这不代表论文没有报告相关内容。",

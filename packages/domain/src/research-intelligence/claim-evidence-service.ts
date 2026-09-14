@@ -31,6 +31,7 @@ const WRITE_ROLES = new Set(['owner', 'maintainer', 'author', 'contributor']);
 // status transition does not create a new snapshot, so `revised` must not reopen it.
 const MUTABLE_VERSION_STATES = new Set(['draft']);
 const MAX_LIST_ITEMS = 100;
+export const MAX_INGESTION_BATCH_EVIDENCE = 192;
 
 function transactionDeps(deps: ArtifactDeps, prisma: unknown): ArtifactDeps {
   return { ...deps, prisma: prisma as ArtifactDeps['prisma'] };
@@ -858,7 +859,7 @@ export async function createClaimEvidenceBatch(
   boundedText(input.sourceTaskId, 'Source task id', 200);
   boundedText(input.snapshotToken, 'Snapshot token', 200);
   boundedText(input.batchDigest, 'Batch digest', 200);
-  if (input.claims.length === 0 || input.claims.length > 12 || input.evidence.length > 6 * 32) {
+  if (input.claims.length === 0 || input.claims.length > 12 || input.evidence.length > MAX_INGESTION_BATCH_EVIDENCE) {
     throw new ClaimEvidenceError('VALIDATION_ERROR', 'Reviewed ingestion batch size is invalid');
   }
   if (input.claims.some((claim) => claim.assessment !== 'missing')) {

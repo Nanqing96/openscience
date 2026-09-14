@@ -1939,7 +1939,16 @@
     "bounds": "Stable bounds"
   },
   "ingestionClaimReview": {
-    "duplicateAssociation": "For this batch, associate each original passage set with one claim. Other split claims can be saved without the repeated association.",
+    "sources": "Sources and relations ({count})",
+    "relation": "Relation to this claim",
+    "relation_none": "Do not attach",
+    "relation_supports": "Supports the claim",
+    "relation_qualifies": "Limits its scope",
+    "relation_contradicts": "Provides counterevidence",
+    "relation_context": "Provides context",
+    "runSupportRequired": "Each claim used for illustration needs at least one supporting passage. Qualifications, counterevidence and context may also be retained.",
+    "sourceAssociationRequired": "Choose passages and relations under Sources and relations, or turn off evidence attachment.",
+    "evidenceLimit": "This batch links too many source passages. Select fewer claims or passages before confirming.",
     "reviewEvidence": "Review original passages",
     "evidenceNotice": "These separate excerpts appear in source order and may not be contiguous; omitted text is not shown. Each passage retains its own location. Check that they support the proposed statement, including its conditions and limitations. A location alone does not establish scientific correctness.",
     "sourceReconciliationFailed": "Source reconciliation for this field was incomplete. This does not mean that the paper failed to report it.",

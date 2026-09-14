@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import multipart from '@fastify/multipart';
 import { z } from 'zod';
+import { ingestionClaimSelectionSchema } from './ingestion-claim-selection-schema';
 import { authorizeIngestionWrite, confirmIngestionClaimEvidenceBridge, confirmIngestionTask, createIngestionBatch, getIngestionBatch, getIngestionTask, getResearchObjectIngestion, IngestionError, listActionableIngestionTasks, listIngestionClaimEvidenceCandidates, previewIngestionClaimEvidenceBridge, reanalyzeConfirmedIngestion, refreshIngestionAnalysis, retryIngestionTask, type IngestionDeps } from '@openscience/domain';
 import type { AuditContext } from '@openscience/observability';
 import { requireCurrentUser } from './session-guard';
@@ -147,18 +148,8 @@ export function registerIngestionRoutes(app: FastifyInstance, deps: IngestionDep
     if (!user) return;
     const { id, versionId, taskId } = bridgeTaskParams.parse(req.params);
     const idempotencyKey = z.string().min(1).max(200).parse(req.headers['idempotency-key']);
-    const selectionSchema = z.object({
-      clientKey: z.string().min(1).max(100),
-      sourceField: z.enum(['problem', 'insight', 'method', 'results', 'limitations', 'reproducibility']),
-      kind: z.enum(['core', 'supporting', 'method', 'boundary', 'counter']),
-      parentClientKey: z.string().min(1).max(100).optional(),
-      statement: z.string().min(1).max(4_000),
-      conditions: z.array(z.string().min(1).max(500)).max(100).optional(),
-      limitations: z.array(z.string().min(1).max(500)).max(100).optional(),
-      attachSourceQuote: z.boolean(),
-    }).strict();
     const body = z.object({
-      snapshotToken: z.string().regex(/^[a-f0-9]{64}$/), selections: z.array(selectionSchema).min(1).max(12),
+      snapshotToken: z.string().regex(/^[a-f0-9]{64}$/), selections: z.array(ingestionClaimSelectionSchema).min(1).max(12),
     }).strict().parse(req.body);
     const created = await confirmIngestionClaimEvidenceBridge(deps, {
       userId: user.userId, researchObjectId: id, versionId, taskId,

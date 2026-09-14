@@ -1,5 +1,6 @@
 export interface PresentationClaim {
   id: string;
+  parentClaimId?: string | null;
   kind: string;
   statement: string;
   assessment: string;

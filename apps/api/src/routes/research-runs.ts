@@ -1,6 +1,7 @@
 import type { AuthDeps } from '@openscience/auth';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
+import { ingestionClaimSelectionSchema } from './ingestion-claim-selection-schema';
 import { authorizeHermesGenerationGrant, confirmHermesSourceReview, createHermesResearchRun, getHermesResearchRun, retryHermesGeneration, type HermesSourceReviewDeps } from '@openscience/domain';
 import type { AuditContext } from '@openscience/observability';
 import type { StorageAdapter } from '@openscience/storage';
@@ -9,14 +10,7 @@ import { requireCurrentUser } from './session-guard';
 const paramsSchema = z.object({ id: z.string().uuid() }).strict();
 const readParamsSchema = z.object({ id: z.string().uuid(), runId: z.string().uuid() }).strict();
 const createSchema = z.object({ ingestionTaskIds: z.array(z.string().uuid()).min(1).max(20) }).strict();
-const selectionSchema = z.object({
-  clientKey: z.string().min(1).max(100),
-  sourceField: z.enum(['problem', 'insight', 'method', 'results', 'limitations', 'reproducibility']),
-  kind: z.enum(['core', 'supporting', 'method', 'boundary', 'counter']),
-  parentClientKey: z.string().min(1).max(100).optional(),
-  statement: z.string().min(1).max(4_000),
-  conditions: z.array(z.string().min(1).max(500)).max(100).optional(),
-  limitations: z.array(z.string().min(1).max(500)).max(100).optional(),
+const selectionSchema = ingestionClaimSelectionSchema.extend({
   attachSourceQuote: z.literal(true),
 }).strict();
 const sourceReviewSchema = z.object({

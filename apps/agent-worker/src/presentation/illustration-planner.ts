@@ -35,7 +35,7 @@ export async function generateIllustrationStoryboard(gateway: Pick<AiGateway, 'c
       sourceIds.set(`${claim.id}:${passage.evidenceId}`, sourceId);
       return { sourceId, text: passage.text, relation: passage.relation };
     });
-    return { kind: claim.kind, assessment: claim.assessment, analysis: claim.statement, conditions: claim.conditions, limitations: claim.limitations, sourcePassages };
+    return { claimId: claim.id, parentClaimId: claim.parentClaimId ?? null, kind: claim.kind, assessment: claim.assessment, analysis: claim.statement, conditions: claim.conditions, limitations: claim.limitations, sourcePassages };
   });
   const previous = base?.output === 'image' ? base.document.scenes.map(scene => {
     const brief = scene.illustration;

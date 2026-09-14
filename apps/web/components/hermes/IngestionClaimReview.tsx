@@ -4,8 +4,9 @@ import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ApiClientError, confirmIngestionClaims, getHermesIngestionClaimPreview, listIngestionClaimPreviews, submitHermesSourceReview, type IngestionClaimPreview, type PresentationClaim } from '@/lib/api';
-import { createReviewRows, editReviewStatement, selectedReviewClaims, splitReviewRow, type ClaimReviewRow } from '@/lib/hermes/ingestion-claim-review';
+import { createReviewRows, editReviewStatement, selectedReviewClaims, setReviewSourceRelation, splitReviewRow, type ClaimReviewRow } from '@/lib/hermes/ingestion-claim-review';
 import { SubmissionIntent } from '@/lib/hermes/presentation-action';
+import { ScientificText } from '@/components/content/ScientificText';
 
 const control = 'min-h-11 w-full rounded border border-os-rule-paper bg-os-paper px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-os-vermilion-ink';
 interface Props {
@@ -43,9 +44,16 @@ export function IngestionClaimReview({ researchObjectId: ro, versionId, onComple
   let selections: ReturnType<typeof selectedReviewClaims> = [];
   let valid = true;
   let invalidReason = 'invalid';
-  try { selections = selectedReviewClaims(rows); } catch (cause) { valid = false; if (cause instanceof Error && cause.message === 'DUPLICATE_SOURCE_ASSOCIATION') invalidReason = 'duplicateAssociation'; }
+  try { selections = selectedReviewClaims(rows, candidate?.maxEvidencePerBatch); } catch (cause) {
+    valid = false;
+    if (cause instanceof Error && cause.message === 'INVALID_SOURCE_ASSOCIATION') invalidReason = 'sourceAssociationRequired';
+    if (cause instanceof Error && cause.message === 'TOO_MANY_SOURCE_ASSOCIATIONS') invalidReason = 'evidenceLimit';
+  }
   const missingRequiredQuote = Boolean(sourceReview && rows.some((row) => row.selected && (!row.attachSourceQuote || !(row.sources ? row.sources.length : row.source))));
   if (missingRequiredQuote) { valid = false; invalidReason = 'runQuoteRequired'; }
+  if (sourceReview && rows.some(row => row.selected && row.sourceBindings !== undefined && !row.sourceBindings.some(binding => binding.relation === 'supports'))) {
+    valid = false; invalidReason = 'runSupportRequired';
+  }
   const submittedSelections = sourceReview ? selections.map((selection) => ({ ...selection, attachSourceQuote: true as const })) : selections;
   const choose = (taskId: string, values = candidates) => {
     const next = values.find(item => item.taskId === taskId);
@@ -118,7 +126,21 @@ export function IngestionClaimReview({ researchObjectId: ro, versionId, onComple
         <label className="grid gap-2 text-sm">{t('kind')}<select className={control} value={row.kind} onChange={event => update(row.clientKey, value => ({ ...value, kind: event.target.value as PresentationClaim['kind'], parentClientKey: undefined }))}>{(['core','supporting','method','boundary','counter'] as const).map(kind => <option key={kind} value={kind}>{t(`kind_${kind}`)}</option>)}</select></label>
         {row.kind !== 'core' ? <label className="grid gap-2 text-sm">{t('parent')}<select className={control} value={row.parentClientKey ?? ''} onChange={event => update(row.clientKey, value => ({ ...value, parentClientKey: event.target.value || undefined }))}><option value="">{t('chooseParent')}</option>{rows.filter(item => item.selected && item.clientKey !== row.clientKey).map(item => <option key={item.clientKey} value={item.clientKey}>{item.statement.slice(0, 90)}</option>)}</select></label> : null}
         {(['conditions','limitations'] as const).map(field => <label key={field} className="grid gap-2 text-sm">{t(field)}<textarea className={control} maxLength={4000} value={(row[field] ?? []).join('\n')} onChange={event => update(row.clientKey, value => ({ ...value, [field]: event.target.value.split('\n'), attachSourceQuote: false }))}/></label>)}
-        {(row.sources ?? (row.source ? [row.source] : [])).length ? <><ol className="space-y-3 pl-5">{(row.sources ?? [row.source!]).map((source, segment) => <li key={segment}><blockquote className="m-0 whitespace-pre-wrap break-words border-l-2 border-os-rule-paper pl-3 text-sm">{source.quote}</blockquote><p className="text-xs">{source.locator.page ? t('page', { page: source.locator.page }) : t('sourceLocated')}</p></li>)}</ol><label className="flex min-h-11 items-start gap-2 text-sm"><input type="checkbox" checked={row.attachSourceQuote} disabled={Boolean(sourceReview)} onChange={event => update(row.clientKey, value => ({ ...value, attachSourceQuote: event.target.checked }))}/>{t(sourceReview ? 'runAssociate' : 'associate')}</label></> : <p className="text-sm">{t('noQuote')}</p>}
+        {(row.sources ?? (row.source ? [row.source] : [])).length ? <>
+          <details className="rounded border border-os-rule-paper px-3">
+            <summary className="min-h-11 cursor-pointer py-3 text-sm">{t('sources', { count: row.sourceBindings?.length ?? row.sources?.length ?? 1 })}</summary>
+            <ol className="m-0 list-none space-y-4 p-0 pb-3">{(row.sources ?? [row.source!]).map((source, segment) => <li key={segment} className="space-y-2 border-t border-os-rule-paper pt-3">
+              <ScientificText as="blockquote" className="m-0 whitespace-pre-wrap break-words border-l-2 border-os-rule-paper pl-3 text-sm">{source.quote}</ScientificText>
+              <label className="grid gap-2 text-sm sm:grid-cols-2 sm:items-center">
+                <span>{source.locator.page ? t('page', { page: source.locator.page }) : t('sourceLocated')} · {t('relation')}</span>
+                <select className={control} value={row.sourceBindings === undefined ? 'supports' : row.sourceBindings.find(binding => binding.sourceIndex === segment)?.relation ?? 'none'} onChange={event => update(row.clientKey, value => setReviewSourceRelation(value, segment, event.target.value as Parameters<typeof setReviewSourceRelation>[2]))}>
+                  {(['none', 'supports', 'qualifies', 'contradicts', 'context'] as const).map(relation => <option key={relation} value={relation}>{t(`relation_${relation}`)}</option>)}
+                </select>
+              </label>
+            </li>)}</ol>
+          </details>
+          <label className="flex min-h-11 items-start gap-2 text-sm"><input type="checkbox" checked={row.attachSourceQuote} disabled={Boolean(sourceReview)} onChange={event => update(row.clientKey, value => ({ ...value, attachSourceQuote: event.target.checked }))}/>{t(sourceReview ? 'runAssociate' : 'associate')}</label>
+        </> : <p className="text-sm">{t('noQuote')}</p>}
         <button type="button" className="min-h-11 text-sm underline" disabled={rows.length >= 12} onClick={() => setState(previous => ({ ...previous, rows: [...previous.rows, splitReviewRow(row, crypto.randomUUID())] }))}>{t('split')}</button>
       </div>)}
     </fieldset> : null}

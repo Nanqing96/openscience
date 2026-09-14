@@ -6,6 +6,8 @@
 
 | 本轮文件 | 用途 |
 |---|---|
+| `packages/domain/src/ingestion/claim-evidence-bridge.ts` / `packages/domain/src/{agent/research-run,research-intelligence/claim-evidence-service}.ts` / `apps/api/src/routes/ingestion-claim-selection-schema.ts` / `apps/api/src/routes/{ingestion,research-runs}.ts` / `apps/web/lib/{api,hermes/ingestion-claim-review}.ts` / `apps/web/components/hermes/IngestionClaimReview.tsx` / `apps/web/messages/{zh,en}.json` | 现有确认链路逐Claim保存原文关系，共享API定义/Domain类型与批次容量；来源折叠，旧请求兼容。配图消费父子关系，状态及局限见CURRENT |
+| `infra/development-platform/langfuse/README.md` | 独立网页登录与本人终端私密查看初始凭据步骤；采集服务身份不依赖用户登录，不读取凭据或代登录 |
 | `apps/agent-worker/src/index.ts` / `infra/development-platform/telemetry/README.md` | 未部署候选：Gateway audit 复用已有任务执行上下文与 requestId，供现有 Langfuse requestCorrelation 定位原任务；不新增追踪系统，不回填未知历史 |
 | `infra/development-platform/catalog/` / `infra/development-platform/langfuse/` / `infra/development-platform/telemetry/` / `infra/development-platform/code-intelligence/` / `infra/development-platform/skills/` | 用户授权的底层能力交付：私有Backstage目录、Langfuse Gateway元数据、Serena只读符号与引用、标准技能CLI；独立于科研应用release，具体安装/使用证据见CURRENT |
 | `infra/scripts/ssh-run.sh` | 既有SSH入口增加development私有3130/3131/3132端口转发，不公开管理服务 |
