@@ -15,7 +15,7 @@
 .cardBody { display: flex; flex: 1; flex-direction: column; padding: 24px; }
 .meta { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; color: #6a7883; font-size: 12px; line-height: 1.5; font-variant-numeric: tabular-nums; }
 .card h2 { margin: 0; color: #1d2935; font: 650 24px/1.3 var(--font-ui), sans-serif; letter-spacing: -.02em; overflow-wrap: anywhere; }
-.abstract { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; margin: 14px 0 0; color: #475764; font-size: 15px; line-height: 1.8; }
+.abstract { margin: 14px 0 0; color: #475764; font-size: 15px; line-height: 1.8; }
 .authors { margin: 16px 0 22px; color: #6a7883; font-size: 13px; line-height: 1.5; }
 .read { display: flex; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 16px; border-top: 1px solid #edf1f3; color: #126a70; font-size: 14px; font-weight: 650; }
 .prominent .cardLink { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; }

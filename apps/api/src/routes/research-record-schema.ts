@@ -11,8 +11,9 @@ const nullableDateTime = { type: ['string', 'null'], format: 'date-time' };
 const uriReference = { type: 'string', format: 'uri-reference' };
 const stringMap = { type: 'object', additionalProperties: string };
 const contribution = object({ displayName: string, creditRole: string });
-const metadataCapture = object({ source: { enum: ['publication', 'legacy_captured_at_migration', 'not_recorded'] },
-  capturedAt: nullableDateTime, fieldSources: { type: ['object', 'null'], additionalProperties: string } });
+const metadataCapture = object({ source: { enum: ['publication', 'legacy_captured_at_migration', 'administrative_correction', 'not_recorded'] },
+  capturedAt: nullableDateTime, fieldSources: { type: ['object', 'null'], additionalProperties: string,
+    description: 'Provenance of displayed metadata, including explicitly authorized administrative corrections. These do not create another scientific publication.' } });
 const state = { enum: ['recorded', 'not_recorded'] };
 const fields = ['problem','insight','method','results','limitations','reproducibility'];
 export const researchRecordSchema = {
@@ -63,7 +64,8 @@ const publicEvidenceSource = object({ text: { ...string, maxLength: 20_000 }, pa
 const publicArticleProperties = {
   publicId: string, recordUrl: uriReference, title: string, url: uriReference, visibility: { const: 'public' },
   version: object({ versionNo: positiveInteger, publicationNo: positiveInteger, publicVersionId: string, status: string,
-    publishedAt: nullableDateTime, contentSha256: nullableString, legalDisclaimer: nullableString,
+    publishedAt: nullableDateTime, contentSha256: { ...nullableString,
+      description: 'Original issuance receipt hash, retained with the original publishedAt. It is not a hash of this HTTP response and is not recomputed after an administrative metadata correction; inspect metadataCapture for corrected fields.' }, legalDisclaimer: nullableString,
     core: { type: 'object', properties: Object.fromEntries(fields.map(field => [field, string])), additionalProperties: true,
       description: 'Frozen SDF core. Empty when this issued version is withdrawn or restricted.' },
   }),
@@ -88,6 +90,10 @@ const publicArticle = object({ ...publicArticleProperties,
 }, Object.keys(publicArticleProperties));
 const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
 const jsonContent = (schema: object) => ({ 'application/json': { schema } });
+const correctedPublicationRedirect = { '307': {
+  description: 'Temporary alias for an explicitly corrected legacy publication label, only while no canonical publication exists at the requested number. A real canonical publication always wins. Follow Location, then retain the returned canonical URL; never cache the old alias.',
+  headers: { Location: { schema: uriReference }, 'Cache-Control': { schema: { const: 'no-store' } } },
+} };
 const errorSchema = object({ error: object({ code: string, message: string, requestId: string }, ['code', 'message']) });
 const responseError = (description: string) => ({ description, content: jsonContent(ref('Error')) });
 const errors = {
@@ -136,12 +142,12 @@ export const researchRecordOpenApi = {
     } },
     '/research/{publicId}/v/{versionNo}': { get: {
       operationId: 'getPublicArticleVersion', summary: 'Read a fixed public article version', security: [], parameters: publicVersionParameters, description: articleDescription,
-      responses: { '200': { description: 'Version-bound public article or its withdrawn/restricted identity and status.', headers: discoveryHeaders, content: jsonContent(object({ research: ref('PublicArticle') })) }, ...errors },
+      responses: { '200': { description: 'Version-bound public article or its withdrawn/restricted identity and status.', headers: discoveryHeaders, content: jsonContent(object({ research: ref('PublicArticle') })) }, ...correctedPublicationRedirect, ...errors },
     } },
     '/research/{publicId}/v/{versionNo}/evidence/{evidenceId}/source': { get: {
       operationId: 'getPublicEvidenceSource', summary: 'Read a frozen evidence source excerpt', security: [], parameters: [...publicVersionParameters, pathParameter('evidenceId', uuid)],
       description: 'Requires an available published/revised version and a verified evidence entry with frozen public-reuse permission. Returns an unwrapped source excerpt of at most 20,000 characters, public locator fields and frozen artifact display metadata. It is not the complete source document and does not expose private storage or SourceMap references.',
-      responses: { '200': { description: 'Resolved source excerpt, without a source wrapper.', content: jsonContent(ref('PublicEvidenceSource')) }, ...errors, '503': unavailable },
+      responses: { '200': { description: 'Resolved source excerpt, without a source wrapper.', content: jsonContent(ref('PublicEvidenceSource')) }, ...correctedPublicationRedirect, ...errors, '503': unavailable },
     } },
     '/research/{publicId}/v/{versionNo}/presentation-assets/{assetId}': { get: {
       operationId: 'getPublicPresentationAsset', summary: 'Read approved media from a published version', security: [],
@@ -155,14 +161,14 @@ export const researchRecordOpenApi = {
           headers: { ...binaryHeaders, 'Accept-Ranges': { schema: string, description: 'bytes for supported video.' }, ETag: { schema: string, description: 'Strong content-hash ETag for supported video.' } } },
         '206': { description: 'One verified MP4/WebM byte range.', content: binaryContent, headers: { ...binaryHeaders, 'Content-Range': { schema: string }, ETag: { schema: string } } },
         '416': { description: 'Invalid or unsatisfiable video byte range; empty response body.', headers: { 'Content-Range': { schema: string, description: 'bytes */total-size' }, 'Content-Length': { schema: { const: '0' } } } },
-        ...errors, '503': unavailable,
+        ...correctedPublicationRedirect, ...errors, '503': unavailable,
       },
     } },
     '/research/{publicId}/v/{versionNo}/artifacts/{artifactId}/download': { get: {
       operationId: 'downloadPublicArtifact', summary: 'Download an explicitly shared publication attachment', security: [], parameters: [...publicVersionParameters, pathParameter('artifactId', uuid)],
       description: 'Requires an available published/revised version, a unique frozen manifest entry with downloadAccess=public, and the retained matching artifact. Legacy or workspace_member entries do not grant anonymous access. The response is always an attachment with a safely encoded frozen filename; the private download endpoint remains protected.',
       responses: { '200': { description: 'Frozen original bytes, streamed with no-store and the safe frozen MIME type or application/octet-stream.', content: binaryContent,
-        headers: { ...binaryHeaders, 'Content-Disposition': { schema: string, description: 'attachment; ASCII fallback filename and UTF-8 filename*.' } } }, ...errors, '503': unavailable },
+        headers: { ...binaryHeaders, 'Content-Disposition': { schema: string, description: 'attachment; ASCII fallback filename and UTF-8 filename*.' } } }, ...correctedPublicationRedirect, ...errors, '503': unavailable },
     } },
     ...Object.fromEntries(['', '/export', '/evidence/{evidenceId}/source'].map(suffix => [`/research-objects/{id}/versions/{versionId}/record${suffix}`, { get: {
       operationId: suffix.includes('source') ? 'getResearchRecordEvidenceSource' : suffix ? 'exportResearchRecord' : 'getResearchRecord',

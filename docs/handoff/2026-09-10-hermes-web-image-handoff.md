@@ -1,5 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
+- 2026-09-14最新续作进行中：卡片TeX/S遗漏、旧第一篇署名/首发v1、两篇结构化折叠证据及工作台同步。交付树未提交候选；启动fetch/checkup实读release6af9c984，服务healthy/公网200，tmp/ro-feedback-start-checkup.log。第一篇DB实际唯一Publication但No10、authors空；用户现在明确授权行政勘误为v1/DHL，旧“不得重排v10”被这一特定授权取代。脚本尚未执行，禁止根据计划当成已改。
 - 2026-09-14最新截图反馈已完成：公开Claim复用Hermes科学Markdown，概要/完整推导/适用条件/原文证据分层；不再整篇h3直出。来源按文件/页码分10组保留40条，去重复标题、制作前言、笔记UUID、内部[S]和机器locator；原quote/source也用Markdown与公式显示，原始数据不改。
 - /developers复用公开产品rp颜色/字体/共享标题；curl前置。线上原文教程实跑发现原Python默认UA被Cloudflare403/1010拒绝，显式真实客户端User-Agent后成功；不放宽防护或伪装浏览器。现在页面curl/Python均已逐字执行exit0，六字段/固定URL/下载URL与API一致。
 - 真实论文仍22/v10与23/v1；作者DHL/文字和数据CC-BY-4.0/代码MIT/PDF授权均保留。无新论文发布、模型/图像生成或数据库写入；视频/批量仍暂停。

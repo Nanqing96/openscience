@@ -130,6 +130,28 @@ export function withoutInternalSourceMarkers(value: string) {
   return splitMath(value).map((part) => part.type === 'text' ? removeSourceMarkers(part.value) : part.source).join('');
 }
 
+/** Keep source offsets while excluding formulas from prose heading/citation matching. */
+export function scientificProseForMatching(value: string) {
+  return splitMath(value).map(part => part.type === 'text' ? part.value : part.source.replace(/[^\n]/g, ' ')).join('');
+}
+
+/** Card excerpts may end between prose characters, but never inside a TeX token. */
+export function scientificTextExcerpt(value: string, maxLength = 240) {
+  const parts = splitMath(withoutInternalSourceMarkers(value));
+  let excerpt = '';
+  let length = 0;
+  for (const part of parts) {
+    const source = part.type === 'math' ? part.source : part.value;
+    const characters = Array.from(source);
+    const remaining = maxLength - length;
+    if (remaining <= 0) return `${excerpt.trimEnd()}…`;
+    if (characters.length <= remaining) { excerpt += source; length += characters.length; continue; }
+    if (part.type === 'text') excerpt += characters.slice(0, remaining).join('');
+    return `${excerpt.trimEnd()}…`;
+  }
+  return excerpt;
+}
+
 export function ScientificText<T extends ElementType = 'div'>({
   as,
   className,

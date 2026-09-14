@@ -2,7 +2,7 @@ import { recordValue } from '../commit/research-record-snapshot';
 
 export interface PublicationMetadata {
   schemaVersion: 1;
-  captureSource: 'publication' | 'legacy_captured_at_migration' | 'not_recorded';
+  captureSource: 'publication' | 'legacy_captured_at_migration' | 'administrative_correction' | 'not_recorded';
   capturedAt: string | null;
   fieldSources?: Record<string, string>;
   title: string | null;

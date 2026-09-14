@@ -10,6 +10,7 @@ import EditorLayout from '../../../../components/editor/EditorLayout';
 import CoreEditor from '../../../../components/editor/CoreEditor';
 import { ScientificText } from '@/components/content/ScientificText';
 import { EditHistory } from '@/components/research/EditHistory';
+import { WorkbenchClaimReader, type ReadingRecord } from '@/components/research/WorkbenchClaimReader';
 import { ResearchContentManager } from '@/components/research/ResearchContentManager';
 import { useVersionLabels } from '@/components/research/useVersionLabels';
 import SuggestionsPanel from '../../../../components/editor/SuggestionsPanel';
@@ -28,6 +29,7 @@ import {
   confirmIngestionTask,
   getAgentTask,
   getCurrentUser,
+  getAuthors,
   getIngestionTask,
   getResearchObject,
   isConfirmedIngestionReanalysisSource,
@@ -179,6 +181,15 @@ function EditorWorkspace({ params, searchParams }: EditorPageProps) {
   const [committedArtifacts, setCommittedArtifacts] = useState<ArtifactReference[]>([]);
   const currentCommittedArtifacts = useRef(committedArtifacts); currentCommittedArtifacts.current = committedArtifacts;
   const [versions, setVersions] = useState<VersionSummary[]>([]);
+  const [authorNames, setAuthorNames] = useState<string[]>([]);
+  useEffect(() => {
+    let active = true;
+    setAuthorNames([]);
+    void getAuthors(roId).then(({ authors }) => {
+      if (active) setAuthorNames([...authors].sort((left, right) => left.sortOrder - right.sortOrder).map(author => author.displayName));
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, [roId]);
   const publishedVersions = versions.filter((version) => version.publicationNo != null).sort((left, right) => right.publicationNo! - left.publicationNo!);
   useEffect(() => {
     if (!historyOpen) return;
@@ -201,20 +212,23 @@ function EditorWorkspace({ params, searchParams }: EditorPageProps) {
     return () => window.removeEventListener('research-publication-updated', refresh);
   }, [roId]);
   const [checkedSnapshotVersion, setCheckedSnapshotVersion] = useState('');
+  const [readingRecord, setReadingRecord] = useState<ReadingRecord | null>(null);
   const snapshotReady = Boolean(versions[0] && checkedSnapshotVersion === versions[0].versionId);
   useEffect(() => {
     const versionId = versions[0]?.versionId;
     setCheckedSnapshotVersion('');
+    setReadingRecord(null);
     if (!versionId) return;
     let active = true;
-    void apiRequest<{ record: { objectId: string; versionId: string; sdf: SdfCore } }>(`/api/research-objects/${encodeURIComponent(roId)}/versions/${encodeURIComponent(versionId)}/record`).then(({ record }) => {
+    void apiRequest<{ record: ReadingRecord }>(`/api/research-objects/${encodeURIComponent(roId)}/versions/${encodeURIComponent(versionId)}/record`).then(({ record }) => {
       if (!active || record.objectId !== roId || record.versionId !== versionId) return;
       confirmedSnapshot.current = record.sdf;
+      setReadingRecord(record);
       setNeedsConfirmation(SDF_FIELDS.some((field) => currentCore.current[field] !== record.sdf[field]));
       setCheckedSnapshotVersion(versionId);
     }).catch(() => { if (active) setNeedsConfirmation(true); });
     return () => { active = false; };
-  }, [roId, versions[0]?.versionId]);
+  }, [contentRefresh, roId, versions[0]?.versionId]);
   const [ingestionTasks, setIngestionTasks] = useState<Awaited<ReturnType<typeof loadResearchMaterials>>['ingestion']['tasks']>([]);
   const [selectedIngestionTaskId, setSelectedIngestionTaskId] = useState(ingestionTaskId);
   const [ingestionProposal, setIngestionProposal] = useState<IngestionProposal | null>(null);
@@ -1214,9 +1228,10 @@ function EditorWorkspace({ params, searchParams }: EditorPageProps) {
             objectId={roId}
             saveState={serverSaveState === 'saving' ? 'saving' : serverSaveState === 'error' && state.dirty ? 'error' : state.dirty ? 'dirty' : 'saved'}
             title={objectMeta.title}
+            metadata={authorNames.length > 0 ? tw('platformAuthors', { names: authorNames.join(' · ') }) : undefined}
             version={state.version}
             visibility="private"
-            actions={publishedVersions[0] && objectMeta.publicId ? <><Link className={styles.detailsLink} href={`/research/${encodeURIComponent(objectMeta.publicId)}/v/${publishedVersions[0].publicationNo}`}>{tw('openPublic')}</Link><button type="button" className={styles.detailsLink} onClick={() => { setHermesInitialGoal(th('previewUpdateCommand')); setHermesOpen(true); }}>{th('previewUpdate')}</button></> : undefined}
+            actions={publishedVersions[0] && objectMeta.publicId ? <><Link className={styles.detailsLink} href={`/research/${encodeURIComponent(objectMeta.publicId)}/v/${publishedVersions[0].publicationNo}`}>{tw('openPublicVersion', { number: publishedVersions[0].publicationNo! })}</Link><button type="button" className={styles.detailsLink} onClick={() => { setHermesInitialGoal(th('previewUpdateCommand')); setHermesOpen(true); }}>{th('previewUpdate')}</button></> : undefined}
           />
         }
         outline={null}
@@ -1254,6 +1269,8 @@ function EditorWorkspace({ params, searchParams }: EditorPageProps) {
 
             {ingestionReviewActive && <button type="button" className={styles.secondaryButton} onClick={() => { setHermesOpen(true); if (sourceReviewRef.current) sourceReviewRef.current.open = true; }}>{th('reviewInHermes')}</button>}
             <CoreEditor core={state.core} onEdit={editField} activeField={activeField} onSelectField={setActiveField} readOnly={ingestionReviewActive} />
+
+            {readingRecord && snapshotReady ? <WorkbenchClaimReader key={`${readingRecord.versionId}:${contentRefresh}`} record={readingRecord} /> : null}
 
             <details className={styles.disclosure}>
               <summary>{tw('supportingMaterials')}</summary>

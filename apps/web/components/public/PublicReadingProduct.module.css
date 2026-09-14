@@ -253,9 +253,8 @@
 .claimNarrative :global(.pub-evidence-select q) { font: 400 16px/1.8 var(--font-ui), system-ui, sans-serif; }
 .claimNarrative :global(.pub-evidence-relation), .claimNarrative :global(.pub-evidence-open) { color: var(--public-product-teal); font-family: var(--font-ui), system-ui, sans-serif; }
 .evidenceGroup + .evidenceGroup { border-top: 1px solid var(--public-product-rule); }
-.evidenceGroup > summary { padding: 14px 16px; color: var(--public-product-ink); font: 500 14px/1.6 var(--font-ui), system-ui, sans-serif; cursor: pointer; overflow-wrap: anywhere; }
-.evidenceGroup > summary span:last-child { display: block; margin-top: 4px; color: var(--public-product-muted); font-size: 13px; }
-.evidenceGroup > summary:focus-visible { outline: 2px solid var(--public-product-teal); outline-offset: -2px; }
+.evidenceGroup > header { padding: 14px 16px; color: var(--public-product-ink); font: 500 14px/1.6 var(--font-ui), system-ui, sans-serif; overflow-wrap: anywhere; background: var(--public-product-canvas); }
+.evidenceGroup > header span:last-child { display: block; margin-top: 4px; color: var(--public-product-muted); font-size: 13px; }
 @media print {
   .claimNarrative :global(.pub-evidence-transcript[hidden]) { display: block !important; }
   .evidenceGroup::details-content { content-visibility: visible; display: block; }
@@ -271,3 +270,81 @@
 .evidencePassage :is(pre, table) { display: block; max-width: 100%; overflow-x: auto; }
 .evidencePassage > button { padding-inline: 0; text-align: left; }
 @media print { .claimDetails::details-content { content-visibility: visible; display: block; } }
+
+/* Shared saved-version reader: authored sections first, source detail on demand. */
+.claimNarrative,
+.workbenchReader {
+  --public-product-canvas: var(--rp-canvas, #f5f8fa);
+  --public-product-paper: var(--rp-paper, #fff);
+  --public-product-ink: var(--rp-ink, #1d2935);
+  --public-product-muted: var(--rp-muted, #596875);
+  --public-product-rule: var(--rp-rule, #dce4e8);
+  --public-product-teal: var(--rp-accent, #126a70);
+  min-width: 0;
+  color: var(--public-product-ink);
+}
+.claimSection { margin-block: 36px; }
+.claimSection > h2,
+.claimField > h3 { margin: 0 0 14px; color: var(--public-product-ink, #1d2935); font: 650 20px/1.5 var(--font-ui), system-ui, sans-serif; }
+.claimField { margin-block: 24px; }
+.claimField > h3 { font-size: 16px; color: var(--public-product-teal); }
+.claimEntry { margin: 0; border-top: 1px solid var(--public-product-rule); }
+.claimEntry + .claimEntry { margin-top: 8px; }
+.claimEntry > .claimSummary,
+.readingSection > summary,
+.boundariesDisclosure > summary,
+.evidenceDisclosure > summary,
+.evidenceEntry > summary,
+.workbenchReader > details > summary {
+  min-height: 44px;
+  padding: 14px 4px;
+  color: var(--public-product-ink);
+  font: 600 16px/1.7 var(--font-ui), system-ui, sans-serif;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  touch-action: manipulation;
+}
+.claimNarrative summary::marker,
+.workbenchReader summary::marker { color: var(--public-product-teal); }
+.claimNarrative summary:focus-visible,
+.workbenchReader summary:focus-visible,
+.workbenchReader button:focus-visible {
+  outline: 2px solid var(--public-product-teal);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.claimContent { min-width: 0; padding: 0 0 12px; }
+details.claimEntry[open] > .claimSummary { color: var(--public-product-teal); }
+.entryMeta { display: block; margin-top: 5px; color: var(--public-product-muted); font: 400 13px/1.5 var(--font-ui), system-ui, sans-serif; }
+.readingSection + .readingSection { border-top: 1px solid var(--public-product-rule); }
+.readingSection > .claimBody { margin-top: 6px; }
+.boundariesDisclosure { margin-block: 16px; border-top: 1px solid var(--public-product-rule); }
+.boundariesDisclosure :global(.pub-claim-boundaries) { margin-top: 0; }
+.evidenceDisclosure { margin-block: 16px; border-top: 1px solid var(--public-product-rule); }
+.evidenceDisclosure > summary { color: var(--public-product-teal); font-size: 14px; }
+.evidenceEntry { margin-inline: 16px; border-top: 1px solid var(--public-product-rule); }
+.evidenceEntry > summary { font-size: 14px; }
+.evidencePassage { padding: 0 0 16px; }
+.evidencePassage > button { min-height: 44px; }
+.remainingEvidence > h4 { margin: 20px 0 0; font: 600 14px/1.7 var(--font-ui), system-ui, sans-serif; }
+.workbenchReader { margin-block: 28px; border-top: 1px solid var(--public-product-rule); }
+.workbenchReader > details > summary { font-size: 18px; }
+.workbenchReader :global(.pub-text-button) { color: var(--public-product-teal); min-height: 44px; }
+@media (hover: hover) {
+  .claimNarrative summary:hover,
+  .workbenchReader > details > summary:hover { color: var(--public-product-teal); }
+}
+@media (max-width: 640px) {
+  .claimBody { font-size: 16px; line-height: 1.85; }
+  .claimNarrative :global(.pub-claim-boundaries) { grid-template-columns: minmax(0, 1fr); }
+  .evidenceGroup > header { padding-inline: 12px; }
+  .evidenceEntry { margin-inline: 12px; }
+}
+@media print {
+  .claimEntry::details-content,
+  .readingSection::details-content,
+  .boundariesDisclosure::details-content,
+  .evidenceDisclosure::details-content,
+  .evidenceEntry::details-content { content-visibility: visible; display: block; }
+  .evidencePassage > button { display: none; }
+}

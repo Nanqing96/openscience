@@ -1,9 +1,11 @@
 # OpenScience (XGS) 项目文件索引
 
-> 当前任务2026-09-14已完成：证据主张/原文结构化阅读与API页视觉及教程修复已部署6af9c984（rollback59c8cebf）。主张57/57公式原文保持、40证据/10页组，来源200与桌面/窄屏截图已看；线上curl/Python原文执行exit0、正文及链接正确。代码HEAD/origin6af9c984，后续仅文档补记；唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> 当前任务2026-09-14续作进行中：修复列表TeX/内部编号、既有22首发v1与DHL、两篇结构化折叠证据及工作台同步。启动实读production6af9c984/rollback59c8cebf，候选待部署及指定行政勘误；此前API教程有效证据复用。唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮文件 | 用途 |
 |---|---|
+| `infra/scripts/correct-deep-sub-cycle-publication.mjs` | 用户指定的首次发布行政勘误：唯一22/v10→v1、DHL署名和原PDF下载，既有Serializable锁/审计保留原值；未运行，状态见CURRENT |
+| `apps/web/components/research/WorkbenchClaimReader.tsx` / `apps/web/components/public/evidence-display.ts` | 基于已保存版本、原栏目/章节/引用关系的共享折叠阅读投影；来源按需读取，科学数据不重生成 |
 | `apps/api/src/routes/research.ts` / `apps/api/src/routes/research-record.ts` / `apps/api/src/routes/research-record-schema.ts` | latest/exact统一公开读取、版本固定及机器发现头，描述全部8个真实GET的OpenAPI3.1 |
 | `apps/web/app/developers/page.tsx` / `apps/web/app/developers/developers.module.css` / `apps/web/messages/zh.json` / `apps/web/messages/en.json` | 统一中英API文档与公开产品视觉；Python真实应用User-Agent/403说明，线上curl/Python执行成功、六字段与链接一致，DEPLOYED6af9c984 |
 | `apps/web/components/landing/SiteHeader.tsx` / `apps/web/app/layout.tsx` / `apps/web/app/research/[publicId]/page.tsx` / `apps/web/app/research/[publicId]/v/[versionNo]/page.tsx` | 导航与OpenAPI发现、真实公开版本的HTML JSON alternate |

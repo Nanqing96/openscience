@@ -6,6 +6,16 @@
 
 ## 2026-09-13 草稿/发布/回收站迁移（ef9e6e97 已部署）
 
+### 2026-09-14 首发误号与遗漏署名行政勘误
+
+前提：用户明确指定 deep-sub-cycle 首发 v1、DHL 昵称署名，并要求既有 RO 使用新增公开能力；此前允许原附件下载的授权继续适用。唯一目标22/Version f4e2dc71，不能把其他历史公开版本统一重排。脚本自带范围/身份/既有来源核对，只在现有API容器执行，不读取Secret；完整科学DTO和原始发行收据保留。
+
+执行：先部署包含临时别名和行政元数据来源枚举的应用，再运行 `node infra/scripts/correct-deep-sub-cycle-publication.mjs --confirm`（API容器/opt/openscience）。脚本使用已有引用锁及RO行锁、Serializable事务，改公开号和作者/引用，仅向精确原PDF补公开下载授权，审计保留全部改前字段。此操作是一次性行政勘误，不调用发布或重新冻结科研内容。
+
+补偿：事务失败全部回滚；成功后应用可回退至兼容生命周期release，v1数据保持。若行政数据自身确有误，先按返回auditId读取 `publication.correct_legacy_identity` 的 before/after，再以同锁事务恢复其中身份/manifest/selection字段；作者移除等后续修改须按用户当时授权处理，不照搬删除。禁止重跑旧publish脚本或重算原始contentSha/发布时间。重复执行仅核对已有更正，不另建作者/发行记录。
+
+实际观察：读取首页/工作台/公开v1和旧v10跳转，展开两篇主张/来源，确认作者、版本、公式、原始正文与PDF。OpenAPI描述307只属临时误号兼容：未来真实v10优先；canonical始终使用返回的v1链接。命令收据与精确release见CURRENT，不触发测试/预检。
+
 前提：两项新迁移随同一应用候选交付；旧公开URL和受保护论文保持原样。服务器复用既有Node、systemd、存储、Parser及浏览器执行器。`infra/private-cleanup/install.sh`只安装受限副本清理服务，不更改供应商凭据或结果挂载的只读权限。
 
 执行：精确候选先完成服务器构建；部署事务在迁移前停止旧api/web/agent-worker，迁移后统一切到新代码。新版Publication INSERT须先写入公开序号，DB约束拒绝旧写入器。清理服务从ID范围队列处理授权清除，未处理完成返回pending；无队列时不打扰生成服务。核心库与搜索库独立，搜索读取以核心存续状态过滤，异步同步失败由已有TrashEntry重试。

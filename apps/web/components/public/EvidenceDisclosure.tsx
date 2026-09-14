@@ -1,17 +1,11 @@
 'use client';
 
-import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import type { PublicEvidence } from '../../lib/api';
 import { ScientificText } from '../content/ScientificText';
 import { ScientificMarkdown } from '../content/ScientificMarkdown';
 import { evidenceReadingTitle, groupEvidenceBySource } from './evidence-display';
 import styles from './PublicReadingProduct.module.css';
-import {
-  readLocalEvidenceDefaultCollapsed,
-  subscribeEvidenceReadingPreference,
-  writeLocalEvidenceDefaultCollapsed,
-} from '../../lib/evidence-reading-preference';
 
 export function EvidenceDisclosure({
   evidence,
@@ -21,48 +15,27 @@ export function EvidenceDisclosure({
   onInspect: (evidence: PublicEvidence) => void;
 }) {
   const t = useTranslations('public.claimReader');
-  const [collapsed, setCollapsed] = React.useState(false);
-
-  React.useEffect(() => {
-    setCollapsed(readLocalEvidenceDefaultCollapsed());
-    return subscribeEvidenceReadingPreference(setCollapsed);
-  }, []);
-
-  const toggle = () => {
-    setCollapsed((current) => {
-      const next = !current;
-      writeLocalEvidenceDefaultCollapsed(next);
-      return next;
-    });
-  };
-
-  if (evidence.length === 0) return <p className="pub-evidence-empty">{t('noEvidence')}</p>;
+  if (evidence.length === 0) return null;
 
   return (
-    <section className={`pub-evidence-disclosure${collapsed ? ' is-collapsed' : ''}`} data-evidence-collapse-state={collapsed ? 'collapsed' : 'expanded'}>
-      <div className="pub-evidence-heading">
-        <h4>{t('evidenceCount', { count: evidence.length })}</h4>
-        <button type="button" className="pub-text-button" aria-expanded={!collapsed} onClick={toggle}>
-          {collapsed ? t('expandEvidence') : t('collapseEvidence')}
-        </button>
-      </div>
-      <div className="pub-evidence-transcript" hidden={collapsed} data-evidence-transcript="true" data-print-evidence="true">
+    <details className={styles.evidenceDisclosure}>
+      <summary>{t('evidenceCount', { count: evidence.length })}</summary>
+      <div data-evidence-transcript="true" data-print-evidence="true">
         {groupEvidenceBySource(evidence).map((group) => (
-          <details className={styles.evidenceGroup} key={group.items[0].id}>
-            <summary><span>{group.file}</span><span>{group.page === null ? t('passage') : t('page', { page: group.page })} · {t('passageCount', { count: group.items.length })}</span></summary>
-            {group.items.map((item) => (
-              <article className="pub-evidence-item" data-evidence-relation={item.relation} key={item.id}>
+          <section className={styles.evidenceGroup} key={group.items[0].id}>
+            <header><span>{group.file}</span><span>{group.page === null ? t('passage') : t('page', { page: group.page })} · {t('passageCount', { count: group.items.length })}</span></header>
+            {group.items.map((item, index) => (
+              <details className={styles.evidenceEntry} data-evidence-id={item.id} data-evidence-relation={item.relation} key={item.id}>
+                <summary><ScientificText as="span" hideSourceMarkers>{evidenceReadingTitle(item) || t('passageNumber', { number: index + 1 })}</ScientificText><span className={styles.entryMeta}>{t(`relation.${item.relation}`)}</span></summary>
                 <div className={styles.evidencePassage}>
-                  <span className="pub-evidence-relation">{t(`relation.${item.relation}`)}</span>
-                  {evidenceReadingTitle(item) && <ScientificText as="strong" hideSourceMarkers>{evidenceReadingTitle(item)}</ScientificText>}
                   {item.exactQuote && <blockquote><ScientificMarkdown body={item.exactQuote} /></blockquote>}
                   <button type="button" className="pub-text-button pub-evidence-open" onClick={() => onInspect(item)}>{t('inspectSource')}</button>
                 </div>
-              </article>
+              </details>
             ))}
-          </details>
+          </section>
         ))}
       </div>
-    </section>
+    </details>
   );
 }

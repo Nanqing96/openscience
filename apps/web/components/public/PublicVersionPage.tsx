@@ -1,8 +1,7 @@
 'use client';
 import * as React from 'react';
 import Link from 'next/link';
-import { getPublicEvidenceSource, getPublicResearchVersion, getReadingPreference, type PublicEvidence, type PublicEvidenceSource } from '../../lib/api';
-import { writeLocalEvidenceDefaultCollapsed } from '../../lib/evidence-reading-preference';
+import { getPublicEvidenceSource, getPublicResearchVersion, type PublicEvidence, type PublicEvidenceSource } from '../../lib/api';
 import { LEGAL_DISCLAIMER_DEFAULT, LICENSE_NAMES } from '../../lib/constants';
 import { useTranslations } from 'next-intl';
 import { TabNavigation, ComingSoonTab, type TabId } from './TabNavigation';
@@ -207,12 +206,6 @@ export function PublicReadingSurface({ research, activeTab = 'overview', onTabCh
   const hashShort = version.contentSha256 ? `${version.contentSha256.slice(0, 8)}…${version.contentSha256.slice(-8)}` : t('unpublished');
 
   React.useEffect(() => {
-    void getReadingPreference()
-      .then((preference) => writeLocalEvidenceDefaultCollapsed(preference.evidenceDefaultCollapsed))
-      .catch(() => undefined);
-  }, []);
-
-  React.useEffect(() => {
     setSelectedEvidence(null);
     setEvidenceSource(null);
     setSourceError(false);
@@ -285,14 +278,13 @@ export function PublicReadingSurface({ research, activeTab = 'overview', onTabCh
           </section>
 
           <PresentationAssetGallery assets={supplementaryMedia} />
+          <section className={styles.claimSection}>
+            <h2>{t('claimReader.title')}</h2>
+            <ClaimNarrative claims={research.claims} evidence={research.evidence} onInspect={inspectEvidence} />
+          </section>
           <details className={styles.resources}>
             <summary>{t('readingResources')}</summary>
             <div className={styles.resourcesBody}>
-          <details className="pub-reading-details">
-            <summary>{t('claimReader.title')}</summary>
-            <ClaimNarrative claims={research.claims} evidence={research.evidence} onInspect={inspectEvidence} />
-          </details>
-
           <details className="pub-reading-details pub-reading-license" data-public-license="true">
             <summary>{t('license')}</summary>
             <div className="pub-license-line">
@@ -306,9 +298,6 @@ export function PublicReadingSurface({ research, activeTab = 'overview', onTabCh
             <ProvenanceCaption label={t('publishedAt')} value={publishedAt} landmark="provenance" />
             <ProvenanceCaption label={t('versionHash')} value={hashShort} landmark="provenance" />
           </details>
-          {research.aiReview && <details className="pub-reading-details pub-reading-review" data-ai-review={research.aiReview.status}>
-            <summary>{t('aiReview')}</summary><p>{t('status')}: {research.aiReview.status === 'passed' ? t('passed') : research.aiReview.status}</p>
-          </details>}
           {research.history.length > 0 && <details className="pub-reading-history pub-reading-details" data-public-version-history="true">
             <summary>{t('history.title')}</summary>
             <ol>{research.history.map((item) => <li key={item.publicVersionId}>

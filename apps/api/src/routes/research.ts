@@ -110,6 +110,33 @@ function orderPublicClaims<T extends { id: string; parentClaimId: string | null;
  * 已撤回/删除 → Phase 1D 状态说明页（P1B-6 直接 404）。
  */
 export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRouteDeps): void {
+  // Corrected legacy ordinals are temporary aliases, never publication numbers.
+  // A subsequently issued canonical ordinal always wins over a former typo.
+  async function redirectCorrectedPublication(publicId: string, versionNo: number, reply: FastifyReply, suffix = '') {
+    const ro = await deps.prisma.researchObject.findUnique({ where: { publicId }, select: { id: true, visibility: true } });
+    if (!ro || ro.visibility !== 'public') return false;
+    const canonical = await deps.prisma.version.findFirst({
+      where: { researchObjectId: ro.id, publicationNo: versionNo, publications: { some: {} } }, select: { id: true },
+    });
+    if (canonical) return false;
+    const matches = await deps.prisma.version.findMany({
+      where: { researchObjectId: ro.id, publications: { some: {} },
+        researchRecord: { path: ['publicationCorrection', 'previousPublicVersionId'], equals: `${publicId}-v${versionNo}` } },
+      select: { publicationNo: true, publicVersionId: true, researchRecord: true },
+      take: 2,
+    });
+    if (matches.length !== 1) return false;
+    const corrected = matches[0];
+    if (!corrected?.publicationNo || corrected.publicationNo === versionNo) return false;
+    const correction = record(record(corrected.researchRecord).publicationCorrection);
+    if (correction.correctedPublicationNo !== corrected.publicationNo
+      || correction.correctedPublicVersionId !== corrected.publicVersionId) return false;
+    // Relative Location works through both /api public proxy and internal API origin.
+    const depth = suffix.split('/').filter(Boolean).length;
+    reply.header('Cache-Control', 'no-store').redirect(`${'../'.repeat(depth)}${corrected.publicationNo}${suffix}`, 307);
+    return true;
+  }
+
   app.get('/research/:publicId', async (req, reply) => {
     const { publicId } = roParams.parse(req.params);
     return sendResearch(publicId, undefined, reply);
@@ -117,6 +144,7 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
 
   app.get('/research/:publicId/v/:versionNo', async (req, reply) => {
     const { publicId, versionNo } = versionParams.parse(req.params);
+    if (await redirectCorrectedPublication(publicId, versionNo, reply)) return;
     return sendResearch(publicId, versionNo, reply);
   });
 
@@ -247,6 +275,7 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
   app.get('/research/:publicId/v/:versionNo/artifacts/:artifactId/download', async (req, reply) => {
     if (!deps.storage) throw new PublicEvidenceSourceError('SOURCE_UNAVAILABLE', 'Published attachment is temporarily unavailable');
     const params = artifactDownloadParams.parse(req.params);
+    if (await redirectCorrectedPublication(params.publicId, params.versionNo, reply, `/artifacts/${params.artifactId}/download`)) return;
     const download = await getPublicArtifactDownload(deps, params);
     let blob;
     try { blob = await getBlob(deps.storage, download.blobSha256); }
@@ -263,12 +292,14 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
   app.get('/research/:publicId/v/:versionNo/evidence/:evidenceId/source', async (req, reply) => {
     if (!deps.storage) throw new PublicEvidenceSourceError('SOURCE_UNAVAILABLE', 'published source is temporarily unavailable');
     const { publicId, versionNo, evidenceId } = evidenceSourceParams.parse(req.params);
+    if (await redirectCorrectedPublication(publicId, versionNo, reply, `/evidence/${evidenceId}/source`)) return;
     return reply.send(await getPublicEvidenceSource({ ...deps, storage: deps.storage }, { publicId, versionNo, evidenceId }));
   });
 
   app.get('/research/:publicId/v/:versionNo/presentation-assets/:assetId', async (req, reply) => {
     if (!deps.storage) throw new PublicEvidenceSourceError('SOURCE_UNAVAILABLE', 'published asset is temporarily unavailable');
     const { publicId, versionNo, assetId } = presentationAssetParams.parse(req.params);
+    if (await redirectCorrectedPublication(publicId, versionNo, reply, `/presentation-assets/${assetId}`)) return;
     const ro = await deps.prisma.researchObject.findUnique({ where: { publicId } });
     if (!ro || ro.visibility !== 'public') throw new PublicEvidenceSourceError('NOT_FOUND', 'published asset not found');
     const version = await deps.prisma.version.findFirst({
