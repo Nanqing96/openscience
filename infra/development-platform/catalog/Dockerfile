@@ -4,12 +4,9 @@ WORKDIR /app
 
 # Native SQLite may need compilation when no upstream prebuilt binary matches.
 # These build tools never enter the runtime image.
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends python3 g++ make
+RUN apt-get update && apt-get install -y --no-install-recommends python3 g++ make
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-RUN --mount=type=cache,target=/root/.npm \
-    --mount=type=cache,target=/root/.local/share/pnpm/store \
-    npx --yes pnpm@9.15.0 install --frozen-lockfile --prod
+RUN npx --yes pnpm@9.15.0 install --frozen-lockfile --prod
 
 FROM node:22-bookworm-slim AS runtime
 ENV NODE_ENV=production

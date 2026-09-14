@@ -2,9 +2,7 @@
 FROM node:22-bookworm-slim AS dependencies
 WORKDIR /opt/skills
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
-RUN --mount=type=cache,target=/root/.npm \
-    --mount=type=cache,target=/root/.local/share/pnpm/store \
-    npx --yes pnpm@9.15.0 install --prod --frozen-lockfile --ignore-scripts
+RUN npx --yes pnpm@9.15.0 install --prod --frozen-lockfile --ignore-scripts
 
 FROM node:22-bookworm-slim
 LABEL org.opencontainers.image.source="https://github.com/vercel-labs/skills" \
