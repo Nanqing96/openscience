@@ -263,4 +263,11 @@
 .claimDetails { margin-top: 16px; }
 .claimDetails > summary { min-height: 44px; color: var(--public-product-teal); font: 600 14px/24px var(--font-ui), system-ui, sans-serif; cursor: pointer; }
 .claimDetails > p { margin: 14px 0; }
+.evidencePassage { padding: 16px; font: 400 16px/1.8 var(--font-ui), system-ui, sans-serif; overflow-wrap: anywhere; }
+.evidencePassage > strong { display: block; }
+.evidencePassage blockquote { margin: 12px 0; }
+.evidencePassage blockquote > :first-child { margin-top: 0; }
+.evidencePassage :is(h1, h2, h3, h4, h5, h6) { font: 600 17px/1.6 var(--font-ui), system-ui, sans-serif; }
+.evidencePassage :is(pre, table) { display: block; max-width: 100%; overflow-x: auto; }
+.evidencePassage > button { padding-inline: 0; text-align: left; }
 @media print { .claimDetails::details-content { content-visibility: visible; display: block; } }

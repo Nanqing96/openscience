@@ -1,5 +1,7 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
+- 2026-09-14第一轮59c8cebf已部署/rollbacka7214fc9，服务器build/start exit0。匿名公开记录与a721逐字段全等；主张57/57数学源码逐字保持、0错误、制作前言/笔记ID/S标记0；40来源按10页组保留，来源点击200。API页桌面/380CSS窄屏可读无横溢出；线上逐字复制curl/Python教程均exit0，6字段/固定URL/下载URL全等（tmp/api-tutorial-final.log）。
+- 实际看图发现来源quote自身Markdown仍显示星号，已补为相同ScientificMarkdown并把查看来源按钮移到引用外；三文件High静态PASS，待补修部署。滚动截图须CDP Page.captureScreenshot(fromSurface:false)避免既有125%zoom产生scrollY×0.25空白；展开后等待document.fonts.ready，防止未加载字体短暂缺字。真实截图/DOM/57式比对见tmp/claims-visual-reading.log、claims-math-source-comparison.json及claims-api-*.png。
 - 2026-09-14新反馈处理中：核心主张误用h3直出Markdown/TeX/制作前言；正在复用Hermes科学Markdown，按原章节和文件/页码组织证据并去机器locator。API页复用公开产品rp/共享排版。候选尚未部署，无科研记录修改。
 - 已逐字提取线上教程实跑：curl exit0返回23/v1六字段与40证据；Python exit1，Cloudflare403/1010(browser_signature_banned)。明确User-Agent OpenScience-API-Example/1.0后相同GET已200；候选文档加入该客户端标识/403说明，部署后再逐字执行完整教程。收据tmp/api-tutorial-execute.log及api-python-error.sh/client.sh。
 - 2026-09-14公开文章标准API已交付：latest/exact共用原公开读取，最新返回完整JSON；统一OpenAPI3.1含8个真实GET、/developers中英文档与导航、HTML JSON alternate、Link/Content-Location/links.self。借鉴Crossref/OpenAlex/OpenAPI；无新服务/依赖/迁移/科研写入，独立High静态PASS。该API基础已交付，本轮按最新截图修复阅读与教程。

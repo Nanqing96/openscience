@@ -1,6 +1,7 @@
 'use client';
 
 import { ScientificText } from '@/components/content/ScientificText';
+import { ScientificMarkdown } from '@/components/content/ScientificMarkdown';
 
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
@@ -16,7 +17,7 @@ export function EvidenceSourceBody({ evidence, source, loading, error }: { evide
     {loading && <p aria-live="polite">{t('loadingSource')}</p>}
     {error && <p role="alert">{t('sourceUnavailable')}</p>}
     {source && <div className="pub-source-record">
-      <ScientificText as="blockquote">{source.text}</ScientificText>
+      <blockquote><ScientificMarkdown body={source.text} /></blockquote>
       {source.region && <figure className="pub-source-region" data-source-region="normalized" aria-label={t('sourceRegion')}>
         <span style={{ left: `${source.region.x * 100}%`, top: `${source.region.y * 100}%`, width: `${source.region.width * 100}%`, height: `${source.region.height * 100}%` }} />
         <figcaption>{t('sourceRegion')}</figcaption>

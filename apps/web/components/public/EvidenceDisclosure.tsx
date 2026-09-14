@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import type { PublicEvidence } from '../../lib/api';
 import { ScientificText } from '../content/ScientificText';
+import { ScientificMarkdown } from '../content/ScientificMarkdown';
 import { evidenceReadingTitle, groupEvidenceBySource } from './evidence-display';
 import styles from './PublicReadingProduct.module.css';
 import {
@@ -51,12 +52,12 @@ export function EvidenceDisclosure({
             <summary><span>{group.file}</span><span>{group.page === null ? t('passage') : t('page', { page: group.page })} · {t('passageCount', { count: group.items.length })}</span></summary>
             {group.items.map((item) => (
               <article className="pub-evidence-item" data-evidence-relation={item.relation} key={item.id}>
-                <button type="button" className="pub-evidence-select" onClick={() => onInspect(item)}>
+                <div className={styles.evidencePassage}>
                   <span className="pub-evidence-relation">{t(`relation.${item.relation}`)}</span>
                   {evidenceReadingTitle(item) && <ScientificText as="strong" hideSourceMarkers>{evidenceReadingTitle(item)}</ScientificText>}
-                  {item.exactQuote && <ScientificText as="q">{item.exactQuote}</ScientificText>}
-                  <span className="pub-evidence-open">{t('inspectSource')}</span>
-                </button>
+                  {item.exactQuote && <blockquote><ScientificMarkdown body={item.exactQuote} /></blockquote>}
+                  <button type="button" className="pub-text-button pub-evidence-open" onClick={() => onInspect(item)}>{t('inspectSource')}</button>
+                </div>
               </article>
             ))}
           </details>
