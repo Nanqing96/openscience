@@ -15,8 +15,12 @@ case "${1:-}" in
     ;;
   start)
     [[ $# == 2 && $2 == --confirm ]] || exit 64
-    "${compose[@]}" up -d --pull never --wait --wait-timeout 300
     root=/opt/openscience-development/langfuse
+    if [[ -L $root/current && $(readlink -f "$root/current") != "$release_dir" ]]; then
+      printf 'Refusing an older release against current data volumes. Restore matching data separately.\n' >&2
+      exit 1
+    fi
+    "${compose[@]}" up -d --pull never --wait --wait-timeout 300
     [[ ! -e $root/current || -L $root/current ]] || exit 1
     if [[ -L $root/current && $(readlink "$root/current") != "$release_dir" ]]; then readlink "$root/current" > "$release_dir/previous-release"; fi
     ln -s -- "$release_dir" "$root/.current-$$"

@@ -34,6 +34,11 @@ if [ "${1:-}" = '--browser-tunnel' ]; then
   BROWSER_TUNNEL=1
   set -- ':'
 fi
+if [ "${1:-}" = '--development-tunnel' ]; then
+  [ $# -eq 1 ] || usage
+  DEVELOPMENT_TUNNEL=1
+  set -- ':'
+fi
 if [ "${1:-}" = "--confirm" ]; then
   CONFIRM=1
   shift
@@ -95,6 +100,15 @@ if [ "${BROWSER_TUNNEL:-0}" -eq 1 ]; then
     -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
     -i "$HOME/.ssh/id_ed25519_xgs" -p "$SSH_PORT" \
     -L 127.0.0.1:6081:127.0.0.1:6081 "${SSH_USER}@${SSH_HOST}"
+fi
+
+if [ "${DEVELOPMENT_TUNNEL:-0}" -eq 1 ]; then
+  exec ssh -N -T -o BatchMode=yes -o ExitOnForwardFailure=yes \
+    -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+    -i "$SSH_KEY" -p "$SSH_PORT" \
+    -L 127.0.0.1:3130:127.0.0.1:3130 \
+    -L 127.0.0.1:3131:127.0.0.1:3131 \
+    -L 127.0.0.1:3132:127.0.0.1:3132 "${SSH_USER}@${SSH_HOST}"
 fi
 
 # --- 执行（BatchMode：无密钥即失败，绝不提示密码）---

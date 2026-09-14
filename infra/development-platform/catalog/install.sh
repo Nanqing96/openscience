@@ -8,7 +8,8 @@ export CATALOG_SOURCE_DIR
 CATALOG_SOURCE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 export CATALOG_STATE_DIR="${CATALOG_STATE_DIR:-/opt/openscience-development/catalog/state}"
 export CATALOG_SECRETS_DIR="${CATALOG_SECRETS_DIR:-/etc/openscience-development/catalog}"
-export CATALOG_IMAGE_TAG="${CATALOG_IMAGE_TAG:-1.54.7}"
+export CATALOG_IMAGE_TAG="${CATALOG_IMAGE_TAG:?Set the full infrastructure Git revision}"
+[[ $CATALOG_IMAGE_TAG =~ ^[a-f0-9]{40}$ ]] || { printf 'Use a full Git revision.\n' >&2; exit 64; }
 
 if [[ "$(id -u)" != 0 ]]; then
   printf '%s\n' 'Run this installer as root on the server; it prepares persistent container storage.' >&2
@@ -37,6 +38,8 @@ if [[ ! -f "$CATALOG_SOURCE_DIR/pnpm-lock.yaml" ]]; then
     --workdir /app node:22-bookworm-slim \
     npx --yes pnpm@9.15.0 --ignore-workspace install --lockfile-only --ignore-scripts
   chmod 0644 "$CATALOG_SOURCE_DIR/pnpm-lock.yaml"
+  printf 'Dependency lock generated. Commit this file, transfer that revision, then install its image.\n'
+  exit 0
 fi
 
 with-proxy docker build --pull=false --network host \

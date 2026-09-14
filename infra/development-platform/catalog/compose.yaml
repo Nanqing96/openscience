@@ -2,7 +2,7 @@ name: openscience-development-catalog
 
 services:
   catalog:
-    image: openscience-backstage-catalog:${CATALOG_IMAGE_TAG:-1.54.7}
+    image: openscience-backstage-catalog:${CATALOG_IMAGE_TAG:?Set the full infrastructure Git revision}
     restart: unless-stopped
     init: true
     user: "1000:1000"

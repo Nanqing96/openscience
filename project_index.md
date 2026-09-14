@@ -4,6 +4,8 @@
 
 | 本轮文件 | 用途 |
 |---|---|
+| `infra/development-platform/catalog/` / `infra/development-platform/langfuse/` / `infra/development-platform/telemetry/` / `infra/development-platform/code-intelligence/` / `infra/development-platform/skills/` | 用户授权的底层能力交付：私有Backstage目录、Langfuse Gateway元数据、Serena只读符号与引用、标准技能CLI；独立于科研应用release，具体安装/使用证据见CURRENT |
+| `infra/scripts/ssh-run.sh` | 既有SSH入口增加development私有3130/3131/3132端口转发，不公开管理服务 |
 | `AGENTS.md` / `.agents/skills/architecture-guard/SKILL.md` / `.agents/skills/docs-sync/SKILL.md` / `docs/decisions/ADR-002-agent-tooling-portability.md` | 复用前定位产品意图、实际调用与已有结果；能力索引按需读取、唯一版本锚点，禁止安装/格式检查冒充运行效果 |
 | `apps/agent-worker/src/skills/installed-media-skills.ts` / `apps/agent-worker/src/presentation/illustration-review.ts` / `.agents/skills/openscience-research-illustration/SKILL.md` | 未部署候选：引用既有critical-thinking共享规则，删除审阅重复原则；修decision收窄。全文重写与上游传递问题仍待收敛，见CURRENT |
 | `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | dd4c935a/v4已部署；区分科学批准与审美认可、定向修改保持/否定构图重排。新学术cdce/封面1a1d均被用户否定，仍只认可淡彩aa41；实际结果/局限见CURRENT |
@@ -19,7 +21,7 @@
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：应用89d05d6d/rollback b2f3cf37；Chat bundle e2。两阶段真实d31仍科学错误已拒绝，未生图。新增Chat最终语义审阅候选未部署。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> 以下为历史交付索引，不作当前release或next action。唯一续作入口为上方CURRENT handoff。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |

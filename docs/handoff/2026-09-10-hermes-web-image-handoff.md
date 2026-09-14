@@ -1,7 +1,7 @@
 # Hermes / Workbench CURRENT Handoff
 ## 当前目标与暂停边界
-- 用户2026-09-14最新要求：先修能力复用/产品状态掌握问题，再code-review；生图主线保留，但暂停部署、模型任务、改稿和生成。
-- 禁止测试/预检/CI/本机运行检查。只静态编辑、Git、必要状态读取；无新依赖、MCP、后台管理服务、删除或公开变更。
+- 用户2026-09-14最新要求：实际完成已调研的底层开发管理能力，再恢复产品开发；授权项目级新工具及独立服务器服务。生图候选应用部署、模型任务、改稿和生成继续暂停。
+- 禁止测试/预检/CI/本机运行检查。本机静态编辑、Git与传输；服务器执行新底层工具必要安装、构建、启动及实际使用。不得连带部署未完成的科研应用候选，不删除数据或改公开内容。
 - 科学认识来自上游解析/分析，不固定文献/图形模板；Chat生图主用，Codex CLI仅备用。Figma、视频、第三篇、批量继续暂停。
 ## 版本事实
 - 工作树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；代码/治理候选bf8db1ad（基于8e4c62a1），未部署；此后纯交接提交的HEAD/origin用Git读取，不代表代码或release变化。
@@ -9,6 +9,7 @@
 - Chat receiver bundle8e4c62a1已安装exit0，兼容旧v1和新v2；应用8e4构建在handler.ts359 Prisma JSON类型失败exit2，旧应用保持。部署session20551已结束，不重跑。
 - 干净发布树 .worktrees/art-direction-release-41ae8902 当前8e4；根目录dirty main不是交付基线。交付树无关dirty integrated-research-product-design.md不得提交/覆盖。
 ## 本轮完成 / 实际证据
+- 当前基础设施工作：`infra/development-platform/`。首批catalog/langfuse/telemetry源码8360360b已物化服务器；尚未安装/启动。Serena/skills与接线正在实现，独立High审查进行中。Backstage为私有标准目录API（非完整门户）；Langfuse仅受限Gateway调用元数据；Serena只读TS符号/引用、模块图复用dependency-cruiser；Vercel Skills管理项目技能发现。GitNexus因当前Noncommercial许可未采用。
 - 独立High定向审查确认：科学critical-thinking在extractor已使用；配图另写重叠规则；长Claim+全部证据二次分析造成断接。BGE是检索，写作skill是带引用写稿，不能强接为配图真伪裁定器。
 - 候选installed-media-skills直接复用既有critical-thinking常量，记录id/version/源码资源；审阅提示词删重叠原则。decision改字面量收窄，修已定位类型原因；未重新构建，不能称编译通过。
 - 复用architecture-guard/docs-sync/ADR-002，补“目的→已有实现与调用→真实任务结果→缺口”的工作方式；不新建管理系统或机器门禁。
@@ -22,7 +23,8 @@
 - 原参考图bytes路径已部署但未真实上传/生成；输出仍1280×720。自有skill/3套Baoyu已实际消费，但通用科学及审美质量未获证实。
 - 管理索引和规则已整理；没有自动全产品调用图或持续质量评分，不能承诺彻底杜绝遗漏。效果按实际产物与用户反馈更新。
 ## 下一步
-- 本轮治理与候选修正已静态复核并提交；保持产品主线暂停，不自动执行tmp生成/部署脚本。
+- 先完成独立工具服务器安装及实际查询、项目调用入口接线和High复核；更新本页具体结果后再恢复配图主线。旧“无新工具安装”是上轮历史，不是本轮授权边界。
+- 保持科研产品主线暂停，不执行旧tmp生成/应用部署脚本。
 - 恢复配图主线时：先让既有上游已审关系/原文限定提供一个视觉焦点，艺术只做表达；收敛最终审阅范围与允许修改字段。当前完整重写候选先调整，勿先部署碰运气。
 - 后续必要交付沿用既有Gateway和v1/v2接收端、权限/来源关系及no-tests流程；不因skill市场有包就安装新运行器。
 ## 保护范围 / 读法
