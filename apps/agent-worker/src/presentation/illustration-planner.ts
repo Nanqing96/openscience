@@ -13,9 +13,14 @@ const object = (value: unknown): Record<string, unknown> => {
 const keys = (value: Record<string, unknown>, expected: string[]) => {
   if (Object.keys(value).sort().join(',') !== expected.sort().join(',')) throw new Error('unexpected_fields');
 };
-const text = (value: unknown, limit: number): string => {
-  if (typeof value !== 'string' || !value.trim() || value.length > limit || /[\u0000-\u001f]/u.test(value)) throw new Error('text_length_or_control_character');
-  return value.trim();
+const text = (value: unknown, limit: number, field = 'text', art = false): string => {
+  if (typeof value !== 'string') throw new Error(`${field}:string_required_received_${Array.isArray(value) ? 'array' : typeof value}`);
+  const line = (art ? value.replace(/\r?\n|\t/gu, ' ') : value).trim();
+  if (!line) throw new Error(`${field}:empty`);
+  if (line.length > limit) throw new Error(`${field}:length_${line.length}_max_${limit}`);
+  const control = /[\u0000-\u001f]/u.exec(line);
+  if (control) throw new Error(`${field}:control_${control[0].charCodeAt(0)}`);
+  return line;
 };
 
 /** Select scientific meaning before exposing it to composition/style guidance. */
@@ -68,11 +73,11 @@ Return exactly {title,scenes:[{title,narration,message,domain,subjects,labels,co
         return { description: subject.description, basis: { claimId: original.claimId, evidenceId: original.evidenceId, quote: original.text } };
       });
       const illustration = parseIllustrationBrief({ schemaVersion: 1, message: scene.message, domain: scene.domain, subjects,
-        labels: scene.labels, constraints: scene.constraints, composition: text(scene.encoding, 200), treatment: 'Art direction pending' }, claimIds);
+        labels: scene.labels, constraints: scene.constraints, composition: text(scene.encoding, 200, 'encoding'), treatment: 'Art direction pending' }, claimIds);
       requireIllustrationSourceSupport(illustration, claims);
       // Leave the art stage its full existing field budget; it cannot shorten science to fit.
       compileIllustrationImagePrompt({ ...illustration, composition: `科学编码：${illustration.composition}；排布：${'x'.repeat(160)}`, treatment: 'x'.repeat(220) });
-      return { title: text(scene.title, 120), narration: text(scene.narration, 120), illustration,
+      return { title: text(scene.title, 120, 'scene_title'), narration: text(scene.narration, 120, 'narration'), illustration,
         sourceClaimIds: [...new Set(illustration.subjects.map(subject => subject.basis.claimId))] };
     }) };
   }
@@ -98,8 +103,8 @@ Return exactly {title,scenes:[{title,narration,message,domain,subjects,labels,co
       const art = object(raw); keys(art, ['layout', 'treatment']);
       const scene = intent.scenes[index]!;
       const illustration = parseIllustrationBrief({ ...scene.illustration,
-        composition: `科学编码：${scene.illustration.composition}；排布：${text(art.layout, 160)}`,
-        treatment: text(art.treatment, 220) }, scene.sourceClaimIds);
+        composition: `科学编码：${scene.illustration.composition}；排布：${text(art.layout, 160, 'layout', true)}`,
+        treatment: text(art.treatment, 220, 'treatment', true) }, scene.sourceClaimIds);
       compileIllustrationImagePrompt(illustration);
       return { ...scene, illustration, visualAction: describeIllustrationBrief(illustration) };
     });
@@ -109,7 +114,7 @@ Return exactly {title,scenes:[{title,narration,message,domain,subjects,labels,co
     try { combineArt(value); return true; } catch (error) { diagnostic = error instanceof Error ? error.message : 'invalid_art_direction'; return false; }
   }, artMessages, { temperature: 0.3, includeRejectedResponseOnRetry: true,
     validationDiagnostic: () => diagnostic.toLowerCase().replace(/[^a-z0-9_,:-]+/gu, '_').slice(0, 400),
-    validationFeedback: () => `Art direction failed: ${diagnostic}. Return only scenes/layout/treatment. Shorten layout and treatment to fit; science fields cannot be edited.` });
+    validationFeedback: () => `Art direction failed: ${diagnostic}. Return exactly {"scenes":[{"layout":"a short text description of placement","treatment":"a short text description of material and typography"}]}, one entry per supplied intent. Both fields must be strings, not objects, arrays or null. Shorten layout and treatment to their stated character limits; science fields cannot be edited.` });
   const designSkills = [...scienceSkills.usage, ...artSkills.usage].reduce<typeof artSkills.usage>((all, item) => {
     const current = all.find(entry => entry.id === item.id);
     if (current) current.resources = [...new Set([...current.resources, ...item.resources])]; else all.push({ ...item, resources: [...item.resources] });
