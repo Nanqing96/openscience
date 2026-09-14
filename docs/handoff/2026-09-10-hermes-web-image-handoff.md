@@ -1,17 +1,20 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
-- 2026-09-14第一轮59c8cebf已部署/rollbacka7214fc9，服务器build/start exit0。匿名公开记录与a721逐字段全等；主张57/57数学源码逐字保持、0错误、制作前言/笔记ID/S标记0；40来源按10页组保留，来源点击200。API页桌面/380CSS窄屏可读无横溢出；线上逐字复制curl/Python教程均exit0，6字段/固定URL/下载URL全等（tmp/api-tutorial-final.log）。
-- 实际看图发现来源quote自身Markdown仍显示星号，已补为相同ScientificMarkdown并把查看来源按钮移到引用外；三文件High静态PASS，待补修部署。滚动截图须CDP Page.captureScreenshot(fromSurface:false)避免既有125%zoom产生scrollY×0.25空白；展开后等待document.fonts.ready，防止未加载字体短暂缺字。真实截图/DOM/57式比对见tmp/claims-visual-reading.log、claims-math-source-comparison.json及claims-api-*.png。
-- 2026-09-14新反馈处理中：核心主张误用h3直出Markdown/TeX/制作前言；正在复用Hermes科学Markdown，按原章节和文件/页码组织证据并去机器locator。API页复用公开产品rp/共享排版。候选尚未部署，无科研记录修改。
-- 已逐字提取线上教程实跑：curl exit0返回23/v1六字段与40证据；Python exit1，Cloudflare403/1010(browser_signature_banned)。明确User-Agent OpenScience-API-Example/1.0后相同GET已200；候选文档加入该客户端标识/403说明，部署后再逐字执行完整教程。收据tmp/api-tutorial-execute.log及api-python-error.sh/client.sh。
-- 2026-09-14公开文章标准API已交付：latest/exact共用原公开读取，最新返回完整JSON；统一OpenAPI3.1含8个真实GET、/developers中英文档与导航、HTML JSON alternate、Link/Content-Location/links.self。借鉴Crossref/OpenAlex/OpenAPI；无新服务/依赖/迁移/科研写入，独立High静态PASS。该API基础已交付，本轮按最新截图修复阅读与教程。
-- 2026-09-14第二篇已真实发布OSR-2026-000023/v/1，作者DHL、完整原题、文字/数据CC-BY-4.0、代码MIT，原PDF允许匿名下载。用户确认原创/昵称/下载并委托选许可；两篇真实论文已公开，等待用户对产品质量反馈，视频/批量暂停。
-- 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。必要服务器build/migrate/start与真实页面阅读已执行，不通过删除/发布受保护论文验证功能。
-- 服务器MiniMax-M3。自动生成、引导共编、人工校正分别记录；独立High审核不能冒称产品自动审校。
+- 2026-09-14最新截图反馈已完成：公开Claim复用Hermes科学Markdown，概要/完整推导/适用条件/原文证据分层；不再整篇h3直出。来源按文件/页码分10组保留40条，去重复标题、制作前言、笔记UUID、内部[S]和机器locator；原quote/source也用Markdown与公式显示，原始数据不改。
+- /developers复用公开产品rp颜色/字体/共享标题；curl前置。线上原文教程实跑发现原Python默认UA被Cloudflare403/1010拒绝，显式真实客户端User-Agent后成功；不放宽防护或伪装浏览器。现在页面curl/Python均已逐字执行exit0，六字段/固定URL/下载URL与API一致。
+- 真实论文仍22/v10与23/v1；作者DHL/文字和数据CC-BY-4.0/代码MIT/PDF授权均保留。无新论文发布、模型/图像生成或数据库写入；视频/批量仍暂停。
+- 本机只编辑/静态阅读/传输；无测试、预检、CI或本机构建。仅必要服务器build/start和用户明确要求的实际页面/教程读取。自动首稿科学质量仍不稳定，不把人工审校或展示修复称为自动正确。
 ## Version and workspace
-- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；代码HEAD/origina7214fc9bff7c2837ec562fc923ae23a6c4e8d6e，随后仅文档补记；实际文档HEAD从Git读取，不等于应用release。
-- 当前ECS releasea7214fc9bff7c2837ec562fc923ae23a6c4e8d6e / rollbacke7f95180643a852951cfcfb4f7cc8dd65fac58d5。tmp/public-api-deploy-a7214fc9.log及exec98387 exit0：--no-tests --skip-migrate，服务器完整build/start、精确release切换与journal收尾完成，无手动stop。clean树.worktrees/public-api-release-a7214fc9；e7f回滚保留前次发布/下载，但撤销本次API入口升级。c0bc及以前仍禁回退。
-- clean发布树.worktrees/public-download-release-e7f95180；先前各发布树保留。根目录dirty main不是生产基线，未合并main；无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。
+- 交付树E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码HEAD/origin6af9c984a6293582e2e966fa7a540c10c48e5e07，随后仅文档补记；实际文档HEAD从Git读取，不等于应用release。
+- 当前ECS release6af9c984a6293582e2e966fa7a540c10c48e5e07 / rollback59c8cebfd8c5a687af83a11cde07c54c47adb708；最终公开/__release实读一致。clean发布树.worktrees/claims-quotes-release-6af9c984；首轮.worktrees/claims-api-release-59c8cebf及全部旧发布树保留。
+- 首轮59c8及补修6af均独立High静态PASS，必要服务器build/start完成，--no-tests --skip-migrate；tmp/claims-api-deploy-59c8cebf.log与claims-quotes-deploy-6af9c984-resume.log exit0。6af首试在cloud-sync准备阶段SSH reset，实读59仍healthy且无部署进程后原候选续跑成功；没有手动停服务/改生产记录。
+- 根目录dirty main不是生产基线；交付树无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得覆盖/提交。c0bc及以前禁止回退；当前兼容rollback59会仅撤原文Markdown补修，不撤主张/API修复。
+## Latest actual reading
+- tmp/claims-api-reading.json/log：匿名记录与a721深度同值，40证据/10文件页组保留，来源点击200。主张展开后内部S/制作前言/笔记UUID均0；tmp/claims-math-source-comparison.json：57/57公式与保存TeX逐字全等，0公式错误。
+- tmp/claims-api-developers-{desktop,mobile}.png已看：统一冷白rp背景/36px标题，1152/380CSS视口无横溢出。tmp/api-tutorial-final.log：从线上页面逐字提取的curl/Python两者exit0；23/v1六项正文、固定URL和下载URL匹配。原失败收据api-tutorial-execute.log、api-python-error.txt保留。
+- 最终6af实际阅读tmp/evidence-final-reading.json/log：来源Markdown正常呈现，段落/粗体/斜体可见、原星号消失、0公式错误，来源按钮200且机器locator不显示，380CSS窄屏无横溢出；claims-api-evidence-final{,-mobile}.png已看。主张/完整推导/窄屏截图claims-api-{claim-desktop,formulas,claim-mobile}.png已看，API和科学内容未在补修改变，复用上述有效证据。
+- 滚动截图注意：服务器Chrome现有125%zoom使Playwright截图产生scrollY×0.25空白；用现有CDP Page.captureScreenshot(fromSurface:false)获取实际视口，不改网页或图片。展开后等document.fonts.ready再截图，否则未下载字体会短暂缺字。最小DOM/截图记录tmp/claims-visual-reading.{sh,log}，服务器/jobs同名。
+- 本轮完成，下一步按用户实际阅读反馈继续；不自动启动第三篇/视频/批量。特定外部AI工具域名接入限制仍未证明解决，见下方历史API观察。
 ## Public API observation
 - tmp/public-api-reading.json/log（服务器/jobs同名）：匿名/developers、OpenAPI、23/latest、23/v1、22/v10及冻结来源均200；latest除兼容latestVersion字段外与exact深度同值，固定links.self/Content-Location正确；23正文/Claim/原配图与上轮数据同值，40来源保留，下载URL授权保持。HTML中固定JSON alternate和开发者导航可发现，旧引用区技术链接0。tmp/public-api-developers.png已视觉查看。
 - 公开接入：https://openscience.428312321.xyz/developers；规范/api/research-record/openapi；最新完整/api/research/OSR-2026-000023；固定/api/research/OSR-2026-000023/v/1。原PDF下载字节证据复用e7f，不重复下载。

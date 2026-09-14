@@ -1,4 +1,6 @@
 # 服务器能力与复用清单
+
+- 2026-09-14应用6af9c984/rollback59c8cebf：证据主张/原文统一科学Markdown，40来源按文件页码分组，原记录不变；API文档复用公开视觉，线上原文curl/Python已执行成功。原Python默认UA被Cloudflare1010拒绝，示例显式应用User-Agent修复；无防护/权限/模型/依赖变更。主张57式源码全等、来源按钮200及桌面/窄屏已实际查看。服务器必要build/start完成，无测试/预检/迁移/科研写入；详细证据见CURRENT。
 - 2026-09-14当前应用a7214fc9/rollbacke7f95180：外部AI可按公开文章ID读取最新完整JSON或固定公开版；/developers提供中英文档/导航，统一OpenAPI3.1描述8个GET，HTML JSON alternate及API Link/Content-Location完成发现。复用原权限/冻结记录/限流，无新模型/服务/依赖/迁移/科研写入；High静态PASS及必要服务器build/start exit0。匿名文档/规范/23最新与v1/22v10/来源均200，内容保留；web工具域名安全拒绝未作网络根因结论，客户端兼容边界见CURRENT。
 - 2026-09-14历史应用e7f95180/rollback0931cf12：公开附件授权及单结论发布修复已部署，服务器完整build/start exit0，独立High PASS，无测试/预检/新服务/模型/依赖/迁移。第二篇真实公开23/v1，DHL、文字/数据CC-BY-4.0、代码MIT，匿名页面/API/PDF200，原PDF568765字节/hash24d11cc8保持；40来源/原图保留。原context.request绕Chrome代理EAI_AGAIN改页面fetch后成功，不是产品登录故障。具体收据与尚未观察范围见CURRENT。
 - 2026-09-14当前应用0931cf12/rollback02d67ddf：带图草稿保存500已修复（Prisma复合关联拆为同事务create/createMany），无新服务/依赖/迁移/模型调用。独立High静态PASS，必要服务器build/start exit0。真实第二篇重复附件整理201、private/revision7/72c315af；正文/40来源/已批配图继承已实际核对，预览与工作台截图已看。作者/许可/PDF权限待确认，未公开；02d回退会恢复此保存故障，当前细节见CURRENT。

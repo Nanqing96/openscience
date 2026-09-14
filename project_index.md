@@ -1,16 +1,16 @@
 # OpenScience (XGS) 项目文件索引
 
-> 当前任务 2026-09-14已完成：公开文章标准API/统一OpenAPI和/developers发现入口已部署a7214fc9（rollbacke7f95180）。匿名文档/最新/固定/旧v10/来源均200，内容保持、截图已看；外部web工具域名拒绝仍有客户端兼容边界。代码HEAD/origina7214fc9，随后仅文档补记；唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
+> 当前任务2026-09-14已完成：证据主张/原文结构化阅读与API页视觉及教程修复已部署6af9c984（rollback59c8cebf）。主张57/57公式原文保持、40证据/10页组，来源200与桌面/窄屏截图已看；线上curl/Python原文执行exit0、正文及链接正确。代码HEAD/origin6af9c984，后续仅文档补记；唯一状态源docs/handoff/2026-09-10-hermes-web-image-handoff.md。
 
 | 本轮文件 | 用途 |
 |---|---|
 | `apps/api/src/routes/research.ts` / `apps/api/src/routes/research-record.ts` / `apps/api/src/routes/research-record-schema.ts` | latest/exact统一公开读取、版本固定及机器发现头，描述全部8个真实GET的OpenAPI3.1 |
-| `apps/web/app/developers/page.tsx` / `apps/web/app/developers/developers.module.css` / `apps/web/messages/zh.json` / `apps/web/messages/en.json` | 统一中英API文档、可点击实际JSON示例、curl/Python、权限/限流/返回字段 |
+| `apps/web/app/developers/page.tsx` / `apps/web/app/developers/developers.module.css` / `apps/web/messages/zh.json` / `apps/web/messages/en.json` | 统一中英API文档与公开产品视觉；Python真实应用User-Agent/403说明，线上curl/Python执行成功、六字段与链接一致，DEPLOYED6af9c984 |
 | `apps/web/components/landing/SiteHeader.tsx` / `apps/web/app/layout.tsx` / `apps/web/app/research/[publicId]/page.tsx` / `apps/web/app/research/[publicId]/v/[versionNo]/page.tsx` | 导航与OpenAPI发现、真实公开版本的HTML JSON alternate |
 | `apps/web/components/public/PublicVersionPage.tsx` / `apps/web/lib/public-server-api.ts` / `apps/web/lib/api.ts` | 阅读区移除技术链接，latest完整响应一次读取及类型同步 |
 | `docs/specs/2026-09-07-open-research-publication-prd.md` §3.4 / `docs/OpenScience_Kimi_Development_Spec.md` §16 | 用户确认的标准接口寻址、集中入口、Crossref/OpenAlex/OpenAPI方法参考 |
 
-> CURRENT 2026-09-14：第二篇已公开OSR-2026-000023/v/1（72c315af），完整原题/DHL署名/CC-BY-4.0文字与数据许可、MIT代码许可。已审正文/40来源/图保留，匿名PDF下载200且原件字节一致；已完成两篇真实发布，视频/批量暂停。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，应用a7214fc9 / rollbacke7f95180；本篇发布操作历史见CURRENT。无删除/测试/迁移。
+> CURRENT 2026-09-14：第二篇已公开OSR-2026-000023/v/1（72c315af），完整原题/DHL署名/CC-BY-4.0文字与数据许可、MIT代码许可。已审正文/40来源/图保留，匿名PDF下载200且原件字节一致；已完成两篇真实发布，视频/批量暂停。唯一续作入口docs/handoff/2026-09-10-hermes-web-image-handoff.md。branch codex/onchip-video-release，应用6af9c984 / rollback59c8cebf；本篇发布操作历史见CURRENT。无删除/测试/迁移。
 
 | 本轮路径 | 用途与状态 |
 | --- | --- |
@@ -639,4 +639,5 @@
 
 | .agents/skills/frontend-design/SKILL.md | 科研阅读入口统一公式渲染、内部核查留后台、Hermes反馈规则 | 2026-09-13用户纠偏已固化；无新增工具或测试门禁 |
 
-| apps/web/components/content/ScientificMarkdown.tsx / public/evidence-display.ts / public/{ClaimNarrative,EvidenceDisclosure,EvidenceRail}.tsx / public/PublicReadingProduct.module.css | 共用Hermes已有Markdown与公式保护；长主张分层、证据按文件页码组织、阅读隐藏机器信息 | 2026-09-14候选，部署及实际阅读见CURRENT |
+| apps/web/components/content/ScientificMarkdown.tsx / public/evidence-display.ts / public/{ClaimNarrative,EvidenceDisclosure,EvidenceRail}.tsx / public/PublicReadingProduct.module.css | 共用Hermes已有Markdown与公式保护；长主张分层、证据按文件页码组织、阅读隐藏机器信息 | DEPLOYED6af9c984；主张57式原文保持、40证据/10页组，最终来源按钮200与桌面/窄屏截图已看；CURRENT |
+
