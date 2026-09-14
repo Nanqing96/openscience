@@ -1,5 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## Goal and constraints
+- 当前新增反馈进行中：用户指出个人空间右栏大块空白。已实读线上仍f8e44815、api/worker等健康；仅修改dashboard.module.css，Hermes不再跨三行、后续区块整行并压紧导入布局。待必要服务器构建部署和桌面/窄屏实际查看；不是重复执行上一轮清除。
 - 当前反馈已完成：f8e44815已部署；Node符号链接识别、Codex正常信号退出及清理安装等待锁修复。用户原4项purge_pending已全部purged：旧RO66已删除、两会话不存在、笔记内容清空；共享对象仍有引用而保留。整块证据默认关闭，Dashboard仅显示排队/上传/解析任务，核对建议和失败/历史保留Hermes，未伪造确认或重跑科学分析。
 - 2026-09-14最新续作完成：9a36c1e0已部署，卡片科学文本、同版本结构化折叠证据、工作台作者/公开号已实读；第一篇六字段默认折叠、第二篇四原章节分层。22已行政勘误v1/DHL并允许原PDF下载，audit6c93436f-3c2e-40fe-82ad-d0c751c32f73；不是新发布，禁止重跑旧publish或按旧文档恢复v10。scope见已审infra/scripts/correct-deep-sub-cycle-publication.mjs。
 - 2026-09-14最新截图反馈已完成：公开Claim复用Hermes科学Markdown，概要/完整推导/适用条件/原文证据分层；不再整篇h3直出。来源按文件/页码分10组保留40条，去重复标题、制作前言、笔记UUID、内部[S]和机器locator；原quote/source也用Markdown与公式显示，原始数据不改。

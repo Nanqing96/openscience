@@ -4,6 +4,7 @@
 
 | 本轮文件 | 用途 |
 |---|---|
+| `apps/web/app/dashboard/dashboard.module.css` | 2026-09-14新增反馈：收回Hermes遗留跨三行布局，首行并排、后续整行及紧凑导入；候选待部署，当前线上f8e44815 |
 | `infra/private-cleanup/{runner.mjs,install.sh}` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 已交付f8：Node符号链接精确身份、正常排空退出、安装等锁、回收站自动刷新；原4项已实际清除。独立Codex仅090文件补丁、base1ad运行环境保留 |
 | `apps/web/components/public/ClaimNarrative.tsx` / `apps/web/components/hermes/{HermesRail.tsx,hermes-state.ts}` / `apps/web/app/dashboard/page.tsx` | 已部署f8实读：整块证据默认关闭约59px，个人空间只展示处理中任务，建议/失败和历史集中Hermes对话；后台状态未改 |
 | `infra/scripts/correct-deep-sub-cycle-publication.mjs` | 用户指定的首次发布行政勘误已执行：唯一22/v10→v1、DHL署名和原PDF下载，既有Serializable锁/审计保留原值；audit6c93436f，勿重跑发布；状态见CURRENT |
