@@ -1,6 +1,6 @@
 import { planSceneImagePrompt } from './scene-image';
 import type { AiGateway, OcrAuthorizationContext, ScienceReviewInput } from '@openscience/ai-gateway';
-import { parseStoryboardDocument, requireSceneImageParent, requireStoryboardBase, requireVideoGenerationParents, type PresentationGenerationPayload, type StoryboardDocument } from '@openscience/domain';
+import { parseStoryboardDocument, requireSceneImageParent, requireStoryboardBase, requireStoryboardRevisionTask, requireVideoGenerationParents, type PresentationGenerationPayload, type StoryboardDocument } from '@openscience/domain';
 import { generateStoryboard, renderStoryboard } from './storyboard';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
@@ -15,6 +15,7 @@ import { Prisma } from '@prisma/client';
 import { loadInstalledMediaSkills, mergeDesignSkillUsage, type DesignSkillUsage } from '../skills/installed-media-skills';
 import { requireStyleReferenceImage } from '@openscience/domain';
 import { reviewIllustrationStoryboard } from './illustration-review';
+import { clarifyIllustrationLabels } from './illustration-planner';
 
 function presentationClaimContent(claims: readonly PresentationClaim[]): string {
   return JSON.stringify(canonicalPresentationClaims(claims).map(({ id, parentClaimId, kind, statement, assessment, conditions, limitations, extractionStatus }) => ({
@@ -65,6 +66,18 @@ function readStoryboardCheckpoint(result: unknown, expected: StoryboardCheckpoin
     promptHash: planned.promptHash,
     designSkills: planned.designSkills as DesignSkillUsage[] | undefined,
   };
+}
+
+async function readStoryboardPlanningContext(
+  prisma: Pick<Prisma.TransactionClient, 'presentationAsset' | 'agentTask'>,
+  payload: PresentationGenerationPayload,
+  actorId: string,
+) {
+  const base = await requireStoryboardBase(prisma, payload);
+  const revision = await requireStoryboardRevisionTask(prisma, payload, actorId);
+  const revisionBase = revision ? await requireStoryboardBase(prisma, revision.payload) : undefined;
+  return { base, revision, revisionBase,
+    identity: revision ? JSON.stringify({ revision: revision.identity, base: revisionBase?.identity ?? null }) : base?.identity ?? null };
 }
 
 async function readReviewedPresentationEvidence(
@@ -143,7 +156,7 @@ export async function requireIllustrationReviewSubmission(prisma: Prisma.Transac
   const evidence = await readReviewedPresentationEvidence(prisma, payload, lineage);
   if (presentationEvidenceIdentity(evidence) !== source.sourceEvidenceIdentity) throw new Error('[blocked] Illustration evidence changed');
   await requireIllustrationOriginalArtifacts(prisma, evidence, input.authorizationContext.workspaceId);
-  if (((await requireStoryboardBase(prisma, payload))?.identity ?? null) !== snapshot.baseIdentity) {
+  if ((await readStoryboardPlanningContext(prisma, payload, input.authorizationContext.actorId)).identity !== snapshot.baseIdentity) {
     throw new Error('[blocked] Illustration base changed');
   }
 }
@@ -232,7 +245,8 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
         throw new Error('[blocked] Reviewed source evidence changed during media generation');
       }
     };
-    const base = await requireStoryboardBase(deps.prisma, payload);
+    const planningContext = await readStoryboardPlanningContext(deps.prisma, payload, scope.userId);
+    const base = planningContext.base;
     const sceneParent = await requireSceneImageParent(deps.prisma, payload);
     const styleReference = await requireStyleReferenceImage(deps.prisma, { ...payload, styleReferenceAssetId: payload.sceneImage?.styleReferenceAssetId });
     const requireUnchangedStyleReference = async (prisma: Pick<Prisma.TransactionClient, 'presentationAsset'>) => {
@@ -331,7 +345,7 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
           throw new Error('[blocked] Storyboard task was superseded or changed');
         }
         const identity: StoryboardCheckpointIdentity = {
-          payload, sourceEvidenceIdentity, claimContent: presentationClaimContent(claims), baseIdentity: base?.identity ?? null,
+          payload, sourceEvidenceIdentity, claimContent: presentationClaimContent(claims), baseIdentity: planningContext.identity,
         };
         const saved = readStoryboardCheckpoint(owner.result, identity);
         if (saved) {
@@ -340,7 +354,18 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
           if (task.executionAttempt > 1) {
             throw new Error('[blocked] Previous paid storyboard attempt has no saved plan; explicit new planning is required');
           }
-          planned = await generateStoryboard(options.gateway, claims, payload.storyboard, base?.view);
+          if (planningContext.revision) {
+            const previous = readStoryboardCheckpoint(planningContext.revision.task.result, {
+              payload: planningContext.revision.payload, sourceEvidenceIdentity,
+              claimContent: presentationClaimContent(claims), baseIdentity: planningContext.revisionBase?.identity ?? null,
+            });
+            if (!previous) throw new Error('[blocked] Scientific label clarification has no saved plan');
+            await requireIllustrationOriginalArtifacts(deps.prisma, sourceEvidence, researchObject.workspaceId);
+            planned = await clarifyIllustrationLabels(options.gateway, claims, payload.storyboard, previous,
+              planningContext.revision.feedback);
+          } else {
+            planned = await generateStoryboard(options.gateway, claims, payload.storyboard, base?.view);
+          }
           const checkpoint = { ...identity, planned };
           // Persist the paid plan before Chat review. A failed review must not restart planning.
           await deps.prisma.$transaction(async tx => {
@@ -361,7 +386,7 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
             }
             await requireUnchangedEvidence(tx);
             await requireIllustrationOriginalArtifacts(tx, sourceEvidence, researchObject.workspaceId);
-            if (((await requireStoryboardBase(tx, payload))?.identity ?? null) !== identity.baseIdentity) {
+            if ((await readStoryboardPlanningContext(tx, payload, scope.userId)).identity !== identity.baseIdentity) {
               throw new Error('[blocked] Storyboard base changed before checkpoint save');
             }
             if (owner.result !== null && (typeof owner.result !== 'object' || Array.isArray(owner.result))) {
@@ -386,7 +411,7 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
         if (!options.gateway.reviewScientific) throw new Error('[blocked] Illustration scientific review unavailable');
         const reviewed = await reviewIllustrationStoryboard({ reviewScientific: options.gateway.reviewScientific.bind(options.gateway) }, claims, payload.storyboard, planned.document, {
           authorizationContext: Object.freeze({ taskId: task.id, actorId: scope.userId, workspaceId: researchObject.workspaceId }),
-          illustrationContext: { executionAttempt: task.executionAttempt, claimContent: presentationClaimContent(claims), baseIdentity: base?.identity ?? null },
+          illustrationContext: { executionAttempt: task.executionAttempt, claimContent: presentationClaimContent(claims), baseIdentity: planningContext.identity },
           researchObjectId: payload.researchObjectId, versionId: payload.versionId, sourceEvidenceIdentity,
         });
         storyboardDocument = reviewed.document; illustrationReview = reviewed.provenance;
@@ -428,7 +453,7 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
         || presentationClaimContent(currentClaims as PresentationClaim[]) !== presentationClaimContent(claims)) {
         throw new Error('[blocked] source Claims changed before presentation completion');
       }
-      if (base && (await requireStoryboardBase(tx, payload))?.identity !== base.identity) throw new Error('[blocked] base storyboard changed before completion');
+      if ((await readStoryboardPlanningContext(tx, payload, scope.userId)).identity !== planningContext.identity) throw new Error('[blocked] base storyboard changed before completion');
       if (sceneParent && (await requireSceneImageParent(tx, payload))?.identity !== sceneParent.identity) throw new Error('[blocked] approved storyboard changed before scene image completion');
       if (videoParents && (await requireVideoGenerationParents(tx, payload))?.identity !== videoParents.identity) throw new Error('[blocked] approved video inputs changed before completion');
       await requireUnchangedEvidence(tx);
@@ -443,7 +468,7 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       const created = await tx.presentationAsset.create({ data: {
         id: task.id, researchObjectId: payload.researchObjectId, versionId: payload.versionId, kind: payload.kind,
         objectKey, contentHash, generator, generatorVersion, promptHash, label: PRESENTATION_ASSET_LABEL,
-        provenance: { ...(scientificMedia ? { sourceEvidenceIdentity, sourceEvidenceIds: sourceEvidence.map((row) => row.id) } : {}), source: payload.sceneImage ? 'approved_storyboard_scene' : payload.video ? 'approved_storyboard_video' : 'verified_claims', ...(payload.sceneImage && sceneParent ? { subtype: 'storyboard_scene_image', sceneImage: { ...payload.sceneImage }, parentIdentity: sceneParent.identity, storyboardContentHash: sceneParent.contentHash } : {}), ...(videoProvenance ?? {}), ...(illustrationReview ? { illustrationReview } : {}), ...(designSkills ? { designSkills } : {}), ...(styleReference ? { styleReference: { assetId: styleReference.id, contentHash: styleReference.contentHash, role: 'style' } } : {}), ...(sceneParent?.view.document.scenes[payload.sceneImage!.sceneIndex]?.illustration ? { illustrationCompilation: { skill: 'openscience-research-illustration', version: '2', mode: 'structured_brief' } } : {}), taskId: task.id, sourceClaimIds: payload.sourceClaimIds, contentType, ...(storyboardDocument && payload.storyboard ? { subtype: 'sourced_storyboard', storyboardDocument: JSON.parse(JSON.stringify(storyboardDocument)), storyboardSettings: JSON.parse(JSON.stringify(payload.storyboard)) } : {}) },
+        provenance: { ...(scientificMedia ? { sourceEvidenceIdentity, sourceEvidenceIds: sourceEvidence.map((row) => row.id) } : {}), source: payload.sceneImage ? 'approved_storyboard_scene' : payload.video ? 'approved_storyboard_video' : 'verified_claims', ...(payload.sceneImage && sceneParent ? { subtype: 'storyboard_scene_image', sceneImage: { ...payload.sceneImage }, parentIdentity: sceneParent.identity, storyboardContentHash: sceneParent.contentHash } : {}), ...(videoProvenance ?? {}), ...(illustrationReview ? { illustrationReview } : {}), ...(designSkills ? { designSkills } : {}), ...(styleReference ? { styleReference: { assetId: styleReference.id, contentHash: styleReference.contentHash, role: 'style' } } : {}), ...(sceneParent?.view.document.scenes[payload.sceneImage!.sceneIndex]?.illustration ? { illustrationCompilation: { skill: 'openscience-research-illustration', version: '3', mode: 'structured_brief' } } : {}), taskId: task.id, sourceClaimIds: payload.sourceClaimIds, contentType, ...(storyboardDocument && payload.storyboard ? { subtype: 'sourced_storyboard', storyboardDocument: JSON.parse(JSON.stringify(storyboardDocument)), storyboardSettings: JSON.parse(JSON.stringify(payload.storyboard)) } : {}) },
       } });
       await tx.presentationAssetClaim.createMany({ data: payload.sourceClaimIds.map((claimId) => ({ presentationAssetId: created.id, claimId, researchObjectId: payload.researchObjectId, versionId: payload.versionId })) });
       if (storyboardDocument) await deps.audit?.record({ actorId: scope.userId, action: 'presentation_asset.generated', workspaceId: researchObject.workspaceId, targetType: 'presentation_asset', targetId: created.id, metadata: { taskId: task.id, researchObjectId: payload.researchObjectId, versionId: payload.versionId, subtype: 'sourced_storyboard', baseAssetId: payload.storyboard?.baseAssetId ?? null } }, tx);

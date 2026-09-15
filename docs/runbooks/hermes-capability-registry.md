@@ -51,6 +51,7 @@
 | cloud-sync/evaluation-source-sync把MSYS的/c/...路径传给原生Windows OpenSSH | 指定项目密钥不可读，身份选择可能偏离预期 | 共用ssh-identity-path转换，保留参数数组与host-key规则，启用IdentitiesOnly；不修改密钥/配置。正式上传效果见CURRENT |
 | Worker 创建的 Gateway audit sink 未带已有执行上下文，Langfuse requestCorrelation 为空 | 调用失败无法从管理工具准确回到原任务及其技能/资产结果 | index.ts共用现有audit sink，每次record读取已有AsyncLocalStorage taskId，只补空requestId；原view/connector直接消费。已上线，25215六次调用及1da6/2196成功调用均真实关联task；旧记录不猜测回填 |
 | Chat模型标签含slash，被SQL/view消费者各层过滤 | Langfuse有真实调用却model为unknown | 三层仅放行两个固定源码标签；已知view短事务刷新，marker/role/view/ACL异常拒绝，High GO并独立安装；未知历史不回填 |
+| 科学blocked候选无资产，局部修订仍重规划全篇 | 59702缺类别名称，34ce补名称又丢两坐标 | 新revisionTaskId候选只读原failed task checkpoint，以prefix/suffix澄清既有label并保留原索引/符号/坐标/艺术；原文/权限重验，新task仍科学末审。不替代fresh科学规划，不允许反复修订链。部署及实际结果见CURRENT |
 | Chat final已完成但DOM和Copy为空 | 已付款且完成的审阅被误作超时，重复运行会浪费调用 | 既有receiver加严格会话/原文用户/可见final节点及完成父链绑定的同源读取；High GO且安装，a803由原broker恢复blocked，无重发。接口变化失败关闭，不泄露分析/Token；科学blocked仍必须回上游 |
 | 结构化repair只报unexpected_fields或invalid_shape_or_length | 03a9/982f/b5e真实任务反复修错层级、重复付费仍失败 | 原planner及共享brief提供固定路径/预期字段/长度反馈；仅字段集合精确相等时兼容单scene外层，保留全部原校验，不丢未知字段。部署及实际新任务结果见CURRENT |
 | labels遗漏轴/分类阈值，且把可量化函数图当作概念画 | 第二张图片分界已改正却仍不完整；公式正确不能保证曲线正确 | 自有skill科学选题/末审按实际编译契约补标签完整性与data-renderer边界；已同步Codex，Hermes发布/下一真实任务见CURRENT，不再追加一串通用生图禁令 |

@@ -10,7 +10,8 @@
 - 用户2026-09-15确认Langfuse已登录，要求继续并说明后续任务。先收尾既有科学审阅结果复用，再沿正常研究任务恢复配图质量优化；不新增治理平台/模型阶段，新增风格、Figma、视频、第三篇和批量仍暂缓。
 - 禁止测试、预检、CI、本机构建；本机仅静态读写/Git/传输。真实规划及审阅调用见上文，必要服务器构建/启动与阻塞故障取证按现有规则执行；没有新provider或公开发布。
 - Chat为主要生图手段，Codex CLI保留备用。科学认识来自上游已审解析/分析，不能用未审semanticStage或参考图作为科学证据。
-- 当前执行34ce4da4-f55a-461e-afb0-0a77f54206d9：将59702关于类别名称的实际反馈交回同一planner，仍使用既有完整原文；API202一次，回执tmp/illustration-category-labels-start.json。未完成前不得生图或重跑脚本。
+- 34ce4da4-f55a-461e-afb0-0a77f54206d9已blocked：类别名称补齐却重写掉原kx/ky，证实全量重规划漂移。已停止手工新任务循环，回执tmp/illustration-category-labels-review.json；没有新图。
+- 候选代码未部署：新增revisionTaskId窄标签修订，引用同actor/RO/version/Claims/locale/style的failed原任务checkpoint与完整服务端review反馈。仅给既有labels加prefix/suffix，保留全部其他科学/艺术字段；新task重新审阅，旧请求不改。来源/原base与权限在保存、发送、完成时沿既有identity重验。自有skill v3补类别名称与复用规则；独立High指出成图skill provenance仍为2，已同步3；其余权限/来源/并发/局部保持静态GO。无测试/本机构建，准备必要服务器交付。
 ## 版本事实（2026-09-15）
 - 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；完整当前HEAD从Git读取，文档提交及工具bundle不等于应用release。
 - 生产release ed24cb1c79f9374023f0e1cbf36c613a869c5da0，rollback 8e741874f48f5d4aab8b626af94200a217d3e880。既有deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0；必要build/start、release切换和收尾完成。日志tmp/illustration-scene-wrapper-deploy.log（之前诊断修复日志brief-feedback/schema-location）；skill部署tmp/illustration-label-skill-deploy.log；checkpoint此前日志tmp/storyboard-checkpoint-deploy.log，不代表科学/审美验收。
@@ -29,7 +30,7 @@
 - Backstage此前实际返回agent-worker owner及Gateway/parser/skills依赖；它是维护目录，不是运行或质量事实。
 - Serena在新生产快照实际定位materializeReviewedClaimSuggestions的唯一调用：extractor.ts:2566，reviewAndMaterializeCanonicalProposal共同物化路径；日志tmp/reviewed-claims-serena-references.log。
 - Langfuse于2026-09-15 01:34:25 UTC经原受限查询入口读回该真实任务全部6次调用，requestCorrelation均为25215cd1：五次MiniMax成功、一次scientific_review失败。采集有120秒提交延迟、60秒轮询及分页，无需重启/重放；旧unknown不猜测回填。任务关联已实证，不代表科学质量。
-- 同一真实查询已读回1da6三次MiniMax+一次科学审阅成功、2196一次image成功并关联task。SQL view/connector/query仅放行两个源码固定Chat模型标签，安装时验证既有marker/role/view/ACL、原子marker替换，High GO且独立安装完成；不放宽任意字符串/Secret边界，不回填旧unknown。已有真实8d调用的受限view实读返回chatgpt-web/6-pro-image-generation-tool；新Langfuse标签待下一正常Chat任务观察，收据tmp/telemetry-known-model-view-observed.json。
+- 同一真实查询已读回1da6三次MiniMax+一次科学审阅成功、2196一次image成功并关联task。SQL view/connector/query仅放行两个源码固定Chat模型标签，安装时验证既有marker/role/view/ACL、原子marker替换，High GO且独立安装完成；不放宽任意字符串/Secret边界，不回填旧unknown。已有真实8d调用的受限view实读返回chatgpt-web/6-pro-image-generation-tool；新Langfuse记录已实际显示a803的chatgpt-web/6-pro与task关联，59702两次MiniMax已读回；原任务的transport failed日志不因后续恢复而篡改。收据tmp/telemetry-known-model-view-observed.json及illustration-category-labels-live.json。
 - 用户已确认Langfuse登录。账号按明确要求改密，同事务密码比对成功、旧会话失效、私有凭据文件0600原子同步；文档不存密码。容器Prisma使用已安装pnpm生成客户端路径，根入口缺生成client。
 - 登录入口http://localhost:3130/auth/sign-in；沿用ssh-run.sh --development-tunnel。容器重建/IP变化后重开隧道；后台采集/查询用独立服务身份，不依赖网页登录。SMTP/SSO/定时备份/自动保留期未配置。
 - Vercel Skills曾实际list得到31技能、find返回候选；安装、runtime注入、实际产物provenance和质量分别记录。开发工具不自动赋权给科研用户Hermes。

@@ -164,6 +164,7 @@ export async function submitPresentationGeneration(deps: AgentDeps, input: {
 }, ctx: AuditContext = {}): Promise<AgentTaskView> {
   await requirePresentationWriteScope(deps.prisma, input);
   const payload = parsePresentationGenerationPayload({ schemaVersion: 1, researchObjectId: input.researchObjectId, versionId: input.versionId, kind: input.kind, sourceClaimIds: input.sourceClaimIds, ...(input.sceneImage !== undefined ? { sceneImage: input.sceneImage } : {}), ...(input.storyboard !== undefined ? { storyboard: input.storyboard } : {}), ...(input.video !== undefined ? { video: input.video } : {}) });
+  await requireStoryboardRevisionTask(deps.prisma, payload, input.userId);
   const claims = await deps.prisma.claimNode.findMany({ where: { id: { in: payload.sourceClaimIds }, researchObjectId: input.researchObjectId, versionId: input.versionId }, select: { id: true, extractionStatus: true } });
   const returnedClaimIds = new Set(claims.map((claim) => claim.id));
   if (claims.length !== payload.sourceClaimIds.length || payload.sourceClaimIds.some((id) => !returnedClaimIds.has(id))
@@ -374,4 +375,31 @@ export async function requireStoryboardBase(prisma: Pick<Prisma.TransactionClien
     if (!asset || asset.deletedAt || asset.researchObjectId !== payload.researchObjectId || asset.versionId !== payload.versionId || !['draft', 'approved'].includes(asset.status) || !view || JSON.stringify(ids) !== JSON.stringify(payload.sourceClaimIds))
         throw new PresentationAssetError('VALIDATION_ERROR', 'Base storyboard is invalid for these sources');
     return { view, identity: JSON.stringify({ contentHash: asset.contentHash, provenance: asset.provenance, ids }) };
+}
+
+/** Server-owned review feedback and a private checkpoint; the worker validates its contents and current sources. */
+export async function requireStoryboardRevisionTask(prisma: Pick<Prisma.TransactionClient, 'agentTask'>, payload: PresentationGenerationPayload, actorId: string) {
+    const id = payload.storyboard?.revisionTaskId;
+    if (!id) return undefined;
+    if (payload.kind !== 'interactive_html' || payload.storyboard?.output !== 'image' || payload.storyboard.baseAssetId)
+        throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision requires an image plan without a base asset');
+    const task = await prisma.agentTask.findUnique({ where: { id }, include: { session: true } });
+    if (!task || task.deletedAt || task.kind !== 'presentation.generate' || task.status !== 'failed'
+        || task.session.userId !== actorId || task.session.deletedAt || task.session.status !== 'active'
+        || task.session.researchObjectId !== payload.researchObjectId)
+        throw new PresentationAssetError('NOT_FOUND', 'Storyboard revision task not found');
+    const original = parsePresentationGenerationPayload(task.payload);
+    if (original.kind !== 'interactive_html' || original.storyboard?.output !== 'image' || original.storyboard.revisionTaskId
+        || original.researchObjectId !== payload.researchObjectId || original.versionId !== payload.versionId
+        || JSON.stringify(original.sourceClaimIds) !== JSON.stringify(payload.sourceClaimIds)
+        || original.storyboard.locale !== payload.storyboard.locale || original.storyboard.style !== payload.storyboard.style)
+        throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision task is invalid for these sources and settings');
+    const prefix = '[blocked] Illustration needs upstream scientific revision: ';
+    const feedback = task.error?.startsWith(prefix) ? task.error.slice(prefix.length) : '';
+    if (!feedback.trim() || feedback.length >= 300)
+        throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision requires complete scientific review feedback');
+    const checkpoint = task.result && typeof task.result === 'object' && !Array.isArray(task.result) ? task.result.storyboardCheckpoint : undefined;
+    if (!checkpoint || typeof checkpoint !== 'object' || Array.isArray(checkpoint))
+        throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision requires a saved private plan');
+    return { task, payload: original, feedback, identity: JSON.stringify({ id: task.id, updatedAt: task.updatedAt, executionAttempt: task.executionAttempt, payload: task.payload, result: task.result, error: task.error }) };
 }

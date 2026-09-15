@@ -29,7 +29,8 @@ const taskParams = scopeParams.extend({ taskId: z.string().uuid() }).strict();
 
 const generationBody = z.object({
   kind: z.enum(['chart', 'interactive_html', 'image', 'video']),
-  storyboard: z.object({ output: z.enum(['image', 'video']).default('video'), locale: z.enum(['zh', 'en']), style: z.enum(['watercolor', 'technical', 'ink']), instruction: z.string().max(1000).trim().min(1), baseAssetId: z.string().uuid().optional() }).strict().optional(),
+  storyboard: z.object({ output: z.enum(['image', 'video']).default('video'), locale: z.enum(['zh', 'en']), style: z.enum(['watercolor', 'technical', 'ink']), instruction: z.string().max(1000).trim().min(1), baseAssetId: z.string().uuid().optional(), revisionTaskId: z.string().uuid().optional() }).strict()
+    .refine(value => !value.revisionTaskId || (value.output === 'image' && !value.baseAssetId), { message: 'Storyboard revision requires image output and no base asset', path: ['revisionTaskId'] }).optional(),
   sceneImage: z.object({ storyboardAssetId: z.string().uuid(), sceneIndex: z.number().int().min(0).max(5), styleReferenceAssetId: z.string().uuid().optional() }).strict().optional(),
   video: z.object({
     storyboardAssetId: z.string().uuid(),

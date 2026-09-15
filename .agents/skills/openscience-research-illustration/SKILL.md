@@ -2,7 +2,7 @@
 name: openscience-research-illustration
 description: Plan and refine evidence-grounded research illustrations for OpenScience through Hermes and Chat image generation, using structured briefs, source-scoped visual references and reusable art directions. Use for paper illustrations, scientific concept images and research covers; quantitative plots require a data renderer.
 metadata:
-  version: "2"
+  version: "3"
 ---
 
 # OpenScience research illustration
@@ -20,6 +20,8 @@ First select one useful scientific explanation from the upstream reviewed analys
 For each selected explanation, establish the domain, the minimum subjects and relationships, exact short labels, essential conditions and the meaning of every intended visual mark. Use complete original passage identifiers; the server supplies their actual text. The passage must support the full statement, including qualifiers. Reviewed summaries supply context but do not override a conflicting or narrower original passage. Unsupported details should be left out or reported as missing, not repaired from general knowledge.
 
 The renderer uses `labels` as the complete visible-text list. A variable mentioned only in a subject, encoding or composition will not be printed. Reserve labels for every necessary coordinate axis, classification boundary and essential condition before optional titles or decorative annotations. Bind each label to its corresponding mark in the encoding. If the label budget cannot make the picture self-contained, narrow the explanation instead of dropping its coordinate or threshold meaning.
+
+When the takeaway is a classification, each region needs its source-supported category name as well as any defining criterion. An inequality alone may identify a boundary without telling the reader what the category means. Combine the name and criterion in the same short label when appropriate.
 
 In the encoding, distinguish physical position, parameter coordinates and logical groupings. Decide what each axis, boundary, distance, arrow or region would mean before designing its appearance. A meaningful color has one consistent role. Quantitative curves and data-derived shapes require a data renderer; do not ask an image model to invent their values or extrema. Choose a different supported explanatory role when a faithful illustration is not available from the supplied sources.
 
@@ -51,6 +53,8 @@ Keep independent scientific domains distinct. Coordinate dimensionality, units a
 Choose composition from the relationship, not the style name. A process may use a sequence; classification may use a domain partition; a cover may use one expressive subject. Do not turn every paper into a process diagram, a decorated circle or a grid of summary cards. A small label budget is a reason to simplify the explanation, not to shrink text or drop an essential condition.
 
 For a revision, distinguish a local correction from a rejected overall design. Retain accepted aspects and unaffected science. Change the hierarchy and composition when the user rejected them; changing a background or recoloring a motif is insufficient. Preserve useful reference qualities without copying unrelated scientific content. Watercolor is one supported direction, not a default for every paper.
+
+If scientific review only found missing explanations in existing labels, reuse the saved candidate through the scoped label-clarification path. Preserve label indices, symbols, axes, domains and artwork; do not regenerate the whole scientific intent to add a category name. This path cannot repair a missing axis, incorrect equation or changed source. Such problems require a new scientific plan. Every clarified candidate still needs the existing scientific review before rendering.
 
 Before submitting a brief, read its subjects, labels and constraints together: they must use consistent variables, domains and assumptions. Remove a formula if the image does not need it; never invent or approximate one. The brief should fit the actual image transport's prompt budget without a second model having to reinterpret it.
 
