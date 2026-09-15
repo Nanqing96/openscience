@@ -903,6 +903,7 @@ export class SearchStorage {
           const claimIds = stringArray(row.claim_ids, 1_024);
           if (row.tenant_id !== input.tenantId || !HASH_PATTERN.test(row.id)
             || !HASH_PATTERN.test(row.content_hash) || !UUID_PATTERN.test(row.artifact_id)
+            || !UUID_PATTERN.test(row.research_object_id)
             || locators === undefined || claimIds === undefined) {
             needsReviewCount += 1;
             continue;
@@ -910,6 +911,7 @@ export class SearchStorage {
           candidates.push({
             id: row.id,
             tenantId: row.tenant_id,
+            researchObjectId: row.research_object_id,
             text: row.text,
             locators,
             claimIds,

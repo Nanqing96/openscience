@@ -56,6 +56,10 @@ metadata:
       title: CURRENT release, rollback, candidates and observed limitations
     - url: https://github.com/photonics-dhl/OpenScience/blob/codex/onchip-video-release/docs/OpenScience_Kimi_Development_Spec.md
       title: Requirements baseline
+    - url: https://github.com/photonics-dhl/OpenScience/blob/codex/onchip-video-release/.taskmaster/state.json
+      title: Current Taskmaster tag selector
+    - url: https://github.com/photonics-dhl/OpenScience/blob/codex/onchip-video-release/.taskmaster/tasks/tasks.json
+      title: Stable acceptance tasks by tag
 spec:
   owner: group:default/openscience-maintainers
   domain: research-infrastructure

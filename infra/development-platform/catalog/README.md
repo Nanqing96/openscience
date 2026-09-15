@@ -75,6 +75,9 @@ real repository directories. `resource:production/application` points to the
 deployed environment and its release marker; `resource:candidate/onchip-video-release`
 points to the development branch/worktree. Repository source and requirement links
 follow that active delivery branch; the old `main` lacks later product decisions.
+The OpenScience system also links the existing Taskmaster current-tag selector and
+tagged task store so a catalog read can locate stable acceptance criteria without
+copying task status into Backstage.
 These links locate editable code, not the deployed SHA. The existing
 CURRENT handoff remains the only release/rollback and observed-result narrative.
 Runtime research skills and repository development skills are different entities:

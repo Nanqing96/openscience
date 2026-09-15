@@ -86,6 +86,9 @@ export interface ScienceReviewProviderResult {
   text: string;
   promptHash: string;
   responseHash: string;
+  /** Actual execution metadata; legacy browser receipts omit these fields. */
+  provider?: string;
+  model?: string;
 }
 
 export interface ScienceReviewProvider {

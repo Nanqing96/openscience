@@ -33,6 +33,7 @@ COPY --from=python-dependencies /opt/serena-project /opt/serena-project
 COPY --from=typescript /usr/local/bin/node /usr/local/bin/node
 COPY --from=typescript /opt/typescript-runtime /opt/serena-home/language_servers/static/TypeScriptLanguageServer/ts-lsp
 COPY readonly-context.yml /opt/serena/readonly-context.yml
+COPY snapshot_identity.py /opt/serena/snapshot_identity.py
 COPY query.py /opt/serena/query.py
 COPY serve.py /opt/serena/serve.py
 # SerenaPromptFactory calls makedirs(exist_ok=True) at every startup. Keep the

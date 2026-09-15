@@ -15,6 +15,7 @@ export interface RouteRule {
  * 中间件零改动。key = 完整路径（含 prefix）。
  */
 export const RATE_LIMIT_ROUTES: Record<string, RouteRule> = {
+  '/research-objects/search': { limit: 30, windowSec: 60 },
   '/research-objects/:id/versions/:versionId/record': { limit: 120, windowSec: 60 },
   '/research-objects/:id/versions/:versionId/record/export': { limit: 60, windowSec: 60 },
   '/research-objects/:id/versions/:versionId/record/evidence/:evidenceId/source': { limit: 60, windowSec: 60 },

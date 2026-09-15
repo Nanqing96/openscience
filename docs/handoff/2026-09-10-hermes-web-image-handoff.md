@@ -12,6 +12,8 @@
 | 淡彩手绘 · 3 | aa41a018-b2ff-4ffb-9557-19ecabe104bc用户明确认可，原图保留不默认重画；额外f424只是私有候选，不能计新增风格。 |
 
 ## 已查实的断点及处理
+<a id="capability-linkage"></a>
+- 2026-09-15用户要求已查明即可修复，Taskmaster同tag任务4记录本次接线、不替代1/2。候选已完成：Gateway配图末审复用MiniMax结构化池/科学Skill，每次provider尝试前短事务复核任务/来源/原稿；新旧审阅记录兼容。私有ResearchList接POST /research-objects/search与原BGE hybrid服务，成员授权/来源存活/结果再鉴权，3秒一次embedding、显式退化，共享索引配置；查询不进入URL。Serena成功MCP/CLI返回源revision；管理读取同读Git/currentTag/验收及handoff指针，Backstage引用同一Taskmaster。独立High静态通过；待服务器必要build/start和实际读取，未运行测试/预检/本地构建/新模型。
 - Git历史41ae→ea436→3fa2→28197将局部科学/执行器修复提升为“继续淡彩、暂停新风格”，progress/index又沿用。AGENTS/docs-sync现要求先对照具体需求及未完成项，局部暂停不得取消目标；根导航与已有Memory同步，无新状态平台或门禁。
 - Backstage线上需求/源码链接指向缺现行要求的旧main，已改交付分支；维护链接不冒称运行快照。Taskmaster原currentTag仍为八月已完成hermes-research-intelligence，现登记本批三项并切换；旧tag保留历史。工具projectRoot必须为本交付树，根main只作导航。
 - 原艺术修订只在显式API使用，现presentationDraft成对传revisionMode=art/baseAssetId贯穿Hermes解析、草稿、确认、不确定回放；候选限定同RO/version/locale、有效v2科学来源，明确原稿，不按最新时间猜。自由编辑制作指令清除art，原稿/版本错配不换稿继续。

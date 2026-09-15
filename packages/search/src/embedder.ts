@@ -24,6 +24,8 @@ export interface EmbeddingClientOptions {
   baseUrl: string;
   fetchImpl?: typeof fetch;
   logger?: (message: string) => void;
+  requestTimeoutMs?: number;
+  maxAttempts?: 1 | 2;
 }
 
 type EmbeddingResponse = {
@@ -190,11 +192,19 @@ export class EmbeddingClient {
   private readonly baseUrl: string;
   private readonly fetchImpl: typeof fetch;
   private readonly logger?: (message: string) => void;
+  private readonly requestTimeoutMs: number;
+  private readonly maxAttempts: 1 | 2;
 
   constructor(options: EmbeddingClientOptions) {
     this.baseUrl = validateBaseUrl(options.baseUrl);
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.logger = options.logger;
+    this.requestTimeoutMs = options.requestTimeoutMs ?? REQUEST_TIMEOUT_MS;
+    this.maxAttempts = options.maxAttempts ?? 2;
+    if (!Number.isInteger(this.requestTimeoutMs) || this.requestTimeoutMs < 1
+      || this.requestTimeoutMs > REQUEST_TIMEOUT_MS || ![1, 2].includes(this.maxAttempts)) {
+      fail('embedding_configuration_invalid');
+    }
   }
 
   async embed(input: { purpose: EmbeddingPurpose; texts: string[] }): Promise<EmbeddingResult> {
@@ -210,9 +220,9 @@ export class EmbeddingClient {
 
     let response: Response | undefined;
     let responseTimeout: ReturnType<typeof setTimeout> | undefined;
-    for (let attempt = 0; attempt < 2; attempt += 1) {
+    for (let attempt = 0; attempt < this.maxAttempts; attempt += 1) {
       const abortController = new AbortController();
-      const timeout = setTimeout(() => abortController.abort(), REQUEST_TIMEOUT_MS);
+      const timeout = setTimeout(() => abortController.abort(), this.requestTimeoutMs);
       try {
         response = await this.fetchImpl(`${this.baseUrl}/v1/embeddings`, {
           method: 'POST',
@@ -225,7 +235,7 @@ export class EmbeddingClient {
         break;
       } catch {
         clearTimeout(timeout);
-        if (attempt === 1) {
+        if (attempt + 1 === this.maxAttempts) {
           this.logger?.('embedding_request_failed:embedding_transport_unavailable');
           fail('embedding_transport_unavailable');
         }

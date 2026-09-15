@@ -6,6 +6,7 @@ import { createStorageAdapter } from '@openscience/storage';
 import { createLogger } from '@openscience/observability';
 import { ChatGptWebSpoolImageProvider, CodexSpoolImageProvider } from '@openscience/ai-gateway';
 import { buildApp } from './app';
+import { buildHybridSearchFromEnv } from './search-runtime';
 import { createSearchPrismaClient, deleteSearchContent, setSearchContentVisibility } from '@openscience/search';
 
 async function main(): Promise<void> {
@@ -19,6 +20,7 @@ async function main(): Promise<void> {
   // P1B-3：对象存储（S3_* env，dev 缺省 MinIO 127.0.0.1:9000）
   const storage = createStorageAdapter(env.storage);
   const searchPrisma = process.env.SEARCH_DATABASE_URL ? createSearchPrismaClient() : undefined;
+  const researchObjectSearch = buildHybridSearchFromEnv(prisma, searchPrisma);
   const logger = createLogger({ level: env.nodeEnv === 'production' ? 'info' : 'debug' });
   const codexImageInboxDir = process.env.CODEX_IMAGE_INBOX_DIR?.trim();
   const codexImageResultsDir = process.env.CODEX_IMAGE_RESULTS_DIR?.trim();
@@ -41,6 +43,7 @@ async function main(): Promise<void> {
     redis,
     mailer,
     storage,
+    ...(researchObjectSearch ? { researchObjectSearch } : {}),
     ...(searchPrisma ? { deleteSearchContent: (scope: Parameters<typeof deleteSearchContent>[1]) => deleteSearchContent(searchPrisma, scope) } : {}),
     ...(searchPrisma ? { setSearchContentVisibility: (scope, _visible, tx) => setSearchContentVisibility(searchPrisma, tx, scope) } : {}),
     sceneImageEnabled: env.ai.sceneImageEnabled,

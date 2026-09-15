@@ -1255,7 +1255,16 @@
       "title": "你的研究",
       "empty": "还没有研究对象。",
       "noResults": "没有匹配的研究对象。",
-      "search": "搜索研究对象",
+      "search": "搜索标题或全文",
+      "searchScope": "搜索范围",
+      "searchLoading": "正在检索…",
+      "searchUnavailable": "暂时无法检索，请重试。",
+      "searchMode": {
+        "hybrid": "已检索标题与已建立索引的全文。",
+        "lexical_only": "语义检索暂不可用，已检索标题与全文关键词。",
+        "dense_only": "全文关键词检索暂不可用，已检索标题与语义相近内容。",
+        "metadata_only": "全文检索暂不可用，仅按标题或公开编号匹配。"
+      },
       "version": "v{version}",
       "status": {
         "draft": "草稿",

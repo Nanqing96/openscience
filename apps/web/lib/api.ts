@@ -305,6 +305,25 @@ export interface DashboardResearchApi {
   status: string;
 }
 
+export interface ResearchObjectSearchApi {
+  researchObjects: DashboardResearchApi[];
+  search: {
+    mode: 'hybrid' | 'lexical_only' | 'dense_only' | 'metadata_only';
+    degradationCode?: string;
+  };
+}
+
+export async function searchResearchObjects(input: { workspaceId: string; query: string }, signal?: AbortSignal): Promise<ResearchObjectSearchApi> {
+  const result = await request<ResearchObjectSearchApi>('/api/research-objects/search', {
+    method: 'POST', body: JSON.stringify({ ...input, limit: 20 }), signal,
+  });
+  if (!Array.isArray(result.researchObjects) || !result.search
+    || !['hybrid', 'lexical_only', 'dense_only', 'metadata_only'].includes(result.search.mode)) {
+    throw new Error('search_response_unavailable');
+  }
+  return result;
+}
+
 export interface DashboardTaskApi {
   id: string;
   researchObjectId: string;

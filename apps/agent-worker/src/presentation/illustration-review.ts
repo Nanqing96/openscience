@@ -58,9 +58,12 @@ export function readStoredIllustrationIssues(raw: unknown, candidate: Storyboard
   claims: readonly PresentationClaim[], requestId: string, sourceEvidenceIdentity: string): IllustrationReviewIssue[] | undefined {
   if (raw === undefined) return undefined; // Complete legacy feedback remains supported once.
   const saved = object(raw);
-  keys(saved, ['stage', 'requestId', 'decision', 'summary', 'candidateHash', 'sourceEvidenceIdentity', 'promptHash', 'responseHash', 'provider', 'issues']);
+  keys(saved, ['stage', 'requestId', 'decision', 'summary', 'candidateHash', 'sourceEvidenceIdentity', 'promptHash', 'responseHash', 'provider', 'issues',
+    ...(saved.model === undefined ? [] : ['model'])]);
   if (saved.stage !== 'final-brief' || saved.requestId !== requestId || saved.decision !== 'blocked'
-    || saved.provider !== 'chatgpt-web-science-review' || saved.sourceEvidenceIdentity !== sourceEvidenceIdentity
+    || (saved.provider !== 'chatgpt-web-science-review' && !(typeof saved.provider === 'string' && /^minimax-key-[1-9]\d*-model-[1-9]\d*$/u.test(saved.provider)))
+    || (saved.model !== undefined && (typeof saved.model !== 'string' || !saved.model.trim() || saved.model.length > 200))
+    || saved.sourceEvidenceIdentity !== sourceEvidenceIdentity
     || saved.candidateHash !== createHash('sha256').update(JSON.stringify(candidate)).digest('hex')
     || typeof saved.summary !== 'string' || !saved.summary.trim() || saved.summary.length > 6000
     || ![saved.promptHash, saved.responseHash].every(hash => typeof hash === 'string' && /^[a-f0-9]{64}$/u.test(hash))
@@ -122,13 +125,28 @@ ${JSON.stringify({ locale: settings.locale, userRequest: settings.instruction, s
   const requestPrompt = context.structuredIssues ? prompt
     .replace('EXACT keys {decision,summary,corrections}', 'EXACT keys {decision,summary,corrections,issues}')
     .replace('Perform this focused audit yourself.', `Perform this focused audit yourself. issues MUST be [] for accepted/revised. For blocked, list ALL independent scientific issues together (1-36), each exactly {sceneIndex,labelIndex,kind,requiredMeaning,sourceIds}. sceneIndex refers to an existing zero-based scene. kind is label_clarification only when prepending/appending a short explanation to an existing label can fully resolve it without changing its existing symbols, equations, meaning or any other science/art field. Use that existing zero-based labelIndex and 1-8 exact supplied sourceIds. Combine all missing meanings for the same label into one issue; do not repeat label targets. If a definition repeated in multiple labels only needs one visible explanation, select one target. requiredMeaning is a precise complete description <=500 characters in the requested locale. For changes requiring any other field, new label/axis, different source or formula, use kind requires_replan and labelIndex:null; sourceIds may be [] only when the problem is missing evidence. Do not mistake successful JSON or mere presence of a symbol for completion of its required meaning.`) : prompt;
-  if (requestPrompt.length > SCIENCE_REVIEW_MAX_PROMPT_CHARS) throw new Error('[blocked] Illustration review sources exceed the Chat input limit; select fewer Claims');
+  if (requestPrompt.length > SCIENCE_REVIEW_MAX_PROMPT_CHARS) throw new Error('[blocked] Illustration review sources exceed the input budget; select fewer Claims');
+  const validReview = (value: unknown): value is Record<string, unknown> => {
+    try { parseIllustrationReview(value, candidate, claims, sources, context.structuredIssues); return true; }
+    catch { return false; }
+  };
   const response = await gateway.reviewScientific({ requestId: context.authorizationContext.taskId,
     authorizationContext: context.authorizationContext, illustrationContext: context.illustrationContext,
     source: { kind: 'illustration-plan', researchObjectId: context.researchObjectId, versionId: context.versionId,
-      sourceEvidenceIdentity: context.sourceEvidenceIdentity, candidateHash }, prompt: requestPrompt });
-  const review = object(JSON.parse(response.text.trim().replace(/^```(?:json)?\s*/u, '').replace(/\s*```$/u, '')));
-  keys(review, context.structuredIssues ? ['decision', 'summary', 'corrections', 'issues'] : ['decision', 'summary', 'corrections']);
+      sourceEvidenceIdentity: context.sourceEvidenceIdentity, candidateHash }, prompt: requestPrompt }, validReview);
+  const { document, decision, summary, issues } = parseIllustrationReview(
+    JSON.parse(response.text.trim().replace(/^```(?:json)?\s*/u, '').replace(/\s*```$/u, '')), candidate, claims, sources, context.structuredIssues);
+  if (decision === 'blocked' && !context.structuredIssues) throw new Error('[blocked] Illustration needs upstream scientific revision: ' + summary.slice(0, 300));
+  return { document, designSkills: reviewSkills.usage, provenance: { stage: 'final-brief', requestId: context.authorizationContext.taskId,
+    decision, summary, candidateHash, sourceEvidenceIdentity: context.sourceEvidenceIdentity,
+    promptHash: response.promptHash, responseHash: response.responseHash, provider: response.provider ?? 'chatgpt-web-science-review',
+    ...(response.model ? { model: response.model } : {}), ...(issues ? { issues } : {}) } };
+}
+
+function parseIllustrationReview(value: unknown, candidate: StoryboardDocument, claims: readonly PresentationClaim[],
+  sources: readonly { claimId: string; evidenceId: string }[], structuredIssues?: boolean) {
+  const review = object(value);
+  keys(review, structuredIssues ? ['decision', 'summary', 'corrections', 'issues'] : ['decision', 'summary', 'corrections']);
   const decision = review.decision;
   if ((decision !== 'accepted' && decision !== 'revised' && decision !== 'blocked')
     || typeof review.summary !== 'string' || !review.summary.trim() || review.summary.length > 6000) {
@@ -137,11 +155,11 @@ ${JSON.stringify({ locale: settings.locale, userRequest: settings.instruction, s
   if (!Array.isArray(review.corrections) || review.corrections.length > candidate.scenes.length
     || (decision !== 'revised' && review.corrections.length !== 0)) throw new Error('[blocked] Invalid scientific review corrections');
   let issues: IllustrationReviewIssue[] | undefined;
-  if (context.structuredIssues) {
+  if (structuredIssues) {
     if (decision === 'blocked') issues = readIssues(review.issues, candidate, sources);
     else if (!Array.isArray(review.issues) || review.issues.length) throw new Error('[blocked] Unresolved scientific review issues');
     else issues = [];
-  } else if (decision === 'blocked') throw new Error('[blocked] Illustration needs upstream scientific revision: ' + review.summary.slice(0, 300));
+  }
   let document = candidate;
   if (decision === 'revised') {
     if (!review.corrections.length) throw new Error('[blocked] Revised review requires an actual correction');
@@ -168,7 +186,5 @@ ${JSON.stringify({ locale: settings.locale, userRequest: settings.instruction, s
     requireIllustrationSourceSupport(scene.illustration!, claims);
     compileIllustrationImagePrompt(scene.illustration!);
   }
-  return { document, designSkills: reviewSkills.usage, provenance: { stage: 'final-brief', requestId: context.authorizationContext.taskId,
-    decision, summary: review.summary, candidateHash, sourceEvidenceIdentity: context.sourceEvidenceIdentity,
-    promptHash: response.promptHash, responseHash: response.responseHash, provider: 'chatgpt-web-science-review', ...(issues ? { issues } : {}) } };
+  return { document, decision, summary: review.summary, issues };
 }

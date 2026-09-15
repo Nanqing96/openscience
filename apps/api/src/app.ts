@@ -8,6 +8,7 @@ import { registerAdminRoutes } from './routes/admin';
 import { registerAdminUsageRoutes } from './routes/admin-usage';
 import { registerUsageRoutes } from './routes/usage';
 import { registerResearchObjectRoutes } from './routes/research-objects';
+import type { ResearchObjectSearchService } from './research-object-search';
 import { registerArtifactRoutes } from './routes/artifacts';
 import { registerIngestionRoutes } from './routes/ingestion';
 import { registerCommitRoutes } from './routes/commits';
@@ -41,6 +42,7 @@ import { registerRateLimit } from './security/rate-limit';
 import { registerSecurity, type SecurityOptions } from './security/security';
 
 export interface BuildAppOptions extends AuthRouteDeps {
+  researchObjectSearch?: ResearchObjectSearchService;
   deleteSearchContent?: TrashDeps['deleteSearchContent'];
   setSearchContentVisibility?: TrashDeps['setSearchContentVisibility'];
   sceneImageEnabled?: boolean;

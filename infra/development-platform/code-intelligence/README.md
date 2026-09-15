@@ -56,9 +56,11 @@ workspace package names, and are not copied or executed.
 The exported source bytes come from that identified release. A generated `tsconfig.json`
 provides source mappings for `@openscience/*` package entry points and the web
 `@/*` alias. Repository tsconfig files, TypeScript plugins, package scripts and
-Serena configuration are not loaded. `snapshot.json` records the full Git commit,
-the selected scope and source file count; it is provenance, not a completeness or
-quality score. External dependency types are intentionally absent, so symbol
+Serena configuration are not loaded. `snapshot.json` records the full Git commit
+and selected scope. The server reads that immutable file at startup and includes
+`sourceRevision` in every MCP tool result; `query.py` also places it at the top of
+its JSON output. This is provenance, not a completeness or quality score. External
+dependency types are intentionally absent, so symbol
 coverage across third-party libraries and dynamic imports is limited.
 
 `prepare-config.py` creates complete configuration from the pinned upstream's
@@ -127,7 +129,9 @@ docker compose --env-file /dev/null \
 
 The same client accepts `find packages/ai-gateway/src/gateway.ts AiGateway` and
 `references packages/ai-gateway/src/gateway.ts AiGateway`. It initializes the real
-MCP session and performs the selected read tool call. Results retain upstream
+MCP session and performs the selected read tool call. Its JSON identifies the
+operation, requested path and mounted source revision; the nested MCP response
+also carries that revision for clients which do not use `query.py`. Results retain upstream
 symbol names/paths; it does not invent an edge list or convert missing references
 into proof that there are no consumers.
 

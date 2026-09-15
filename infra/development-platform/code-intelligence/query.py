@@ -2,11 +2,14 @@
 
 import argparse
 import asyncio
+import json
 from pathlib import PurePosixPath
 import sys
 
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
+
+from snapshot_identity import read_source_revision
 
 
 async def main():
@@ -20,6 +23,7 @@ async def main():
         parser.error("Use a path relative to the source snapshot")
     if arguments.operation != "overview" and not arguments.symbol:
         parser.error("The find and references operations require a symbol name")
+    source_revision = read_source_revision()
     params = {"relative_path": str(path), "max_answer_chars": 20000}
     if arguments.operation == "overview":
         tool = "get_symbols_overview"
@@ -34,7 +38,13 @@ async def main():
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
             result = await session.call_tool(tool, params)
-            print(result.model_dump_json(indent=2, exclude_none=True))
+            print(json.dumps({
+                "sourceRevision": source_revision,
+                "operation": arguments.operation,
+                "path": str(path),
+                **({"symbol": arguments.symbol} if arguments.symbol else {}),
+                "response": result.model_dump(mode="json", exclude_none=True),
+            }, indent=2, ensure_ascii=False))
             if result.isError:
                 sys.exit(1)
 

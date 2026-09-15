@@ -1255,7 +1255,16 @@
       "title": "Your research",
       "empty": "No research objects yet.",
       "noResults": "No research objects match your search.",
-      "search": "Search research objects",
+      "search": "Search titles or full text",
+      "searchScope": "Search in",
+      "searchLoading": "Searching…",
+      "searchUnavailable": "Search is unavailable. Please retry.",
+      "searchMode": {
+        "hybrid": "Searched titles and indexed full text.",
+        "lexical_only": "Semantic search is unavailable. Searched titles and full-text keywords.",
+        "dense_only": "Full-text keyword search is unavailable. Searched titles and semantically similar content.",
+        "metadata_only": "Full-text search is unavailable. Matching titles and public identifiers only."
+      },
       "version": "v{version}",
       "status": {
         "draft": "Draft",

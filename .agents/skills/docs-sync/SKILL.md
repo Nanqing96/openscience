@@ -17,6 +17,8 @@ description: Sync actual project changes and decisions before ending a work turn
 
 ## 1. 启动时先定锚
 
+先在交付树运行 `node scripts/read-current-management-context.mjs`，一次取得 branch/HEAD、Taskmaster currentTag、任务状态和 CURRENT handoff 指针；需要某项完整验收说明时加 `--task <id>`。该命令只读并导出现有状态，不自动同步、验收或修改任务。
+
 在解释任务前运行：
 
 ```text

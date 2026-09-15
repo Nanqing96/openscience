@@ -99,6 +99,13 @@ services:
       CODEX_IMAGE_RESULTS_DIR: /codex-jobs/results
       CHATGPT_WEB_IMAGE_INBOX_DIR: /chatgpt-web-image-jobs/inbox
       CHATGPT_WEB_IMAGE_RESULTS_DIR: /chatgpt-web-image-jobs/results
+      BGE_M3_ENABLED: ${BGE_M3_ENABLED:-false}
+      BGE_M3_MODEL_VERSION_ID: ${BGE_M3_MODEL_VERSION_ID:-}
+      BGE_M3_MODEL_REVISION: ${BGE_M3_MODEL_REVISION:-}
+      BGE_M3_SOURCE_SHA256: ${BGE_M3_SOURCE_SHA256:-}
+      BGE_M3_PACKAGE_FREEZE_SHA256: ${BGE_M3_PACKAGE_FREEZE_SHA256:-}
+      BGE_M3_MODEL_MANIFEST_SHA256: ${BGE_M3_MODEL_MANIFEST_SHA256:-}
+      EMBEDDING_WORKER_URL: http://embedding-worker:8080
       S3_DRIVER: minio
       S3_ENDPOINT: object-storage
       S3_PORT: "8333"
@@ -119,6 +126,7 @@ services:
     networks:
       - app_net
       - data_net
+      - embedding_net
     restart: unless-stopped
 
   malware-scanner:

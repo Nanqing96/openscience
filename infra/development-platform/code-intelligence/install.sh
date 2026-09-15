@@ -75,7 +75,7 @@ if [[ ! -f "$upstream_archive" ]]; then
 fi
 
 build_dir="$(mktemp -d "$install_root/build/$revision.XXXXXX")"
-for source_file in Dockerfile .dockerignore package.json pnpm-lock.yaml prepare-config.py readonly-context.yml query.py serve.py; do
+for source_file in Dockerfile .dockerignore package.json pnpm-lock.yaml prepare-config.py readonly-context.yml snapshot_identity.py query.py serve.py; do
   install -m 0644 "$source_dir/$source_file" "$build_dir/$source_file"
 done
 # Reuse the existing host uv binary; it is present only in the build stage.
