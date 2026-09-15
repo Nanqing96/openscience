@@ -257,6 +257,9 @@ export function createHandlers(
     videoSpool?: HostVideoSpool;
   } = {},
 ): Record<string, TaskHandler> {
+  // BGE serves one CPU inference at a time. Keep indexing jobs serial in this
+  // worker, including source authorization after waiting; other handlers stay concurrent.
+  let searchIndexTail: Promise<unknown> = Promise.resolve();
   return {
     'demo.echo': async () => {
       await sleep(300);
@@ -505,8 +508,8 @@ export function createHandlers(
     'presentation.generate': createPresentationGenerationHandler({ gateway, videoSpool: options.videoSpool }),
     'workspace.guide': async (deps, task) => workspaceGuideHandler(gateway, deps, task),
     ...(options.searchIndexer === undefined ? {} : {
-      'search.index': async (_deps: WorkerDeps, task) =>
-        options.searchIndexer!.index(await authorizeSearchIndexJob(_deps, task), operation => _deps.prisma.$transaction(async tx => {
+      'search.index': async (_deps: WorkerDeps, task) => {
+        const run = searchIndexTail.then(async () => options.searchIndexer!.index(await authorizeSearchIndexJob(_deps, task), operation => _deps.prisma.$transaction(async tx => {
           await lockTrashReferences(tx);
           const live = await tx.agentTask.findUnique({ where: { id: task.id }, include: { session: { include: { researchObject: true } } } });
           if (!live || live.deletedAt || live.session.deletedAt || live.session.researchObject?.deletedAt || live.status !== 'running' || live.executionAttempt !== task.executionAttempt) throw new Error('[blocked] search source was deleted');
@@ -514,7 +517,10 @@ export function createHandlers(
           const sourceArtifactId = (live.payload as Record<string, unknown>).artifactId;
           if (typeof sourceArtifactId !== 'string' || !await tx.artifact.findFirst({ where: { id: sourceArtifactId, deletedAt: null, bytesPurgedAt: null } })) throw new Error('[blocked] search artifact was deleted');
           return operation();
-        }, { timeout: 30_000 })),
+        }, { timeout: 30_000 })));
+        searchIndexTail = run.catch(() => undefined);
+        return run;
+      },
     }),
     ...(options.sourceRetrieveHandler === undefined ? {} : {
       'source.retrieve': options.sourceRetrieveHandler,

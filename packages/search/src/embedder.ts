@@ -264,6 +264,7 @@ export class EmbeddingClient {
     }
 
     let response: Response | undefined;
+    let responseBody: Buffer | undefined;
     let responseTimeout: ReturnType<typeof setTimeout> | undefined;
     for (let attempt = 0; attempt < this.maxAttempts; attempt += 1) {
       const abortController = new AbortController();
@@ -276,10 +277,22 @@ export class EmbeddingClient {
           signal: abortController.signal,
           redirect: 'error',
         });
+        if (input.purpose === 'chunk' && response.status === 503 && attempt + 1 < this.maxAttempts) {
+          responseBody = await readBoundedBody(response);
+          if (response.headers.get('content-type')?.split(';', 1)[0]?.trim() === 'application/json'
+            && workerErrorCode(responseBody) === 'worker_busy') {
+            clearTimeout(timeout);
+            response = undefined;
+            responseBody = undefined;
+            await new Promise(resolve => setTimeout(resolve, 500));
+            continue;
+          }
+        }
         responseTimeout = timeout;
         break;
-      } catch {
+      } catch (error) {
         clearTimeout(timeout);
+        if (error instanceof EmbeddingClientError) throw error;
         if (attempt + 1 === this.maxAttempts) {
           this.logger?.('embedding_request_failed:embedding_transport_unavailable');
           fail('embedding_transport_unavailable');
@@ -291,7 +304,7 @@ export class EmbeddingClient {
       return fail('embedding_transport_unavailable');
     }
     try {
-      const rawBody = await readBoundedBody(response);
+      const rawBody = responseBody ?? await readBoundedBody(response);
       if (response.headers.get('content-type')?.split(';', 1)[0]?.trim() !== 'application/json') {
         fail('embedding_response_unavailable');
       }
