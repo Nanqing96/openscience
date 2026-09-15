@@ -22,7 +22,9 @@ function metadata(source) {
   return {
     auditId: matching(s.auditId, UUID), auditRecordedAt: timestamp(s.auditRecordedAt),
     operation: choice(s.operation, ['text', 'ocr', 'image', 'scientific_review']),
-    provider: identifier(s.provider, 80), model: identifier(s.model, 128),
+    provider: identifier(s.provider, 80),
+    model: ['chatgpt-web/6-pro', 'chatgpt-web/6-pro-image-generation-tool'].includes(s.model)
+      ? s.model : identifier(s.model, 128),
     outcome: choice(s.outcome, ['succeeded', 'failed']),
     inputTokens: integer(s.inputTokens), outputTokens: integer(s.outputTokens),
     estimatedInputTokens: integer(s.estimatedInputTokens), estimatedOutputTokens: integer(s.estimatedOutputTokens),

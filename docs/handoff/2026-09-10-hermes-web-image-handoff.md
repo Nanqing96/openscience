@@ -2,7 +2,8 @@
 ## 目标与约束
 - 2026-09-15真实私有配图25215cd1-e37a-4155-922d-3c06ae9aaec5五次MiniMax后Chat提交前失败；两处runner修复后同原请求仅发送一次、现已自动回收blocked。6 Pro指出k_z误作矢势分量、k与k⊥混用、Bessel形状因子与k_z曲线/量纲混合，禁止该方案生图。原review job及spool均有recovered-result/response；不是成功资产。下一任务将原审阅反馈交回既有planner，不能手工替代科学分析。
 - 修订任务1da6b754-0678-41b7-af4b-240d401a56d4已succeeded；真实checkpoint先保存、API仅result:{}，正常Chat发送/锚定/回收无兼容错误。6 Pro revised仅改composition：k₀分界置低波矢、f近1区，振荡过零在倏逝区，f作纵轴、k_z只作区域说明；方案已按修正保存，内部approval API200。回执tmp/illustration-revision-20260915-start.json。
-- 生图2196c4bc-347f-4ad5-a75b-3e9721efe491于02:13:33 UTC API202只提交一次，parent1da6/schema2直接编译、实际styleReference aa41；job已有reference.png/attachment-ready/submitted/conversation，当前等待真实图片。回执tmp/illustration-image-20260915-start.json、服务器/jobs/research-illustration-20260915-image.json。不重发、不再prompt改写、不用Codex CLI，尚未确认最终图科学/审美。
+- 生图2196c4bc-347f-4ad5-a75b-3e9721efe491实际成功回传1672×941 PNG，parent1da6/schema2直接编译+aa41实际reference上传，Langfuse仅1次image成功/80秒，无新语义改写。已实际看图：淡彩和公式清楚，但错误把k₀分界放在首次过零点，API200标rejected；本地tmp/research-illustration-2196.png保留，未发布。回执tmp/illustration-image-20260915-start.json。
+- 局部艺术修订a38aa258-029a-4404-889d-54048b1085ec于02:20:03 UTC API202一次，base为已审1da6，明确保留科学内容、仅用独立竖线将k₀定位于起始f近1平台，与首次过零分开。回执tmp/illustration-artfix-20260915-start.json；未完成科学复核/新图。
 - 用户2026-09-15确认Langfuse已登录，要求继续并说明后续任务。先收尾既有科学审阅结果复用，再沿正常研究任务恢复配图质量优化；不新增治理平台/模型阶段，新增风格、Figma、视频、第三篇和批量仍暂缓。
 - 禁止测试、预检、CI、本机构建；本机仅静态读写/Git/传输。真实规划及审阅调用见上文，必要服务器构建/启动与阻塞故障取证按现有规则执行；没有新provider或公开发布。
 - Chat为主要生图手段，Codex CLI保留备用。科学认识来自上游已审解析/分析，不能用未审semanticStage或参考图作为科学证据。
@@ -24,6 +25,7 @@
 - Backstage此前实际返回agent-worker owner及Gateway/parser/skills依赖；它是维护目录，不是运行或质量事实。
 - Serena在新生产快照实际定位materializeReviewedClaimSuggestions的唯一调用：extractor.ts:2566，reviewAndMaterializeCanonicalProposal共同物化路径；日志tmp/reviewed-claims-serena-references.log。
 - Langfuse于2026-09-15 01:34:25 UTC经原受限查询入口读回该真实任务全部6次调用，requestCorrelation均为25215cd1：五次MiniMax成功、一次scientific_review失败。采集有120秒提交延迟、60秒轮询及分页，无需重启/重放；旧unknown不猜测回填。任务关联已实证，不代表科学质量。
+- 同一真实查询已读回1da6三次MiniMax+一次科学审阅成功、2196一次image成功并关联task。已知Chat模型标签含slash，被原白名单过滤unknown；connector/query仅增加两个源码固定标签，High GO，准备独立更新，不放宽任意字符串/Secret边界，不回填旧记录。收据tmp/illustration-live-langfuse-20260915.json。
 - 用户已确认Langfuse登录。账号按明确要求改密，同事务密码比对成功、旧会话失效、私有凭据文件0600原子同步；文档不存密码。容器Prisma使用已安装pnpm生成客户端路径，根入口缺生成client。
 - 登录入口http://localhost:3130/auth/sign-in；沿用ssh-run.sh --development-tunnel。容器重建/IP变化后重开隧道；后台采集/查询用独立服务身份，不依赖网页登录。SMTP/SSO/定时备份/自动保留期未配置。
 - Vercel Skills曾实际list得到31技能、find返回候选；安装、runtime注入、实际产物provenance和质量分别记录。开发工具不自动赋权给科研用户Hermes。

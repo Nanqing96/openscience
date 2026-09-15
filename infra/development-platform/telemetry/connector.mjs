@@ -40,7 +40,9 @@ function sanitize(source) {
   const s = source && typeof source === 'object' && !Array.isArray(source) ? source : {};
   return {
     operation: choice(s.operation, ['text', 'ocr', 'image', 'scientific_review']),
-    provider: safeIdentifier(s.provider, 80), model: safeIdentifier(s.model, 128),
+    provider: safeIdentifier(s.provider, 80),
+    model: ['chatgpt-web/6-pro', 'chatgpt-web/6-pro-image-generation-tool'].includes(s.model)
+      ? s.model : safeIdentifier(s.model, 128),
     outcome: choice(s.outcome, ['succeeded', 'failed']),
     inputTokens: safeNumber(s.inputTokens), outputTokens: safeNumber(s.outputTokens),
     estimatedInputTokens: safeNumber(s.estimatedInputTokens), estimatedOutputTokens: safeNumber(s.estimatedOutputTokens),
