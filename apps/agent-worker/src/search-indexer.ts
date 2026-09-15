@@ -1,5 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
-import { parseDocumentSourceMap, type AgentDeps, type DocumentSourceMap } from '@openscience/domain';
+import { assertSearchIndexSourceLive, loadDocumentSourceMapReference, parseDocumentSourceMap, type AgentDeps, type DocumentSourceMap } from '@openscience/domain';
+import type { StorageAdapter } from '@openscience/storage';
 import {
   chunkDocument,
   SEARCH_CHUNK_SCHEMA_VERSION,
@@ -155,7 +156,7 @@ export function parseSearchIndexPayload(value: unknown): SearchIndexPayload {
 }
 
 export async function authorizeSearchIndexJob(
-  deps: Pick<AgentDeps, 'prisma'>,
+  deps: Pick<AgentDeps, 'prisma'> & { storage?: StorageAdapter },
   task: { id: string; executionAttempt: number },
 ): Promise<SearchIndexJob> {
   const ownerTask = await deps.prisma.agentTask.findUnique({
@@ -166,13 +167,19 @@ export async function authorizeSearchIndexJob(
     || ownerTask.executionAttempt !== task.executionAttempt) {
     throw new Error('[blocked] search index task authority mismatch');
   }
-  const payload = parseSearchIndexPayload(ownerTask.payload);
+  const source = await assertSearchIndexSourceLive(deps.prisma, ownerTask);
+  if (source && !deps.storage) throw new Error('[blocked] source map storage unavailable');
+  const payload: Omit<SearchIndexPayload, 'sourceMap'> & { sourceMap?: DocumentSourceMap } = source ? {
+    artifactId: source.payload.artifactId,
+    versionId: source.payload.versionId,
+  } : parseSearchIndexPayload(ownerTask.payload);
+  const sourceIdentity = source?.payload.sourceMapRef ?? payload.sourceMap!;
   const researchObject = ownerTask?.session.researchObject;
   const artifact = await deps.prisma.artifact.findUnique({ where: { id: payload.artifactId } });
-  if (!researchObject || researchObject.deletedAt || !artifact || artifact.deletedAt
+  if (!researchObject || researchObject.deletedAt || !artifact || artifact.deletedAt || artifact.bytesPurgedAt
     || artifact.workspaceId !== researchObject.workspaceId
-    || payload.sourceMap.artifactId !== artifact.id
-    || !sameHash(payload.sourceMap.contentHash, artifact.blobSha256)) {
+    || sourceIdentity.artifactId !== artifact.id
+    || !sameHash(sourceIdentity.contentHash, artifact.blobSha256)) {
     throw new Error('[blocked] search index authority mismatch');
   }
   const membership = await deps.prisma.membership.findUnique({
@@ -212,7 +219,7 @@ export async function authorizeSearchIndexJob(
     contentHash: artifact.blobSha256,
     sourceCreatedAt: ownerTask.createdAt,
     sourceExecutionAttempt: ownerTask.executionAttempt,
-    sourceMap: payload.sourceMap,
+    sourceMap: source ? await loadDocumentSourceMapReference(deps.storage!, source.payload.sourceMapRef) : payload.sourceMap!,
     ...(payload.claimIdsByBlockId === undefined ? {} : { claimIdsByBlockId: payload.claimIdsByBlockId }),
   };
 }

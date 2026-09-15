@@ -1,4 +1,5 @@
 import type { Prisma, PrismaClient } from '@prisma/client';
+import { assertSearchIndexSourceLive, SearchIndexSourceError } from '@openscience/domain';
 import type { PrismaClient as SearchClient } from '../generated/client';
 
 export interface SearchSourceIdentity {
@@ -12,7 +13,7 @@ export async function liveSearchSourceIds(core: Prisma.TransactionClient, rows: 
   const [objects, artifacts, tasks, publications] = await Promise.all([
     core.researchObject.findMany({ where: { id: { in: rows.map(r => r.researchObjectId) } }, select: { id: true, workspaceId: true, deletedAt: true } }),
     core.artifact.findMany({ where: { id: { in: rows.map(r => r.artifactId) } }, select: { id: true, workspaceId: true, deletedAt: true, bytesPurgedAt: true } }),
-    core.agentTask.findMany({ where: { id: { in: rows.flatMap(r => r.ownerTaskId ? [r.ownerTaskId] : []) } }, select: { id: true, deletedAt: true, session: { select: { deletedAt: true } } } }),
+    core.agentTask.findMany({ where: { id: { in: rows.flatMap(r => r.ownerTaskId ? [r.ownerTaskId] : []) } }, select: { id: true, sessionId: true, payload: true, deletedAt: true, session: { select: { deletedAt: true } } } }),
     core.version.findMany({ where: { id: { in: rows.flatMap(r => r.sourceVersionId ? [r.sourceVersionId] : []) }, publications: { some: {} } },
       select: { id: true, researchObjectId: true, status: true, manifest: { select: { entries: { select: { artifactId: true } } } }, evidenceRecords: { select: { artifactId: true } } } }),
   ]);
@@ -20,6 +21,14 @@ export async function liveSearchSourceIds(core: Prisma.TransactionClient, rows: 
   const artifactMap = new Map(artifacts.map(r => [r.id, r]));
   const taskMap = new Map(tasks.map(r => [r.id, r]));
   const versionMap = new Map(publications.map(r => [r.id, r]));
+  const invalidSources = new Set<string>();
+  for (const task of tasks) {
+    try { await assertSearchIndexSourceLive(core, task); }
+    catch (error) {
+      if (!(error instanceof SearchIndexSourceError)) throw error;
+      invalidSources.add(task.id);
+    }
+  }
   return new Set(rows.filter(row => {
     const ro = roMap.get(row.researchObjectId), artifact = artifactMap.get(row.artifactId);
     if (!ro || ro.workspaceId !== row.workspaceId || !artifact || artifact.workspaceId !== row.workspaceId || artifact.bytesPurgedAt) return false;
@@ -27,7 +36,7 @@ export async function liveSearchSourceIds(core: Prisma.TransactionClient, rows: 
     if (publication) return ['published', 'revised'].includes(publication.status) && publication.researchObjectId === ro.id
       && [...(publication.manifest?.entries ?? []), ...publication.evidenceRecords].some(e => e.artifactId === artifact.id);
     const task = row.ownerTaskId ? taskMap.get(row.ownerTaskId) : undefined;
-    return !ro.deletedAt && !artifact.deletedAt && (!row.ownerTaskId || Boolean(task && !task.deletedAt && !task.session.deletedAt));
+    return !ro.deletedAt && !artifact.deletedAt && (!row.ownerTaskId || Boolean(task && !task.deletedAt && !task.session.deletedAt && !invalidSources.has(task.id)));
   }).map(row => row.id));
 }
 
@@ -36,10 +45,15 @@ export async function setSearchContentVisibility(search: SearchClient, core: Pri
   workspaceId?: string; researchObjectId?: string; taskIds: string[]; artifactIds: string[];
 }): Promise<void> {
   if (!scope.researchObjectId && !scope.taskIds.length && !scope.artifactIds.length) return;
+  const derivedTasks = scope.taskIds.length ? await core.agentTask.findMany({
+    where: { kind: 'search.index', OR: scope.taskIds.map(id => ({ payload: { path: ['sourceTaskId'], equals: id } })) },
+    select: { id: true },
+  }) : [];
+  const taskIds = [...new Set([...scope.taskIds, ...derivedTasks.map(task => task.id)])];
   const where = { ...(scope.workspaceId ? { workspaceId: scope.workspaceId } : {}), OR: [
     ...(scope.researchObjectId ? [{ researchObjectId: scope.researchObjectId }] : []),
     ...(scope.artifactIds.length ? [{ artifactId: { in: scope.artifactIds } }] : []),
-    ...(scope.taskIds.length ? [{ indexTask: { fenceOwnerTaskId: { in: scope.taskIds } } }] : []),
+    ...(taskIds.length ? [{ indexTask: { fenceOwnerTaskId: { in: taskIds } } }] : []),
   ] };
   let cursor: string | undefined;
   for (;;) {

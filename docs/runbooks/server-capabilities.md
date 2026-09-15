@@ -14,7 +14,7 @@
 
 | 入口 | 现有运行方式与实际证据 |
 |---|---|
-| Backstage目录API | `openscience-development-catalog-catalog-1`；标准实体实际返回Hermes owner/deps及当前交付分支需求链接，匿名401；SQLite独立state，只读Token身份，无Docker socket/生产DB |
+| Backstage目录API | `openscience-development-catalog-catalog-1`；标准实体实际返回Hermes owner/deps、当前交付分支需求/CURRENT及同一Taskmaster state/tasks链接，匿名401；SQLite独立state，只读Token身份，无Docker socket/生产DB |
 | Serena只读MCP | `openscience-development-serena-serena-1`；实际三工具列表、Gateway符号及extractor调用返回；快照按CURRENT区分候选与生产，缓存独立，不加载仓库脚本/Secret/测试/依赖目录 |
 | Langfuse | `openscience-development-langfuse-*`六个独立服务，官方v4.35.0；独立PG/Redis/ClickHouse/MinIO，登录页200，实际API读回已有调用；无provider keys、外部AI任务或论文正文 |
 | Gateway元数据 | `openscience-development-gateway-audit`；专用只读`xgs_telemetry.gateway_calls`视图/角色，无原表SELECT；真实配图25215cd1六次调用已在Langfuse全部按taskId关联。120秒提交延迟、60秒轮询及分页不是丢日志；采集checkpoint和凭据持久保存；现有query支持--task UUID并已读回实际规划/审阅和失败guide的调用 |

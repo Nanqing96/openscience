@@ -58,7 +58,7 @@ async function main() {
   const handoffs = handoffReferences(selected);
   const warnings = [];
   if (handoffs.length === 0) warnings.push('No CURRENT handoff reference was found in the selected Taskmaster details');
-  if (handoffs.length > 1) warnings.push('Selected Taskmaster entries reference more than one handoff; read each before deciding scope');
+  if (new Set(handoffs.map(handoff => handoff.path)).size > 1) warnings.push('Selected Taskmaster entries reference more than one handoff; read each before deciding scope');
   const status = git('status', '--porcelain', '--untracked-files=normal');
   const summaries = selected.map(task => ({
     id: task.id,

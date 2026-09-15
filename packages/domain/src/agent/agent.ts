@@ -23,6 +23,7 @@ import { ResearchIntelligenceValidationError, validateSourceLocator } from '../r
 import { parseDocumentSourceMapReference, type DocumentSourceMapReference } from '../research-intelligence/source-map-ref';
 import { parseWorkspaceGuidePayload } from './workspace-guide-contract';
 import { isOwnedPrismaIdempotencyConflict, throwOwnedPrismaIdempotencyConflict } from '../prisma-idempotency-conflict';
+import { assertSearchIndexSourceLive, SearchIndexSourceError, type SourceMapSearchIndexPayload } from './search-index-source';
 
 export const AGENT_TASK_QUEUE = 'agent:queue';
 export const AI_CREDIT_RESOURCE = 'ai_credit'; // §2.4-7 配额骨架（P1A-7）
@@ -693,6 +694,66 @@ export async function prepareAgentTaskForCrashRecovery(deps: AgentDeps, taskId: 
     data: { status: 'pending', error: null },
   });
   return reset.count === 1;
+}
+
+/** A source-derived CPU job uses the existing durable queue without reserving an LLM credit. */
+export async function persistSourceMapSearchIndexInTransaction(
+  deps: AgentDeps,
+  tx: Prisma.TransactionClient,
+  input: { sourceTaskId: string; versionId: string; userId: string },
+  ctx: AuditContext = {},
+): Promise<AgentTask> {
+  await lockTrashReferences(tx);
+  const source = await tx.agentTask.findUnique({ where: { id: input.sourceTaskId }, include: { session: true } });
+  if (!source || !source.session.researchObjectId) throw new SearchIndexSourceError();
+  let reference: DocumentSourceMapReference;
+  try { reference = parseDocumentSourceMapReference((source.result as Record<string, unknown> | null)?.sourceMapRef); }
+  catch { throw new SearchIndexSourceError(); }
+  const payload: SourceMapSearchIndexPayload = {
+    artifactId: reference.artifactId, versionId: input.versionId, sourceTaskId: source.id,
+    sourceExecutionAttempt: source.executionAttempt, sourceMapRef: reference,
+  };
+  await assertSearchIndexSourceLive(tx, { sessionId: source.sessionId, payload });
+  const ro = await tx.researchObject.findUnique({ where: { id: source.session.researchObjectId } });
+  if (!ro || ro.deletedAt) throw new SearchIndexSourceError();
+  await requireActiveMembership(tx, ro.workspaceId, input.userId);
+  const artifact = await tx.artifact.findFirst({ where: { id: reference.artifactId, workspaceId: ro.workspaceId,
+    deletedAt: null, bytesPurgedAt: null, blobSha256: reference.contentHash } });
+  const confirmed = await tx.ingestionTask.findFirst({ where: {
+    agentTaskId: source.id, artifactId: reference.artifactId, state: 'confirmed', batch: { researchObjectId: ro.id },
+  } });
+  const version = await tx.version.findFirst({ where: { id: input.versionId, researchObjectId: ro.id,
+    commit: { idempotencyKey: `ingestion-confirm:${confirmed?.id ?? ''}` },
+    manifest: { entries: { some: { artifactId: reference.artifactId, blobSha256: reference.contentHash } } } } });
+  if (!artifact || !confirmed || !version) throw new SearchIndexSourceError();
+  const { task } = await persistAgentTaskCoreInTransaction(deps, tx, {
+    sessionId: source.sessionId, userId: source.session.userId, kind: 'search.index',
+    payload: { ...payload },
+    idempotencyKey: `system:search-index:${source.id}:${source.executionAttempt}:${version.id}:${reference.serializedSha256}`,
+  }, ctx, 'deterministic');
+  return task;
+}
+
+/** Explicit historical recovery uses the same producer as confirmation; it never reparses a paper. */
+export async function enqueueSourceMapSearchIndex(
+  deps: AgentDeps,
+  input: { sourceTaskId: string; versionId: string; userId: string },
+  ctx: AuditContext = {},
+): Promise<{ taskId: string; status: string }> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      const task = await deps.prisma.$transaction(
+        tx => persistSourceMapSearchIndexInTransaction(deps, tx, input, ctx), { isolationLevel: 'Serializable', timeout: 30_000 },
+      );
+      if (task.status === 'pending' && !task.deletedAt) {
+        try { await dispatchAgentTask(deps, task.id); } catch { /* Committed pending row is recovered by recoverUndispatchedAgentTasks. */ }
+      }
+      return { taskId: task.id, status: task.status };
+    } catch (error) {
+      if (((error as { code?: string }).code === 'P2034' || isOwnedPrismaIdempotencyConflict(error)) && attempt < 2) continue;
+      throw error;
+    }
+  }
 }
 
 const SERIALIZABLE_RETRY_DELAYS_MS = [10, 25, 50, 100, 200] as const;

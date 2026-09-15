@@ -20,6 +20,7 @@ import {
   parseDocumentSourceMapReference, loadDocumentSourceMapReference, type AgentDeps,
   purgeExpiredTrash,
   lockTrashReferences,
+  assertSearchIndexSourceLive,
 } from '@openscience/domain';
 import { createStorageAdapter, getBlob, storageConfigFromEnv, type StorageAdapter } from '@openscience/storage';
 import {
@@ -509,8 +510,9 @@ export function createHandlers(
           await lockTrashReferences(tx);
           const live = await tx.agentTask.findUnique({ where: { id: task.id }, include: { session: { include: { researchObject: true } } } });
           if (!live || live.deletedAt || live.session.deletedAt || live.session.researchObject?.deletedAt || live.status !== 'running' || live.executionAttempt !== task.executionAttempt) throw new Error('[blocked] search source was deleted');
+          await assertSearchIndexSourceLive(tx, live);
           const sourceArtifactId = (live.payload as Record<string, unknown>).artifactId;
-          if (typeof sourceArtifactId !== 'string' || !await tx.artifact.findFirst({ where: { id: sourceArtifactId, deletedAt: null } })) throw new Error('[blocked] search artifact was deleted');
+          if (typeof sourceArtifactId !== 'string' || !await tx.artifact.findFirst({ where: { id: sourceArtifactId, deletedAt: null, bytesPurgedAt: null } })) throw new Error('[blocked] search artifact was deleted');
           return operation();
         }, { timeout: 30_000 })),
     }),

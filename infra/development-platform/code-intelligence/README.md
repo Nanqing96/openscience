@@ -58,7 +58,7 @@ provides source mappings for `@openscience/*` package entry points and the web
 `@/*` alias. Repository tsconfig files, TypeScript plugins, package scripts and
 Serena configuration are not loaded. `snapshot.json` records the full Git commit
 and selected scope. The server reads that immutable file at startup and includes
-`sourceRevision` in every MCP tool result; `query.py` also places it at the top of
+`sourceRevision` in every successful MCP tool result; `query.py` also places it at the top of
 its JSON output. This is provenance, not a completeness or quality score. External
 dependency types are intentionally absent, so symbol
 coverage across third-party libraries and dynamic imports is limited.

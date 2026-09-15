@@ -171,11 +171,12 @@ export {
 export {
   claimAgentTask, createAgentSession, dispatchAgentTask, findOrCreateAgentSessionInTransaction,
   submitAgentTask, persistAgentTaskInTransaction, getAgentTask, retryAgentTask, listAgentSessions, listAgentTasks, markTaskProgress,
-  prepareAgentTaskForCrashRecovery, recoverUndispatchedAgentTasks,
+  prepareAgentTaskForCrashRecovery, recoverUndispatchedAgentTasks, enqueueSourceMapSearchIndex,
   AGENT_TASK_QUEUE, AI_CREDIT_RESOURCE, AGENT_TASK_KINDS, PUBLIC_AGENT_SESSION_KINDS, PUBLIC_AGENT_TASK_KINDS,
   type AgentDeps, type AgentTaskView, type AgentSessionView, type AgentTaskStatus,
   type CreateAgentSessionInput, type SubmitAgentTaskInput,
 } from './agent/agent';
+export { assertSearchIndexSourceLive, parseSourceMapSearchIndexPayload, SearchIndexSourceError } from './agent/search-index-source';
 export { ApprovalError, type ApprovalErrorCode } from './approval/errors';
 export {
   approvalLevel, buildConfirmation, createApproval, approveApproval, rejectApproval, revokeApproval, listPendingApprovals,

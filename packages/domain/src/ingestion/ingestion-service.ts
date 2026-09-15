@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import type { StorageAdapter } from '@openscience/storage';
 import type { AuditContext } from '@openscience/observability';
 import { createArtifact } from '../artifact/artifacts';
-import { AI_CREDIT_RESOURCE, createAgentSession, dispatchAgentTask, findOrCreateAgentSessionInTransaction, persistAgentTaskInTransaction, projectAgentTaskResult, submitAgentTask, type AgentDeps } from '../agent/agent';
+import { AI_CREDIT_RESOURCE, createAgentSession, dispatchAgentTask, findOrCreateAgentSessionInTransaction, persistAgentTaskInTransaction, persistSourceMapSearchIndexInTransaction, projectAgentTaskResult, submitAgentTask, type AgentDeps } from '../agent/agent';
 import { AgentError } from '../agent/errors';
 import { requireActive, requireActiveMembership, requireMembership } from '../workspace/helpers';
 import { WorkspaceError } from '../workspace/errors';
@@ -19,6 +19,7 @@ import { IngestionError } from './errors';
 import { loadDocumentSourceMapReference, parseDocumentSourceMapReference } from '../research-intelligence/source-map-ref';
 import { recordEntry } from '../usage/ledger';
 import { assertIngestionContent, assertSupportedIngestionFile } from './format-policy';
+import { isOwnedPrismaIdempotencyConflict } from '../prisma-idempotency-conflict';
 import type { ActionableIngestionTaskView, IngestionBatchView, IngestionFileInput, IngestionTaskView } from './ingestion-types';
 
 export type IngestionDeps = AgentDeps & { storage: StorageAdapter };
@@ -1073,13 +1074,14 @@ export async function confirmIngestionTask(
 ): Promise<{ task: IngestionTaskView; sdf: SdfDocumentView; confirmation: IngestionConfirmation }> {
   for (let attempt = 0; ; attempt += 1) {
     try {
-      return await deps.prisma.$transaction(async tx => {
+      const saved = await deps.prisma.$transaction(async tx => {
         const scoped = { ...deps, prisma: tx as IngestionDeps['prisma'] };
         const task = await tx.ingestionTask.findUnique({ where: { id: input.taskId },
           include: { artifact: true, agentTask: true, batch: { include: { researchObject: true } } } });
         if (!task || task.artifact.deletedAt || task.agentTask?.deletedAt || task.batch.researchObject.deletedAt) throw new IngestionError('INGESTION_NOT_FOUND', 'Ingestion task not found');
         const { researchObject: ro } = await authorizeIngestionWrite(scoped, { userId: input.userId, researchObjectId: task.batch.researchObjectId });
         let commit = await savedConfirmation(scoped, task.id, ro.id);
+        let indexTaskId: string | null = null;
         if (!commit) {
           if (!input.sourceAgentTaskId || task.agentTaskId !== input.sourceAgentTaskId) {
             throw new IngestionError('INGESTION_NOT_RETRYABLE', 'Analysis changed; review the current proposal before confirming');
@@ -1113,13 +1115,28 @@ export async function confirmIngestionTask(
           if (updated.count !== 1) throw new IngestionError('INGESTION_NOT_RETRYABLE', 'Task changed while confirming');
           await recordAudit(deps, tx, { actorId: input.userId, action: 'ingestion.confirm', workspaceId: ro.workspaceId,
             targetType: 'ingestion_task', targetId: task.id, metadata: { versionId: commit.versionId, sourceAgentTaskId: input.sourceAgentTaskId, evidenceStatus: 'needs_review' } }, ctx);
+          let sourceReference;
+          try { sourceReference = parseDocumentSourceMapReference((task.agentTask?.result as Record<string, unknown> | null)?.sourceMapRef); }
+          catch { /* Legacy confirmations without a durable parser map remain valid. */ }
+          if (sourceReference?.parserStatus === 'succeeded') {
+            const indexTask = await persistSourceMapSearchIndexInTransaction(deps, tx, {
+              sourceTaskId: input.sourceAgentTaskId, versionId: commit.versionId, userId: input.userId,
+            }, ctx);
+            if (indexTask.status === 'pending' && !indexTask.deletedAt) indexTaskId = indexTask.id;
+          }
         }
         const core = commit.snapshot.core as Record<string, string>;
         return { task: { ...taskToView(task), state: 'confirmed', error: null },
-          sdf: { core, nodes: SDF_NODE_TYPES.map(nodeType => ({ nodeType, content: core[nodeType] ?? '' })) }, confirmation: confirmationView(commit) };
+          sdf: { core, nodes: SDF_NODE_TYPES.map(nodeType => ({ nodeType, content: core[nodeType] ?? '' })) }, confirmation: confirmationView(commit),
+          indexTaskId };
       }, { isolationLevel: 'Serializable', timeout: 30_000 });
+      const { indexTaskId, ...response } = saved;
+      if (indexTaskId) {
+        try { await dispatchAgentTask(deps, indexTaskId); } catch { /* Durable pending index dispatch is recovered by the existing worker loop. */ }
+      }
+      return response;
     } catch (error) {
-      if ((error as { code?: string }).code === 'P2034' && attempt < 2) continue;
+      if (((error as { code?: string }).code === 'P2034' || isOwnedPrismaIdempotencyConflict(error)) && attempt < 2) continue;
       throw error;
     }
   }

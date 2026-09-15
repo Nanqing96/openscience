@@ -14,6 +14,7 @@
 ## 已查实的断点及处理
 <a id="capability-linkage"></a>
 - 2026-09-15用户要求已查明即可修复，Taskmaster同tag任务4记录本次接线、不替代1/2。候选已完成：Gateway配图末审复用MiniMax结构化池/科学Skill，每次provider尝试前短事务复核任务/来源/原稿；新旧审阅记录兼容。私有ResearchList接POST /research-objects/search与原BGE hybrid服务，成员授权/来源存活/结果再鉴权，3秒一次embedding、显式退化，共享索引配置；查询不进入URL。Serena成功MCP/CLI返回源revision；管理读取同读Git/currentTag/验收及handoff指针，Backstage引用同一Taskmaster。独立High静态通过；待服务器必要build/start和实际读取，未运行测试/预检/本地构建/新模型。
+- 接线首轮应用e02c391defcb4aa59cc7d22d7bd922d9180eb0d0已部署，rollback c63；必要build/start exit0，tmp/capability-linkage-deploy.log。真实/dashboard搜索Weyl POST200/mode=hybrid却rows=[]，/jobs/capability-linkage-search-observed.json；进一步查明只有search.index handler没有业务producer，后续已补首次确认事务入队，缺ref旧确认与重放保持兼容；原confirmed行来源不变已有实际写路径证明，私有删除/公开保留及outbox复用经High批准。两真实论文补录计划各1条eligible，tmp/confirmed-source-index-plan.json；待新候选部署后apply，任务4未完成。Catalog已安装e02；Serena新wrapper因.dockerignore漏snapshot_identity.py安装COPY失败，原6a运行不变，已补白名单待下一候选安装；tmp/capability-linkage-tools-install.log。管理helper静态同读已返回正确tag/1、2未完成/3done/4进行中，根实际Skill入口亦同步；同文件不同anchor不再误报多handoff。
 - Git历史41ae→ea436→3fa2→28197将局部科学/执行器修复提升为“继续淡彩、暂停新风格”，progress/index又沿用。AGENTS/docs-sync现要求先对照具体需求及未完成项，局部暂停不得取消目标；根导航与已有Memory同步，无新状态平台或门禁。
 - Backstage线上需求/源码链接指向缺现行要求的旧main，已改交付分支；维护链接不冒称运行快照。Taskmaster原currentTag仍为八月已完成hermes-research-intelligence，现登记本批三项并切换；旧tag保留历史。工具projectRoot必须为本交付树，根main只作导航。
 - 原艺术修订只在显式API使用，现presentationDraft成对传revisionMode=art/baseAssetId贯穿Hermes解析、草稿、确认、不确定回放；候选限定同RO/version/locale、有效v2科学来源，明确原稿，不按最新时间猜。自由编辑制作指令清除art，原稿/版本错配不换稿继续。
@@ -30,7 +31,7 @@
 - 真实DB与Langfuse重读769：provenance含共享scientific-critical-thinking v2、自有v5及三套Baoyu；review final-brief/revised；两次调用为MiniMax艺术规划、Hermes经Gateway调用6Pro审核。Skill是方法、Hermes编排、模型执行；不是绕过Hermes，不能推导所有论文均已正确分析。
 - 清理前定向盘点：根盘148G/已用81G/可用61G、inode15%；38个release目录合计15G，跨目录硬链接使逐目录du不可相加当可回收量；103镜像29.43GB、Docker标记可回收11.4GB；build cache1.34GB，evals1.6G、models4.9G。新浏览器加入后共69容器/24运行。应用/c63、目录与遥测/061、Serena/6a及独立rollback仍有引用，不能把所有非当前目录直接删除。
 - 09:14Z按用户“验证确实不需要的可以清除”授权，独立High审阅后精确删除36个停止、只读rootfs、restart=no的一次性浏览器/Codex/TTS/video容器。277个unit/Compose/直接安装脚本及所有容器namespace引用检查无引用，逐ID保留私有metadata/log.gz后无-f/-v删除；剩33容器，24运行+3回滚状态/镜像、65处挂载及release/rollback/failure标记均不变。镜像/卷/release/资料未删；无测试/预检/模型调用。凭据未输出。收据/原IDs在/opt/openscience-development/server-cleanup-20260915-{approved-scope.json,removed-containers/result.json}，勿重跑tmp/server-cleanup-containers.ps1。
-- 本轮明确模型职责：Hermes主路由及默认论文来源审校均MiniMax+科学Skill（extractor:2056/2562）；显式web复核和配图末审另走固定Chat6Pro，配图没有MiniMax回退。不是Skill切模型，不代表Hermes缺少审阅能力；本轮未改路由。自动业务链/审计与人工开发管理工具边界已原地补入能力台账，未新建平台或审核器。
+- 上一轮模型职责取证：Hermes主路由及默认论文来源审校均MiniMax+科学Skill；当时显式web复核和配图末审另走固定Chat6Pro。该历史断点本轮已修，配图末审当前路由见上方接线状态；旧产物的6Pro记录保持真实。
 - 真实页面guide7002b77f-5b6c-4b67-b06e-79695e147960首轮成功；实际返回和页面提交instruction与保存原请求完全相等，base15a、revisionMode art、technical正确。页面“确认制作”POST202创建76918e55，无Codex代写新画面指令。证据tmp/goal-hermes-direct-{submit,confirm}.json。
 - 76918e55使用自有v5/baoyu editorial/cover types/font等，与15a对比sciencePreserved=true，来源identity不变。6Pro实际revised仅将深墨背景上的分界圆/坐标轴明确为暖白细线；保留深墨负空间/少量铜橙、科学分区及五项原标签。证据tmp/goal-editorial-{plan-status,science-observed,plan-review}.json，plan-status含私有来源，不全文输出。
 - 方案已通过既有PATCH内部批准，07:09:22Z既有generation接口POST202创建7cd50e44，07:09:32Z仅提交一次，无参考图。原Chat https://chatgpt.com/c/6aa8ef2d-15b8-83ea-8981-19492a1d99dd 实际只有原用户请求，未见assistant/图片/限额提示；产品任务failed，provider uncertain。不得重跑image-start；收据tmp/goal-editorial-image-start.json及服务器/jobs/research-illustration-20260915-style-editorial-final-image.json。
@@ -49,7 +50,7 @@
 
 ## 已观察能力、保护及边界
 - 实际Backstage读回当前需求链接及owner/deps；Serena定位既有planner源码；Langfuse新--task UUID在24h/最多10条范围读回625119fa、76918e55各2条规划/审阅及99e4的3条失败guide调用（模型返回成功≠业务成功），采集有120秒/60秒延迟。769的MiniMax 6131/197 tokens、6Pro用量未知，不把记录cost=0解释成免费；无模型造数、无正文外传。
-- 7cd的Langfuse实际image调用failed，554426ms、retry0、tokens/cost均unknown；原任务关联有效。Library现在由/images的“Open Library”指向/library?tab=images，旧精确chat链接fallback尚未适配；新Library页本次资源错误无法加载，不按最新缩略图猜结果。新canonical观察收据/jobs/research-illustration-20260915-original-new-page.json。
+- 7cd的Langfuse实际image调用failed，554426ms、retry0、tokens/cost均unknown；原任务关联有效。容量修复后Library已实际加载19图；疑似图的“View original chat”禁用，未取得原会话绑定，不能按名称/时间认领。旧/images精确chat链接fallback尚未适配；未强点禁用项、下载/导入或重发。原canonical观察收据/jobs/research-illustration-20260915-original-new-page.json。
 - 只读High发现page-lifecycle终态回收未判断后来输入的草稿，已按最小修复只自动回收归属匹配、未提交且失败/过期的about:blank；Chat首页与已提交会话不再走raw-CDP终态回收。正常runner自身成功收尾不变；异常残留需看实际输入后处理。独立High GO并安装，未触发关页来做验证，不宣称异常页自动整理已完善。
 - RO9067a2d5-42ad-4c06-b234-753728b71064，私有versione77dc3c7-95cb-4269-ac3c-24276fea74e7，Claim93416292-0dbb-42b1-8810-6bdf77804c1f；40证据identity dbec53fff80645ec6698eea26720e4157b74a72561e7d4ee6283ad5c70374e13。base15a继承已审69ec/4f科学内容；没有重跑全文提取/科学解析。
 - 用户认可aa41 hash565fa04e0c79ab9ee797b4bfd9d3a334b6f49b88b72756f8d1533bb631e7330b保持。公开Quantization OSR-2026-000023/v1与deep-sub-cycle/v1、原论文/笔记/草稿不变。真实PNG：tmp/research-illustration-atlas-c3a497.png、editorial-ac166.png、f424.png，已看图；不从生成成功推导审美认可。
