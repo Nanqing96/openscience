@@ -44,7 +44,7 @@ export function IngestionClaimReview({ researchObjectId: ro, versionId, onComple
   let selections: ReturnType<typeof selectedReviewClaims> = [];
   let valid = true;
   let invalidReason = 'invalid';
-  try { selections = selectedReviewClaims(rows, candidate?.maxEvidencePerBatch); } catch (cause) {
+  try { selections = selectedReviewClaims(rows, candidate?.maxEvidencePerBatch, candidate?.maxClaims); } catch (cause) {
     valid = false;
     if (cause instanceof Error && cause.message === 'INVALID_SOURCE_ASSOCIATION') invalidReason = 'sourceAssociationRequired';
     if (cause instanceof Error && cause.message === 'TOO_MANY_SOURCE_ASSOCIATIONS') invalidReason = 'evidenceLimit';
@@ -77,8 +77,7 @@ export function IngestionClaimReview({ researchObjectId: ro, versionId, onComple
     if (locked) return;
     setState(previous => previous.scope === scope ? { ...previous, rows: previous.rows.map(row => {
       if (row.clientKey !== key) return row;
-      const next = edit(row);
-      return sourceReview && next.selected ? { ...next, attachSourceQuote: true } : next;
+      return edit(row);
     }) } : previous);
   }
   async function confirm() {
@@ -139,9 +138,9 @@ export function IngestionClaimReview({ researchObjectId: ro, versionId, onComple
               </label>
             </li>)}</ol>
           </details>
-          <label className="flex min-h-11 items-start gap-2 text-sm"><input type="checkbox" checked={row.attachSourceQuote} disabled={Boolean(sourceReview)} onChange={event => update(row.clientKey, value => ({ ...value, attachSourceQuote: event.target.checked }))}/>{t(sourceReview ? 'runAssociate' : 'associate')}</label>
+          <label className="flex min-h-11 items-start gap-2 text-sm"><input type="checkbox" checked={row.attachSourceQuote} onChange={event => update(row.clientKey, value => ({ ...value, attachSourceQuote: event.target.checked }))}/>{t(sourceReview ? 'runAssociate' : 'associate')}</label>
         </> : <p className="text-sm">{t('noQuote')}</p>}
-        <button type="button" className="min-h-11 text-sm underline" disabled={rows.length >= 12} onClick={() => setState(previous => ({ ...previous, rows: [...previous.rows, splitReviewRow(row, crypto.randomUUID())] }))}>{t('split')}</button>
+        <button type="button" className="min-h-11 text-sm underline" disabled={rows.length >= (candidate?.maxClaims ?? 12)} onClick={() => setState(previous => ({ ...previous, rows: [...previous.rows, splitReviewRow(row, crypto.randomUUID())] }))}>{t('split')}</button>
       </div>)}
     </fieldset> : null}
     {!valid ? <p role="alert" className="text-sm">{t(invalidReason)}</p> : null}

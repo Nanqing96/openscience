@@ -7,14 +7,22 @@ export interface ClaimReviewRow extends IngestionClaimSelection {
   sources?: IngestionClaimSuggestion['sources'];
 }
 export function createReviewRows(suggestions: IngestionClaimSuggestion[], id: () => string = () => crypto.randomUUID()): ClaimReviewRow[] {
-  return suggestions.map(s => ({
+  const keys = new Map(suggestions.flatMap(s => s.atomicSuggestions ?? []).map(claim => [claim.clientKey, id()]));
+  return suggestions.flatMap((s): ClaimReviewRow[] => s.atomicSuggestions?.length ? s.atomicSuggestions.map(claim => ({
+    clientKey: keys.get(claim.clientKey)!, sourceField: s.sourceField, selected: false,
+    kind: claim.kind, ...(claim.parentClientKey ? { parentClientKey: keys.get(claim.parentClientKey) } : {}),
+    statement: claim.statement, originalStatement: claim.statement, source: s.source, sources: s.sources,
+    attachSourceQuote: s.defaultQuoteAssociation,
+    sourceBindings: claim.sourceBindings.map(binding => ({ ...binding })),
+    conditions: [...claim.conditions], limitations: [...claim.limitations],
+  })) : [{
     clientKey: id(), sourceField: s.sourceField, selected: false,
     kind: s.sourceField === 'method' || s.sourceField === 'reproducibility' ? 'method' : s.sourceField === 'limitations' ? 'boundary' : s.sourceField === 'results' ? 'supporting' : 'core',
     statement: s.reviewedStatement, originalStatement: s.originalStatement, source: s.source, sources: s.sources,
     attachSourceQuote: (s.sources ? s.sources.length > 0 : !!s.source) && s.defaultQuoteAssociation,
     sourceBindings: (s.sources ?? (s.source ? [s.source] : [])).map((_, sourceIndex) => ({ sourceIndex, relation: 'supports' as const })),
     conditions: [], limitations: [],
-  }));
+  }]);
 }
 export function editReviewStatement(row: ClaimReviewRow, statement: string): ClaimReviewRow {
   return { ...row, statement, attachSourceQuote: false };
@@ -29,10 +37,10 @@ export function setReviewSourceRelation(row: ClaimReviewRow, sourceIndex: number
   sourceBindings.sort((left, right) => left.sourceIndex - right.sourceIndex);
   return { ...row, sourceBindings, attachSourceQuote: false };
 }
-export function selectedReviewClaims(rows: ClaimReviewRow[], maxEvidencePerBatch?: number): IngestionClaimSelection[] {
+export function selectedReviewClaims(rows: ClaimReviewRow[], maxEvidencePerBatch?: number, maxClaims = 12): IngestionClaimSelection[] {
   const selected = rows.filter(row => row.selected);
   const byKey = new Map(selected.map(row => [row.clientKey, row]));
-  if (byKey.size !== selected.length || selected.length > 12) throw new Error('Invalid selection');
+  if (byKey.size !== selected.length || selected.length > maxClaims) throw new Error('Invalid selection');
   const evidenceCount = selected.reduce((total, row) => total + (row.attachSourceQuote
     ? row.sourceBindings?.length ?? (row.sources ?? (row.source ? [row.source] : [])).length : 0), 0);
   if (maxEvidencePerBatch !== undefined && evidenceCount > maxEvidencePerBatch) throw new Error('TOO_MANY_SOURCE_ASSOCIATIONS');

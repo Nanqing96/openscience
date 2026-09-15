@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import multipart from '@fastify/multipart';
 import { z } from 'zod';
 import { ingestionClaimSelectionSchema } from './ingestion-claim-selection-schema';
+import { MAX_INGESTION_CLAIMS } from '@openscience/domain';
 import { authorizeIngestionWrite, confirmIngestionClaimEvidenceBridge, confirmIngestionTask, createIngestionBatch, getIngestionBatch, getIngestionTask, getResearchObjectIngestion, IngestionError, listActionableIngestionTasks, listIngestionClaimEvidenceCandidates, previewIngestionClaimEvidenceBridge, reanalyzeConfirmedIngestion, refreshIngestionAnalysis, retryIngestionTask, type IngestionDeps } from '@openscience/domain';
 import type { AuditContext } from '@openscience/observability';
 import { requireCurrentUser } from './session-guard';
@@ -149,7 +150,7 @@ export function registerIngestionRoutes(app: FastifyInstance, deps: IngestionDep
     const { id, versionId, taskId } = bridgeTaskParams.parse(req.params);
     const idempotencyKey = z.string().min(1).max(200).parse(req.headers['idempotency-key']);
     const body = z.object({
-      snapshotToken: z.string().regex(/^[a-f0-9]{64}$/), selections: z.array(ingestionClaimSelectionSchema).min(1).max(12),
+      snapshotToken: z.string().regex(/^[a-f0-9]{64}$/), selections: z.array(ingestionClaimSelectionSchema).min(1).max(MAX_INGESTION_CLAIMS),
     }).strict().parse(req.body);
     const created = await confirmIngestionClaimEvidenceBridge(deps, {
       userId: user.userId, researchObjectId: id, versionId, taskId,

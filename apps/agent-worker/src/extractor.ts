@@ -1,13 +1,19 @@
 import { AiGatewayError, SCIENCE_REVIEW_MAX_PROMPT_CHARS, type AiGateway, type OcrAuthorizationContext, type SchemaGuard, type ScienceReviewAttachment } from '@openscience/ai-gateway';
 import { createHash } from 'node:crypto';
 import {
+  CLAIM_KINDS,
+  CLAIM_RELATIONS,
   createBlockSourceLocator,
   MAX_CANONICAL_EVIDENCE_CHARS,
   MAX_CANONICAL_EVIDENCE_SEGMENTS,
+  MAX_INGESTION_CLAIMS,
   parseDocumentSourceMap,
+  parseReviewedClaimSuggestions,
   resolveSourceLocator,
   validateSourceLocator,
+  type ClaimRelation,
   type DocumentSourceMap,
+  type ReviewedClaimSuggestion,
   type SourceLocator,
 } from '@openscience/domain';
 import { SDF_CORE_FIELDS, SDF_CORE_VERSION } from '@openscience/sdf-schema';
@@ -54,6 +60,8 @@ export interface ExtractionResult extends Record<string, unknown> {
   evidenceLocation?: Record<(typeof SDF_CORE_FIELDS)[number], EvidenceLocation>;
   /** Exact canonical block segments selected by the model and materialized by the worker. */
   evidenceSegments?: Record<(typeof SDF_CORE_FIELDS)[number], Array<{ quote: string; sourceLocator: SourceLocator }>>;
+  /** Optional atomic suggestions from the final scientific review, bound to these exact field segments. */
+  reviewedClaimSuggestions?: ReviewedClaimSuggestion[];
   /** Present only when structured retries exhausted after retaining at least one supported canonical field. */
   reason?: 'canonical_partial_validation_exhausted';
   /** Exact final guard reasons for unresolved fields; explicitly missing fields are omitted. */
@@ -77,7 +85,7 @@ export interface ExtractionResult extends Record<string, unknown> {
     needsMoreEvidence?: ScientificReviewResponse['needsMoreEvidence'];
     usage?: { inputTokens: number; outputTokens: number };
     finishReason?: 'stop' | 'length' | 'other' | 'unknown';
-    contractVersion: '4';
+    contractVersion: '4' | '5';
     status: 'review_received' | 'awaiting_review_evidence' | 'blocked_scientific_review';
     attemptId: string;
     promptHash?: string;
@@ -1157,23 +1165,36 @@ type ScientificReviewField = {
 };
 type ScientificReviewResponse = {
   fields: Record<(typeof SDF_CORE_FIELDS)[number], ScientificReviewField>;
+  /** Validated separately after materialization; malformed suggestions never invalidate the field review. */
+  claimSuggestions?: unknown;
   needsMoreEvidence: Array<{
     affectedFields: Array<(typeof SDF_CORE_FIELDS)[number]>;
     question: string;
     requestedContext: string;
   }>;
 };
-export const SCIENCE_REVIEW_CONTRACT_VERSION = '4';
+export const SCIENCE_REVIEW_CONTRACT_VERSION = '5';
+const LEGACY_SCIENCE_REVIEW_CONTRACT_VERSION = '4';
+type ScientificReviewContractVersion = '4' | '5';
 const SCIENCE_REVIEW_SUPPLEMENTAL_CONTRACT_VERSION = '3';
+
+interface CanonicalScientificReviewResult {
+  partial: CanonicalPartialResult;
+  review: ExtractionResult['scientificReview'];
+  suggestions?: { response: ScientificReviewResponse; passages: readonly CanonicalPassage[] };
+}
 
 function sha256Json(value: unknown): string {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
 
-function reviewAttemptId(parentTaskId: string, sourceMapHash: string, candidateHash: string, evidenceManifestHash?: string): string {
+function reviewAttemptId(
+  parentTaskId: string, sourceMapHash: string, candidateHash: string, evidenceManifestHash?: string,
+  contractVersion: ScientificReviewContractVersion = SCIENCE_REVIEW_CONTRACT_VERSION,
+): string {
   const seed = evidenceManifestHash
-    ? `${parentTaskId}\0${sourceMapHash}\0${candidateHash}\0science-v${SCIENCE_REVIEW_CONTRACT_VERSION}\0${evidenceManifestHash}\0supplemental-v${SCIENCE_REVIEW_SUPPLEMENTAL_CONTRACT_VERSION}`
-    : `${parentTaskId}\0${sourceMapHash}\0${candidateHash}\0science-v${SCIENCE_REVIEW_CONTRACT_VERSION}`;
+    ? `${parentTaskId}\0${sourceMapHash}\0${candidateHash}\0science-v${contractVersion}\0${evidenceManifestHash}\0supplemental-v${SCIENCE_REVIEW_SUPPLEMENTAL_CONTRACT_VERSION}`
+    : `${parentTaskId}\0${sourceMapHash}\0${candidateHash}\0science-v${contractVersion}`;
   const hex = createHash('sha256').update(seed).digest('hex').slice(0, 32).split('');
   hex[12] = '5';
   hex[16] = ['8', '9', 'a', 'b'][Number.parseInt(hex[16]!, 16) % 4]!;
@@ -1254,10 +1275,14 @@ function selectScienceReviewPassages(passages: readonly CanonicalPassage[], prop
   return result.sort((left, right) => left.pageStart - right.pageStart || left.id.localeCompare(right.id));
 }
 
-function scientificReviewGuard(value: unknown, allowedIds: ReadonlySet<string>): value is ScientificReviewResponse {
+function scientificReviewGuard(
+  value: unknown, allowedIds: ReadonlySet<string>,
+  contractVersion: ScientificReviewContractVersion = SCIENCE_REVIEW_CONTRACT_VERSION,
+): value is ScientificReviewResponse {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const root = value as Record<string, unknown>;
-  if (Object.keys(root).sort().join(',') !== 'fields,needsMoreEvidence' || !root.fields || typeof root.fields !== 'object' || Array.isArray(root.fields)
+  const requiredKeys = Object.keys(root).filter((key) => contractVersion !== '5' || key !== 'claimSuggestions');
+  if (requiredKeys.sort().join(',') !== 'fields,needsMoreEvidence' || !root.fields || typeof root.fields !== 'object' || Array.isArray(root.fields)
     || !Array.isArray(root.needsMoreEvidence) || root.needsMoreEvidence.length > 8) return false;
   for (const need of root.needsMoreEvidence) {
     if (!need || typeof need !== 'object' || Array.isArray(need)) return false;
@@ -1301,6 +1326,116 @@ function fieldsAffectedByReviewEvidence(review: ScientificReviewResponse): Set<(
     for (const field of need.affectedFields) affected.add(field);
   }
   return affected;
+}
+
+function reviewedPassageBindings(
+  sourceMap: DocumentSourceMap,
+  bindings: readonly { sourcePassageId: string; relation: ClaimRelation }[],
+  allowed: ReadonlyMap<string, CanonicalPassage>,
+  fieldSegments: readonly { quote: string; sourceLocator: SourceLocator }[],
+): ReviewedClaimSuggestion['sourceBindings'] | undefined {
+  const assignments = new Map<number, { relation: ClaimRelation; ranges: Array<{ start: number; end: number }> }>();
+  try {
+    for (const binding of bindings) {
+      // Materialize each P through the same locator round-trip as the final field.
+      // P ordinals and quote searches cannot identify its merged evidence segment.
+      for (const segment of segmentsForPassages(sourceMap, [binding.sourcePassageId], allowed)) {
+        const locator = segment.sourceLocator;
+        const range = locator.charRange;
+        if (!range) return undefined;
+        const sourceIndex = fieldSegments.findIndex(({ sourceLocator: candidate }) =>
+          candidate.artifactId === locator.artifactId && candidate.contentHash === locator.contentHash
+          && candidate.blockId === locator.blockId && candidate.page === locator.page
+          && candidate.charRange !== undefined
+          && candidate.charRange.start <= range.start && candidate.charRange.end >= range.end);
+        if (sourceIndex < 0) return undefined;
+        const existing = assignments.get(sourceIndex);
+        // A merged segment cannot faithfully carry different P-level relations.
+        if (existing && existing.relation !== binding.relation) return undefined;
+        const assignment: { relation: ClaimRelation; ranges: Array<{ start: number; end: number }> } =
+          existing ?? { relation: binding.relation, ranges: [] };
+        assignment.ranges.push(range);
+        assignments.set(sourceIndex, assignment);
+      }
+    }
+  } catch {
+    return undefined;
+  }
+  for (const [sourceIndex, assignment] of assignments) {
+    const range = fieldSegments[sourceIndex]!.sourceLocator.charRange!;
+    let coveredUntil = range.start;
+    for (const bound of assignment.ranges.sort((left, right) => left.start - right.start || left.end - right.end)) {
+      if (bound.start > coveredUntil) return undefined;
+      coveredUntil = Math.max(coveredUntil, bound.end);
+    }
+    // Do not extend a relation to neighbouring P ranges the reviewer did not bind.
+    if (coveredUntil !== range.end) return undefined;
+  }
+  return [...assignments].sort(([left], [right]) => left - right)
+    .map(([sourceIndex, assignment]) => ({ sourceIndex, relation: assignment.relation }));
+}
+
+function materializeReviewedClaimSuggestions(
+  sourceMap: DocumentSourceMap,
+  result: ExtractionResult,
+  review: ScientificReviewResponse,
+  passages: readonly CanonicalPassage[],
+): ReviewedClaimSuggestion[] | undefined {
+  if (!Array.isArray(review.claimSuggestions) || review.claimSuggestions.length > MAX_INGESTION_CLAIMS) return undefined;
+  const allowed = new Map(passages.map((passage) => [passage.id, passage]));
+  const awaitingEvidence = fieldsAffectedByReviewEvidence(review);
+  const keys = new Set<string>();
+  const candidates: ReviewedClaimSuggestion[] = [];
+  const text = (value: unknown, max: number): value is string =>
+    typeof value === 'string' && !!value.trim() && value.length <= max;
+  const textList = (value: unknown): value is string[] =>
+    Array.isArray(value) && value.length <= 100 && value.every((item) => text(item, 500));
+  for (const candidate of review.claimSuggestions) {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return undefined;
+    const item = candidate as Record<string, unknown>;
+    const expected = ['clientKey', 'sourceField', 'kind', 'statement', 'conditions', 'limitations', 'sourceBindings'];
+    if (item.parentClientKey !== undefined) expected.push('parentClientKey');
+    if (Object.keys(item).sort().join(',') !== expected.sort().join(',')
+      || !text(item.clientKey, 100) || keys.has(item.clientKey)
+      || !SDF_CORE_FIELDS.includes(item.sourceField as ReviewedClaimSuggestion['sourceField'])
+      || !CLAIM_KINDS.includes(item.kind as ReviewedClaimSuggestion['kind']) || !text(item.statement, 4_000)
+      || !textList(item.conditions) || !textList(item.limitations)
+      || (item.kind === 'core' ? item.parentClientKey !== undefined : !text(item.parentClientKey, 100))
+      || !Array.isArray(item.sourceBindings) || !item.sourceBindings.length
+      || item.sourceBindings.length > MAX_CANONICAL_EVIDENCE_SEGMENTS) return undefined;
+    keys.add(item.clientKey);
+    const field = item.sourceField as ReviewedClaimSuggestion['sourceField'];
+    const fieldReview = review.fields[field];
+    const fieldSegments = result.evidenceSegments?.[field] ?? [];
+    const usableField = fieldReview.verdict !== 'blocked' && !awaitingEvidence.has(field)
+      && !result.needsMoreInformation.includes(field) && fieldSegments.length > 0;
+    const passageBindings: Array<{ sourcePassageId: string; relation: ClaimRelation }> = [];
+    const seen = new Set<string>();
+    for (const binding of item.sourceBindings) {
+      if (!binding || typeof binding !== 'object' || Array.isArray(binding)
+        || Object.keys(binding).sort().join(',') !== 'relation,sourcePassageId'
+        || typeof binding.sourcePassageId !== 'string' || seen.has(binding.sourcePassageId)
+        || !allowed.has(binding.sourcePassageId) || !CLAIM_RELATIONS.includes(binding.relation)
+        || (usableField && !fieldReview.sourcePassageIds.includes(binding.sourcePassageId))) return undefined;
+      seen.add(binding.sourcePassageId);
+      passageBindings.push({ sourcePassageId: binding.sourcePassageId, relation: binding.relation });
+    }
+    if (!passageBindings.some((binding) => binding.relation === 'supports')) return undefined;
+    if (!usableField) continue;
+    const sourceBindings = reviewedPassageBindings(sourceMap, passageBindings, allowed, fieldSegments);
+    if (!sourceBindings?.length) continue;
+    candidates.push({ ...item, sourceBindings } as unknown as ReviewedClaimSuggestion);
+  }
+  // Removing an unrepresentable parent also removes every descendant, without reparenting.
+  let retained = candidates;
+  for (;;) {
+    const retainedKeys = new Set(retained.map((claim) => claim.clientKey));
+    const next = retained.filter((claim) => !claim.parentClientKey || retainedKeys.has(claim.parentClientKey));
+    if (next.length === retained.length) break;
+    retained = next;
+  }
+  return parseReviewedClaimSuggestions(retained, Object.fromEntries(SDF_CORE_FIELDS
+    .map((field) => [field, result.evidenceSegments?.[field]?.length ?? 0])));
 }
 
 function canonicalProposalValidation(sourceMap: DocumentSourceMap, passages: readonly CanonicalPassage[]): {
@@ -1809,9 +1944,19 @@ function supplementalDocumentEvidence(
   return { manifest, manifestHash: sha256Json(manifest), attachments: [{ ...sourceDocument, bytes: Uint8Array.from(sourceDocument.bytes) }] };
 }
 
+function reviewedClaimSuggestionsPrompt(): string {
+  return [
+    `在同一次科学终审中可附加claimSuggestions，最多${MAX_INGESTION_CLAIMS}条，按论文实际贡献给出可供用户逐条确认的原子科学主张。通常只保留少量简洁的关键主张和必要限定，各项容量是上限，不是填满目标。不要每字段强制一条、不要为了填满六字段拆分，也不要把整栏摘要换名当作原子主张。不能可靠形成建议时省略此可选项或返回空数组；不为建议单独请求补证或再审。`,
+    '优先完整输出六字段终审；claimSuggestions序列化后的JSON总量控制在8000字符以内。容量不足时减少建议条数，或省略整个可选项；不要删掉必要条件与局限来凑字数，也不要让建议挤占六字段的完整输出。',
+    '每项必须且只能含clientKey、sourceField、kind、statement、conditions、limitations、sourceBindings，以及非core项必需的parentClientKey。clientKey是本批唯一非空标识（最多100字符）；sourceField是所属六字段英文名；kind只能是core/supporting/method/boundary/counter。core不含parentClientKey；其他项仅在真实依赖关系成立时引用本批父项clientKey，不猜父关系、不成环，可有多个core。statement是独立可读的中文科学断言（最多4000字符），保持作者明示与综合推断、理论/数值/实验性质、对象、算例、比较范围和适用条件。改变断言成立范围的条件与局限必须保留在statement或conditions/limitations中，不能为了原子化丢失。conditions与limitations均为字符串数组，各最多100项、每项最多500字符。',
+    `sourceBindings是非空数组（最多${MAX_CANONICAL_EVIDENCE_SEGMENTS}项），每项必须且只能含sourcePassageId和relation；sourcePassageId必须既是本轮已提供的真实P编号，又出现在该sourceField终审后的sourcePassageIds中，不能复制quote/locator或编造数字索引。每个P只绑定一次。relation只能是supports、qualifies、contradicts或context；准确区分支持、限定、反证与背景，不把限定全部标成supports，且每条主张至少有一个supports。blocked字段或仍在needsMoreEvidence.affectedFields中的字段不能给出建议；子项所依赖父项也须能保留。`,
+  ].join('\n');
+}
+
 function scientificReviewPrompt(
   candidateHash: string, sourceMapHash: string, current: Record<string, unknown>,
   reviewPassages: readonly CanonicalPassage[], hasAttachment: boolean,
+  contractVersion: ScientificReviewContractVersion = SCIENCE_REVIEW_CONTRACT_VERSION,
 ): string {
   return [
     hasAttachment ? '已提供原PDF，可核对原页。' : '本轮只有带P编号的解析原文，没有原页图像。不要声称已查看PDF/原图。先独立重建研究逻辑，再用原文纠正候选；解析疑点只影响相关断言，不把技术缺陷写成论文局限。',
@@ -1822,11 +1967,13 @@ function scientificReviewPrompt(
       '逐字段检查物理对象、角度/坐标定义、关系符、主峰与异号旁瓣、近远场、适用条件、背景比较范围、理论/模拟/实验身份、字段归属和限定词。不要因文字流畅而放行。',
       'accepted表示候选已是有证据的凝练综合；revised表示用证据纠正、补足限定或压缩摘要；blocked仅用于现有全文无法形成任何科学上负责的字段摘要，或未解冲突会使所有可写摘要都误导。只要能写成准确的受限摘要，就必须accepted或revised，不能因局部未披露而清空整栏。',
       'needsMoreEvidence仅用于附件或当前P段中本应存在但不可读、缺页，或核验摘要核心主张所必需的特定公式/图注/相邻段尚未进入复核上下文；它不是“作者没有报告实现细节”的标记。作者未报告的事项应在reproducibility或limitations摘要中明确限定。当前提供的是解析原文；只在实际收到附件时才可声称查阅原PDF。affectedFields必须结构化列出所有受影响字段，不能把范围藏在question文本里。',
+      ...(contractVersion === '5' ? [reviewedClaimSuggestionsPrompt()] : []),
       `只返回JSON对象，完整空结构如下：${JSON.stringify({
         fields: Object.fromEntries(SDF_CORE_FIELDS.map((field) => [field, {
           verdict: 'blocked', summary: '', sourcePassageIds: [], issues: [],
         }])),
         needsMoreEvidence: [],
+        ...(contractVersion === '5' ? { claimSuggestions: [] } : {}),
       })}。每个verdict只能是accepted、revised或blocked；issues元素必须且只能含code、problem、sourcePassageIds，code只能是RELATION_MISMATCH、EVIDENCE_TYPE_OVERCLAIM、FIELD_MISPLACED、QUALIFIER_LOSS、PHYSICS_MISINTERPRETATION。六字段都必须出现。blocked字段summary为空、sourcePassageIds为空；其他字段必须给出可直接面向用户的完整中文凝练摘要。需要补证时needsMoreEvidence元素必须且只能含affectedFields、question、requestedContext；affectedFields是非空、无重复的六字段英文名数组。`,
       `固定候选（hash=${candidateHash}）：${JSON.stringify({ schemaVersion: SDF_CORE_VERSION, fields: current })}`,
       `直接证据与冲突上下文（sourceMapHash=${sourceMapHash}）：\n${canonicalPassagePrompt(reviewPassages)}`,
@@ -1912,7 +2059,7 @@ async function modelScientificReviewCanonicalProposal(
   passages: readonly CanonicalPassage[],
   proposal: ExtractedProposal,
   context?: ScientificReviewContext,
-): Promise<{ partial: CanonicalPartialResult; review: ExtractionResult['scientificReview'] }> {
+): Promise<CanonicalScientificReviewResult> {
   const candidateHash = sha256Json({ schemaVersion: SDF_CORE_VERSION, fields: proposal.fields });
   const sourceMapHash = sha256Json(sourceMap);
   const attemptId = reviewAttemptId(context?.requestId ?? 'missing', sourceMapHash, candidateHash);
@@ -1956,7 +2103,7 @@ async function modelScientificReviewCanonicalProposal(
           + '\n你是当前候选的来源审校者。按候选的每项实质断言回读原文并作最小必要修订，不另选主题重新成稿。accepted必须逐字保留原summary和原来源集合，issues为空；revised必须实际修正文或来源，issues至少一项，说明原断言、来源和修订原因；blocked必须有问题或明确补证请求。每项保留断言及其限定都须有最终引用，不以引用存在代替语义支持。纠正后仍须与其他字段的对象、算例和范围一致；不能把一个算例的互证写成另一个算例或全篇互证。只返回规定JSON，不宣布科学通过。' },
           { role: 'user', content: prompt }],
         { ...SCIENTIFIC_SYNTHESIS_OPTIONS, maxTokens: 65_536, maxRetries: 1,
-          validationFeedback: () => '只返回fields与needsMoreEvidence。六字段各只含verdict、summary、sourcePassageIds、issues；verdict为accepted/revised/blocked，issues每项只含code、problem、sourcePassageIds，code遵循原合同。保留必要科学条件，P编号只取原文。'
+          validationFeedback: () => '只返回fields、needsMoreEvidence及可选claimSuggestions。六字段各只含verdict、summary、sourcePassageIds、issues；verdict为accepted/revised/blocked，issues每项只含code、problem、sourcePassageIds，code遵循原合同。保留必要科学条件，P编号只取原文。'
             + candidateIssues.join('；') + validation.feedback() },
       );
       completion = response.completion;
@@ -1989,6 +2136,7 @@ async function modelScientificReviewCanonicalProposal(
   const status = parsed?.needsMoreEvidence.length ? 'awaiting_review_evidence'
     : blocked.size ? 'blocked_scientific_review' : 'review_received';
   return {
+    ...(parsed ? { suggestions: { response: parsed, passages: reviewPassages } } : {}),
     partial: {
       proposal: { schemaVersion: SDF_CORE_VERSION, fields },
       fieldDiagnostics: Object.fromEntries([...blocked].map((field) => [field, 'malformed_item' as const])),
@@ -2001,7 +2149,8 @@ async function modelScientificReviewCanonicalProposal(
       provider: completion?.provider ?? null,
       model: completion?.model ?? null,
       kind: 'model_self_check',
-      reviewSkill: { id: SCIENTIFIC_CRITICAL_THINKING_SKILL.id, version: SCIENTIFIC_CRITICAL_THINKING_SKILL.version }, contractVersion: '4', status, attemptId,
+      reviewSkill: { id: SCIENTIFIC_CRITICAL_THINKING_SKILL.id, version: SCIENTIFIC_CRITICAL_THINKING_SKILL.version },
+      contractVersion: SCIENCE_REVIEW_CONTRACT_VERSION, status, attemptId,
       ...(parsed ? { fieldReviews: parsed.fields, needsMoreEvidence: parsed.needsMoreEvidence } : {}),
       reviewedCandidateHash: candidateHash,
       ...(completion ? { promptHash: completion.promptHash } : {}),
@@ -2020,7 +2169,8 @@ async function modelScientificComposeSemantic(
 ): Promise<ExtractionResult> {
   const sourceMapHash = sha256Json(sourceMap);
   const candidateHash = sha256Json(stage.reduction);
-  const attemptId = reviewAttemptId(context?.requestId ?? 'missing', sourceMapHash, candidateHash);
+  const attemptId = reviewAttemptId(context?.requestId ?? 'missing', sourceMapHash, candidateHash,
+    undefined, LEGACY_SCIENCE_REVIEW_CONTRACT_VERSION);
   const idsByField = expandSemanticPassages(stage);
   const selectedIds = new Set(SDF_CORE_FIELDS.flatMap((field) => idsByField[field]));
   const selectedPassages = passages.filter((passage) => selectedIds.has(passage.id));
@@ -2192,7 +2342,8 @@ function blockedSemanticStageResult(
       compositionSkill: { id: SCIENTIFIC_SUMMARY_SKILL.id, version: SCIENTIFIC_SUMMARY_SKILL.version },
       contractVersion: '4',
       status: 'blocked_scientific_review',
-      attemptId: reviewAttemptId(context?.requestId ?? 'missing', sourceMapHash, reviewedCandidateHash),
+      attemptId: reviewAttemptId(context?.requestId ?? 'missing', sourceMapHash, reviewedCandidateHash,
+        undefined, LEGACY_SCIENCE_REVIEW_CONTRACT_VERSION),
       reviewedCandidateHash,
       ...(semanticStage ? { semanticStage: semanticStageMetadata(sourceMap, semanticStage) } : {}),
     },
@@ -2205,13 +2356,18 @@ async function webScientificReviewCanonicalProposal(
   passages: readonly CanonicalPassage[],
   proposal: ExtractedProposal,
   context: ScientificReviewContext | undefined,
-): Promise<{ partial: CanonicalPartialResult; review: ExtractionResult['scientificReview'] }> {
+): Promise<CanonicalScientificReviewResult> {
   const candidateHash = sha256Json({ schemaVersion: SDF_CORE_VERSION, fields: proposal.fields });
   const sourceMapHash = sha256Json(sourceMap);
-  const attemptId = context?.reusableAttempt?.reviewedCandidateHash === candidateHash
-      && context.reusableAttempt.contractVersion === SCIENCE_REVIEW_CONTRACT_VERSION
-    ? context.reusableAttempt.attemptId
-    : reviewAttemptId(context?.requestId ?? 'missing', sourceMapHash, candidateHash);
+  const reusableAttempt = context?.reusableAttempt?.reviewedCandidateHash === candidateHash
+      && (context.reusableAttempt.contractVersion === LEGACY_SCIENCE_REVIEW_CONTRACT_VERSION
+        || context.reusableAttempt.contractVersion === SCIENCE_REVIEW_CONTRACT_VERSION)
+    ? context.reusableAttempt : undefined;
+  // Keep paid v4 responses and their prompt/attempt identity on the legacy path.
+  const contractVersion: ScientificReviewContractVersion = reusableAttempt?.contractVersion === LEGACY_SCIENCE_REVIEW_CONTRACT_VERSION
+    ? LEGACY_SCIENCE_REVIEW_CONTRACT_VERSION : SCIENCE_REVIEW_CONTRACT_VERSION;
+  const attemptId = reusableAttempt?.attemptId
+    ?? reviewAttemptId(context?.requestId ?? 'missing', sourceMapHash, candidateHash, undefined, contractVersion);
   const blockAll = (status: 'awaiting_review_evidence' | 'blocked_scientific_review', detail: string, metadata: {
     attemptId?: string; promptHash?: string; responseHash?: string; previousAttemptId?: string;
     evidenceManifestHash?: string; evidencePages?: Array<{ pageNumber: number; imageSha256: string }>;
@@ -2228,7 +2384,7 @@ async function webScientificReviewCanonicalProposal(
         unverifiedSourcePassageIds: Object.fromEntries(affected.map((field) => [field, proposal.fields[field].sourcePassageIds ?? []])),
       },
       review: { provider: 'chatgpt-web-science-review' as const, model: 'chatgpt-web/6-pro' as const,
-        contractVersion: '4' as const,
+        contractVersion,
         status, attemptId: metadata.attemptId ?? attemptId, reviewedCandidateHash: candidateHash,
         ...(metadata.promptHash ? { promptHash: metadata.promptHash } : {}),
         ...(metadata.responseHash ? { responseHash: metadata.responseHash } : {}),
@@ -2248,7 +2404,7 @@ async function webScientificReviewCanonicalProposal(
     needsMoreInformation: proposal.fields[field].needsMoreInformation,
   }]));
   try {
-    const prompt = scientificReviewPrompt(candidateHash, sourceMapHash, current, reviewPassages, Boolean(context.sourceDocument));
+    const prompt = scientificReviewPrompt(candidateHash, sourceMapHash, current, reviewPassages, Boolean(context.sourceDocument), contractVersion);
     if (prompt.length > SCIENCE_REVIEW_MAX_PROMPT_CHARS) {
       return blockAll('awaiting_review_evidence', 'scientificReview=review_packet_too_large');
     }
@@ -2264,7 +2420,7 @@ async function webScientificReviewCanonicalProposal(
       }] } : {}),
     });
     const parsedResponse = parseJsonObject(response.text);
-    if (!scientificReviewGuard(parsedResponse, allowedIds)) return blockAll('blocked_scientific_review', 'scientificReview=invalid_response', {
+    if (!scientificReviewGuard(parsedResponse, allowedIds, contractVersion)) return blockAll('blocked_scientific_review', 'scientificReview=invalid_response', {
       promptHash: response.promptHash, responseHash: response.responseHash,
     });
     const initialResponse = response;
@@ -2304,6 +2460,7 @@ async function webScientificReviewCanonicalProposal(
         sourceMapHash,
         candidateHash,
         evidence.manifestHash,
+        contractVersion,
       );
       const supplementalPassages = passages.filter((passage) => pageNumbers.some(
         (pageNumber) => passage.pageStart <= pageNumber && passage.pageEnd >= pageNumber,
@@ -2314,14 +2471,18 @@ async function webScientificReviewCanonicalProposal(
       allowedIds = new Set(reviewPassages.map((passage) => passage.id));
       const supplementalPrompt = [
         '这是同一论文候选的定点原始材料补证续审。上一轮审稿保持不可变；本轮是新的review attempt。附件是原始 PDF 或原始页图，可作为公式符号与版面的直接证据；OCR与视觉转录均是未验证辅助，不得替代附件原件。',
-        `上一轮attempt=${attemptId}；本轮evidenceManifestHash=${evidence.manifestHash}。逐项解决上一轮needsMoreEvidence；重新按science-v${SCIENCE_REVIEW_CONTRACT_VERSION}语义判断：字段是跨全文凝练，作者未披露细节应写为限定或缺口，不能据此清空整栏。若关键原文仍不可读或缺页则继续填写needsMoreEvidence，不猜测；只在无法形成任何负责摘要或未解冲突使摘要必然误导时blocked。其他字段必须独立accepted或revised。`,
+        `上一轮attempt=${attemptId}；本轮evidenceManifestHash=${evidence.manifestHash}。逐项解决上一轮needsMoreEvidence；重新按science-v${contractVersion}语义判断：字段是跨全文凝练，作者未披露细节应写为限定或缺口，不能据此清空整栏。若关键原文仍不可读或缺页则继续填写needsMoreEvidence，不猜测；只在无法形成任何负责摘要或未解冲突使摘要必然误导时blocked。其他字段必须独立accepted或revised。`,
+        ...(contractVersion === '5' ? [reviewedClaimSuggestionsPrompt()] : []),
         `输出结构和裁定规则与上一轮相同，只返回JSON：${JSON.stringify({
           fields: Object.fromEntries(SDF_CORE_FIELDS.map((field) => [field, {
             verdict: 'blocked', summary: '', sourcePassageIds: [], issues: [],
           }])), needsMoreEvidence: [],
+          ...(contractVersion === '5' ? { claimSuggestions: [] } : {}),
         })}。sourcePassageIds可以引用下方新增页段中的P编号；附件用于核对这些P编号内公式和定义的准确性。`,
         `固定候选（hash=${candidateHash}）：${JSON.stringify({ schemaVersion: SDF_CORE_VERSION, fields: current })}`,
-        `上一轮科学复核：${JSON.stringify(parsed)}`,
+        `上一轮科学复核：${JSON.stringify(contractVersion === '5'
+          ? { fields: parsed.fields, needsMoreEvidence: parsed.needsMoreEvidence }
+          : parsed)}`,
         `冻结图像证据清单：${JSON.stringify(evidence.manifest)}`,
         `补证页对应的可引用原文段：\n${canonicalPassagePrompt(supplementalPassages)}`,
       ].join('\n\n');
@@ -2337,7 +2498,7 @@ async function webScientificReviewCanonicalProposal(
           attachments: evidence.attachments,
         });
         const supplementalParsed = parseJsonObject(response.text);
-        if (scientificReviewGuard(supplementalParsed, allowedIds)) parsed = supplementalParsed;
+        if (scientificReviewGuard(supplementalParsed, allowedIds, contractVersion)) parsed = supplementalParsed;
         else {
           continuationStatus = 'invalid_response';
           continuationAttemptId = finalAttemptId;
@@ -2369,6 +2530,7 @@ async function webScientificReviewCanonicalProposal(
       ? 'awaiting_review_evidence'
       : blockedFields.length ? 'blocked_scientific_review' : 'review_received';
     return {
+      ...(contractVersion === '5' ? { suggestions: { response: parsed, passages: reviewPassages } } : {}),
       partial: {
         proposal: { schemaVersion: SDF_CORE_VERSION, fields: reviewedFields },
         fieldDiagnostics: Object.fromEntries(blockedFields.map((field) => [field, 'malformed_item' as const])),
@@ -2377,7 +2539,7 @@ async function webScientificReviewCanonicalProposal(
         unverifiedSourcePassageIds: Object.fromEntries(blockedFields.map((field) => [field, parsed.fields[field].sourcePassageIds.length ? parsed.fields[field].sourcePassageIds : proposal.fields[field].sourcePassageIds ?? []])),
       },
       review: { provider: 'chatgpt-web-science-review', model: 'chatgpt-web/6-pro',
-        contractVersion: '4' as const,
+        contractVersion,
         status: reviewStatus,
         attemptId: finalAttemptId, ...(finalAttemptId === attemptId ? {} : { previousAttemptId: attemptId }),
         promptHash: response.promptHash, responseHash: response.responseHash, reviewedCandidateHash: candidateHash,
@@ -2400,7 +2562,12 @@ async function reviewAndMaterializeCanonicalProposal(
   const reviewed = context?.mode === 'web'
     ? await webScientificReviewCanonicalProposal(gateway, sourceMap, passages, proposal, context)
     : await modelScientificReviewCanonicalProposal(gateway, sourceMap, passages, proposal, context);
-  const result = { ...materializeCanonicalProposal(reviewed.partial.proposal), scientificReview: reviewed.review };
+  const result: ExtractionResult = { ...materializeCanonicalProposal(reviewed.partial.proposal), scientificReview: reviewed.review };
+  if (reviewed.suggestions) {
+    const suggestions = materializeReviewedClaimSuggestions(sourceMap, result,
+      reviewed.suggestions.response, reviewed.suggestions.passages);
+    if (suggestions !== undefined) result.reviewedClaimSuggestions = suggestions;
+  }
   if (Object.keys(reviewed.partial.fieldDiagnostics).length === 0) return result;
   return {
     ...result,

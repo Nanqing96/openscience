@@ -2,6 +2,7 @@ import type { AuthDeps } from '@openscience/auth';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { ingestionClaimSelectionSchema } from './ingestion-claim-selection-schema';
+import { MAX_INGESTION_CLAIMS } from '@openscience/domain';
 import { authorizeHermesGenerationGrant, confirmHermesSourceReview, createHermesResearchRun, getHermesResearchRun, retryHermesGeneration, type HermesSourceReviewDeps } from '@openscience/domain';
 import type { AuditContext } from '@openscience/observability';
 import type { StorageAdapter } from '@openscience/storage';
@@ -22,7 +23,7 @@ const sourceReviewSchema = z.object({
   ]),
   reviews: z.array(z.object({
     ingestionTaskId: z.string().uuid(), snapshotToken: z.string().regex(/^[a-f0-9]{64}$/),
-    selections: z.array(selectionSchema).min(1).max(12),
+    selections: z.array(selectionSchema).min(1).max(MAX_INGESTION_CLAIMS),
   }).strict()).min(1).max(20),
 }).strict();
 const generationGrantSchema = z.object({

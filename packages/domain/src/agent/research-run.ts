@@ -6,6 +6,7 @@ import { recordAudit } from '../workspace/audit';
 import { requireActiveMembership } from '../workspace/helpers';
 import { now } from '../workspace/types';
 import { confirmIngestionClaimEvidenceBridge, type IngestionClaimSelection } from '../ingestion/claim-evidence-bridge';
+import { MAX_INGESTION_CLAIMS } from '../ingestion/reviewed-claim-suggestions';
 import type { IngestionDeps } from '../ingestion/ingestion-service';
 import { dispatchAgentTask, findOrCreateAgentSessionInTransaction, persistAgentTaskInTransaction, type AgentDeps } from './agent';
 import { ONCHIP_FIELD_SAMPLING_PROFILE, ONCHIP_SCENE_ROLES, ONCHIP_SOURCE_CONTENT_HASH, CONTENT_DRIVEN_PROFILE, CONTENT_DRIVEN_IMAGE_PROFILE } from '../assets/video';
@@ -373,7 +374,7 @@ export async function confirmHermesSourceReview(
   }
   const reviewIds = input.reviews.map((review) => review.ingestionTaskId);
   const requestedClaimCount = input.reviews.reduce((total, review) => total + review.selections.length, 0);
-  if (reviewIds.length === 0 || new Set(reviewIds).size !== reviewIds.length || requestedClaimCount < 1 || requestedClaimCount > 12
+  if (reviewIds.length === 0 || new Set(reviewIds).size !== reviewIds.length || requestedClaimCount < 1 || requestedClaimCount > MAX_INGESTION_CLAIMS
     || input.reviews.some((review) => review.selections.some((selection) => !selection.attachSourceQuote
       || (selection.sourceBindings !== undefined && (!Array.isArray(selection.sourceBindings)
         || !selection.sourceBindings.some(binding => binding?.relation === 'supports')))))) {

@@ -43,7 +43,7 @@ on those ports. The logged-in Langfuse UI uses its normal account authentication
 
 This is an internal model-call observability console, separate from the OpenScience research product. OpenScience passwords, ChatGPT passwords, project API keys and SSH keys are not Langfuse login credentials. `Invalid credentials` reports rejected account credentials; it does not by itself indicate an expired OpenScience session or a proxy failure.
 
-The initial installation generated an independent owner password. A server administrator hands it to the owner privately using `/etc/openscience-development/langfuse/owner-credentials.txt`; do not print or paste that file into Codex/chat, logs or Git. No login handoff has yet been completed. Opening the sign-in page only demonstrated access through the SSH tunnel. Do not reinstall, regenerate secrets or reset a password merely to fix this handoff. Once the owner has changed their password, the initial file is not proof of the current password.
+The initial installation generated an independent owner password. On 2026-09-15, the owner explicitly requested its replacement. The existing account was updated with the upstream bcrypt cost of 12, the password was compared inside the same database transaction, and prior sessions were invalidated. The private `/etc/openscience-development/langfuse/owner-credentials.txt` was atomically synchronized with mode 0600. No password is stored in this document. The owner confirmed successful browser sign-in with the replacement password on 2026-09-15. Do not reinstall or regenerate service secrets for account handoff; a later password change may make this file stale again.
 
 SMTP is not configured, so the displayed password-reset link is not a working recovery channel for this deployment. Credentials or identity integration need a deliberate separate account operation; normal development can use the existing restricted metadata-query helper without signing into the browser UI.
 
@@ -57,7 +57,7 @@ Owner login steps (run in your own PowerShell terminal, not in a chat/tool outpu
    & 'C:/Program Files/Git/bin/bash.exe' 'E:/Miscellaneous/XGS/.worktrees/onchip-video-release/infra/scripts/ssh-run.sh' 'cat /etc/openscience-development/langfuse/owner-credentials.txt'
    ```
 
-3. Open `http://localhost:3130/auth/sign-in` and enter that file's email and password. The password is the initial one; use your current password if you already changed it. Do not paste terminal output back into Codex.
+3. Open `http://localhost:3130/auth/sign-in` and enter that file's email and password, or your newer password if you changed it after the recorded synchronization. Do not paste terminal output back into Codex.
 
 Signing out of the UI does not stop ingestion or the restricted developer queries: they use the existing integration service keys. These steps do not reset credentials, activate SMTP or claim that a browser login has occurred.
 
@@ -81,7 +81,7 @@ An optional first-install `--public-url https://dedicated-hostname` changes the 
 | `runtime.env` | Independent database/storage credentials, encryption/authentication secrets, origin |
 | `bootstrap.env` | Official headless initialization of organization `openscience-development`, project `openscience-hermes`, owner and project API key pair |
 | `integration.env` | Project API key pair and `http://development-langfuse-web:3000` endpoint for the separately reviewed connector on the telemetry-ingest network |
-| `owner-credentials.txt` | Initial operator login, for a human administrator to transfer through a private channel |
+| `owner-credentials.txt` | Operator login, synchronized after the explicitly requested 2026-09-15 password change; later changes can make it stale |
 
 Do not print these files, dump the composed configuration, paste keys into a chat, or commit generated files. Project [headless initialization](https://langfuse.com/self-hosting/administration/headless-initialization) creates missing resources; an existing owner/password is not replaced. A human administrator can sign in with the provided account, change their password, and invite/manage users. The API keys are for the integration, not the owner's login. Retire bootstrap credentials through a separately reviewed server change after account handoff; repeated bootstrapping should not become account management.
 

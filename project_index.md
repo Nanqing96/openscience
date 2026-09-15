@@ -9,7 +9,8 @@
 | 本轮文件 | 用途 |
 |---|---|
 | `packages/domain/src/ingestion/claim-evidence-bridge.ts` / `packages/domain/src/{agent/research-run,research-intelligence/claim-evidence-service}.ts` / `apps/api/src/routes/ingestion-claim-selection-schema.ts` / `apps/api/src/routes/{ingestion,research-runs}.ts` / `apps/web/lib/{api,hermes/ingestion-claim-review}.ts` / `apps/web/components/hermes/IngestionClaimReview.tsx` / `apps/web/messages/{zh,en}.json` | 现有确认链路逐Claim保存原文关系，共享API定义/Domain类型与批次容量；来源折叠，旧请求兼容。配图消费父子关系，状态及局限见CURRENT |
-| `infra/development-platform/langfuse/README.md` | 独立网页登录与本人终端私密查看初始凭据步骤；采集服务身份不依赖用户登录，不读取凭据或代登录 |
+| `packages/domain/src/ingestion/reviewed-claim-suggestions.ts` / `apps/agent-worker/src/extractor.ts` | 现有末审v5可选逐条建议；P原文定位映射既有Evidence索引，共享契约/批次上限；旧v4精确恢复，原确认入口预填。实现/部署及科学效果见CURRENT |
+| `infra/development-platform/langfuse/README.md` | 独立账号访问、私有凭据交接与按用户要求改密记录；用户已确认登录，采集服务身份不依赖网页登录，文档不存密码 |
 | `apps/agent-worker/src/index.ts` / `infra/development-platform/telemetry/README.md` | Gateway audit复用已有任务执行上下文与requestId；已上线，正常新调用的任务关联尚未观察，不回填未知历史。精确状态见CURRENT |
 | `infra/development-platform/catalog/` / `infra/development-platform/langfuse/` / `infra/development-platform/telemetry/` / `infra/development-platform/code-intelligence/` / `infra/development-platform/skills/` | 用户授权的底层能力交付：私有Backstage目录、Langfuse Gateway元数据、Serena只读符号与引用、标准技能CLI；独立于科研应用release，具体安装/使用证据见CURRENT |
 | `infra/scripts/ssh-run.sh` | 既有SSH入口增加development私有3130/3131/3132端口转发，不公开管理服务 |

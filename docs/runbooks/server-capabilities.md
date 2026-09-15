@@ -14,7 +14,7 @@
 | Gateway元数据 | `openscience-development-gateway-audit`；专用只读`xgs_telemetry.gateway_calls`视图/角色，无原表SELECT，50条接收回执，抽读12条；checkpoint和凭据持久保存 |
 | 模块依赖 / 技能CLI | 复用现有dependency-cruiser18.1.0，真实19模块/4跨包边；Vercel Skills1.5.26 list/find已实际使用，不安装搜索结果 |
 | 访问 | `ssh-run.sh --development-tunnel`在SSH中解析固定容器内部IP，本机127.0.0.1:3130/3131/3132；不增加服务器listener或外网network。容器重建后重开隧道。Docker24纯internal网络的ports声明不会生成映射，不能据compose配置声称可访问 |
-| Langfuse账号 | 与OpenScience独立；初始随机凭据未完成私密交接，用户截图显示Invalid credentials。不能据此断言代理或产品会话失效；不打印/重置Secret，交接说明见`infra/development-platform/langfuse/README.md`。未配置SMTP，不能依赖忘记密码链接 |
+| Langfuse账号 | 与OpenScience独立；2026-09-15按用户明确要求完成单账号改密，同事务密码比对成功并使旧会话失效，私有凭据文件同步0600。用户已确认网页登录成功；交接说明见`infra/development-platform/langfuse/README.md`。未配置SMTP，不能依赖忘记密码链接 |
 | 代理兼容 | 原ALinux Squid7.2加官方Bug5520单文件补丁，现包`7:7.2-1.alnx4.openscience.1.x86_64`；原RPM/配置/unit备份在`/opt/openscience-development/squid-compat/ce02ee5273aa7fb9de2a7e9679b480485ae46939/`，`native-rpm.sh rollback`可恢复；数字起始R2 CONNECT修复后真实镜像下载完成，ACL/路由不改 |
 
 复用已有Node full/slim、Python3.12、PG/Redis、代理与共享缓存。仅补独立工具依赖、Langfuse必要镜像和ALinux原生RPM构建镜像；编译器仅在隔离builder中。没有安装BuildKit、第二个代理或新模型供应商。

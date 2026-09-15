@@ -10,6 +10,7 @@ import { ClaimEvidenceError } from '../research-intelligence/claim-evidence-erro
 import { createClaimEvidenceBatch, MAX_INGESTION_BATCH_EVIDENCE } from '../research-intelligence/claim-evidence-service';
 import { authorizeIngestionWrite, type IngestionDeps } from './ingestion-service';
 import { MAX_CANONICAL_EVIDENCE_CHARS, MAX_CANONICAL_EVIDENCE_SEGMENTS } from './canonical-evidence-contract';
+import { MAX_INGESTION_CLAIMS, parseReviewedClaimSuggestions, type ReviewedClaimSuggestion } from './reviewed-claim-suggestions';
 
 export const INGESTION_BRIDGE_FIELDS = ['problem', 'insight', 'method', 'results', 'limitations', 'reproducibility'] as const;
 export type IngestionBridgeField = typeof INGESTION_BRIDGE_FIELDS[number];
@@ -22,6 +23,7 @@ export interface IngestionClaimEvidenceSuggestion {
   defaultQuoteAssociation: boolean;
   source?: { quote: string; locator: SourceLocator };
   sources?: Array<{ quote: string; locator: SourceLocator }>;
+  atomicSuggestions?: ReviewedClaimSuggestion[];
 }
 
 export interface IngestionClaimEvidencePreview {
@@ -33,6 +35,7 @@ export interface IngestionClaimEvidencePreview {
   snapshotToken: string;
   suggestions: IngestionClaimEvidenceSuggestion[];
   maxEvidencePerBatch: number;
+  maxClaims: number;
 }
 
 export interface IngestionClaimSelection {
@@ -201,6 +204,29 @@ async function loadSnapshot(
       ...(sources.length > 0 ? { sources } : {}), ...(sources.length === 1 ? { source: sources[0] } : {}),
     };
   });
+  // Only final-review output from this unchanged canonical field can prefill claims.
+  // Model passage identifiers never cross this boundary: indices address verified sources above.
+  const review = record(result.scientificReview);
+  const reviewedClaims = review.contractVersion === '5' && review.status === 'review_received'
+    ? parseReviewedClaimSuggestions(result.reviewedClaimSuggestions,
+      Object.fromEntries(suggestions.map(suggestion => [suggestion.sourceField, suggestion.sources?.length ?? 0])))
+    : undefined;
+  if (reviewedClaims?.length) {
+    const usableFields = new Set(suggestions.filter(suggestion => !suggestion.rewritten
+      && suggestion.originalStatement.trim() && !missingFields?.has(suggestion.sourceField)).map(suggestion => suggestion.sourceField));
+    let usable = reviewedClaims.filter(claim => usableFields.has(claim.sourceField));
+    // A changed/blocked parent must not leave a child looking independently reviewed.
+    for (;;) {
+      const keys = new Set(usable.map(claim => claim.clientKey));
+      const retained = usable.filter(claim => !claim.parentClientKey || keys.has(claim.parentClientKey));
+      if (retained.length === usable.length) break;
+      usable = retained;
+    }
+    for (const suggestion of suggestions) {
+      const atoms = usable.filter(claim => claim.sourceField === suggestion.sourceField);
+      if (atoms.length) suggestion.atomicSuggestions = atoms;
+    }
+  }
   const snapshotToken = digest({
     taskId: task.id, taskUpdatedAt: task.updatedAt.toISOString(), agentTaskId: task.agentTask.id,
     agentTaskUpdatedAt: task.agentTask.updatedAt.toISOString(), sourceMap: reference.serializedSha256,
@@ -212,7 +238,7 @@ async function loadSnapshot(
     preview: {
       taskId: task.id, researchObjectId: input.researchObjectId, versionId: version.id, commitId: version.commitId,
       artifact: { id: task.artifact.id, logicalPath: entry.logicalPath, contentHash: task.artifact.blobSha256 },
-      snapshotToken, suggestions, maxEvidencePerBatch: MAX_INGESTION_BATCH_EVIDENCE,
+      snapshotToken, suggestions, maxEvidencePerBatch: MAX_INGESTION_BATCH_EVIDENCE, maxClaims: MAX_INGESTION_CLAIMS,
     },
   };
 }
@@ -281,7 +307,7 @@ export async function confirmIngestionClaimEvidenceBridge(
     throw new ClaimEvidenceError('CONCURRENT_UPDATE', 'Ingestion or version snapshot changed; preview again');
   }
   const idempotencyKey = input.idempotencyKey.trim();
-  if (!idempotencyKey || idempotencyKey.length > 200 || input.selections.length === 0 || input.selections.length > 12) {
+  if (!idempotencyKey || idempotencyKey.length > 200 || input.selections.length === 0 || input.selections.length > MAX_INGESTION_CLAIMS) {
     throw new ClaimEvidenceError('VALIDATION_ERROR', 'Reviewed selection is invalid');
   }
   const keys = new Set(input.selections.map((selection) => selection.clientKey));

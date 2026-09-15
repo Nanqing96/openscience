@@ -443,12 +443,12 @@ export function createHandlers(
               if (candidate.provider === 'chatgpt-web-science-review'
                 && (candidate.kind === undefined || candidate.kind === 'independent_review')
                 && initialAttemptId && SHA256_PATTERN.test(String(candidate.reviewedCandidateHash ?? ''))
-                && candidate.contractVersion === SCIENCE_REVIEW_CONTRACT_VERSION) {
+                && (candidate.contractVersion === '4' || candidate.contractVersion === SCIENCE_REVIEW_CONTRACT_VERSION)) {
                 reusableScientificReviewAttempt = {
                   attemptId: initialAttemptId,
                   reviewedCandidateHash: candidate.reviewedCandidateHash as string,
                   parentRequestId: candidate.previousAttemptId !== undefined && previousRefresh ? previousRefresh[2]! : previous.id,
-                  contractVersion: SCIENCE_REVIEW_CONTRACT_VERSION,
+                  contractVersion: candidate.contractVersion,
                 };
               }
             }
