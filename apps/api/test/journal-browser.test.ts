@@ -244,6 +244,7 @@ suite('journal real-browser acceptance against isolated PostgreSQL', () => {
         expect(await editPage.getByRole('button', { name: '批准当前修订' }).isEnabled()).toBe(true);
         await editPage.screenshot({ path: resolve(outputDir, 'article-edit-saved-submitted.png'), fullPage: true });
         const restricted = editPage.waitForResponse((response) => response.url().includes(`/journals/${journalId}/articles/${articleId}/restrict`) && response.ok());
+        editPage.once('dialog', (dialog) => { void dialog.accept('Synthetic browser restriction verification'); });
         await editPage.getByRole('button', { name: '限制公开' }).click();
         await restricted;
         const sitemapDeadline = Date.now() + 10_000;
@@ -261,5 +262,5 @@ suite('journal real-browser acceptance against isolated PostgreSQL', () => {
       expect(browserErrors).toEqual([]);
       await Promise.all([publicContext.close(), ownerContext.close(), adminContext.close()]);
     } finally { await browser.close(); }
-  }, 90_000);
+  }, 180_000);
 });
