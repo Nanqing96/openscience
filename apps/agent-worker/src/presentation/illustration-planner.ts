@@ -10,8 +10,14 @@ const object = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('object_required');
   return value as Record<string, unknown>;
 };
-const keys = (value: Record<string, unknown>, expected: string[]) => {
-  if (Object.keys(value).sort().join(',') !== expected.sort().join(',')) throw new Error('unexpected_fields');
+const keys = (value: Record<string, unknown>, expected: string[], field: string) => {
+  const actual = Object.keys(value);
+  const missing = expected.filter(key => !actual.includes(key));
+  const extraCount = actual.filter(key => !expected.includes(key)).length;
+  if (missing.length || extraCount) {
+    // Report only caller-owned field names/counts, never source-derived keys or values.
+    throw new Error(`${field}:expected_${expected.join(',')}:missing_${missing.join(',') || 'none'}:extra_count_${extraCount}`);
+  }
 };
 const text = (value: unknown, limit: number, field = 'text', art = false): string => {
   if (typeof value !== 'string') throw new Error(`${field}:string_required_received_${Array.isArray(value) ? 'array' : typeof value}`);
@@ -60,16 +66,16 @@ Return exactly {title,scenes:[{title,narration,message,domain,subjects,labels,co
     { role: 'user' as const, content: sourceInput }];
   const claimIds = claims.map(claim => claim.id);
   function materializeScience(value: unknown): { title: string; scenes: ScientificScene[] } {
-    const root = object(value); keys(root, ['title', 'scenes']);
+    const root = object(value); keys(root, ['title', 'scenes'], 'science_root');
     if (!Array.isArray(root.scenes) || root.scenes.length < 1 || root.scenes.length > 6) throw new Error('scene_count');
     return { title: text(root.title, 120), scenes: root.scenes.map(raw => {
-      const scene = object(raw); keys(scene, ['title', 'narration', 'message', 'domain', 'subjects', 'labels', 'constraints', 'encoding']);
+      const scene = object(raw); keys(scene, ['title', 'narration', 'message', 'domain', 'subjects', 'labels', 'constraints', 'encoding'], 'science_scene');
       if (!Array.isArray(scene.subjects) || scene.subjects.length < 1 || scene.subjects.length > 2) throw new Error('subject_count');
       if (!Array.isArray(scene.labels) || scene.labels.length > 6) throw new Error('label_count');
       if (!Array.isArray(scene.constraints) || scene.constraints.length > 2) throw new Error('constraint_count');
       const subjects = scene.subjects.map(rawSubject => {
-        const subject = object(rawSubject); keys(subject, ['description', 'basis']);
-        const basis = object(subject.basis); keys(basis, ['sourceId']);
+        const subject = object(rawSubject); keys(subject, ['description', 'basis'], 'science_subject');
+        const basis = object(subject.basis); keys(basis, ['sourceId'], 'science_subject_basis');
         const original = typeof basis.sourceId === 'string' ? sourceLookup.get(basis.sourceId) : undefined;
         if (!original) throw new Error('unknown_original_source');
         if (original.relation !== 'supports') throw new Error('subject_requires_supporting_evidence');
@@ -102,10 +108,10 @@ Return exactly {title,scenes:[{title,narration,message,domain,subjects,labels,co
       encoding: scene.illustration.encoding, labels: scene.illustration.labels, constraints: scene.illustration.constraints })),
       ...(reusableBase ? { previousArt: reusableBase.map(scene => scene!.art) } : {}) }) }];
   function combineArt(value: unknown): StoryboardDocument {
-    const root = object(value); keys(root, ['scenes']);
+    const root = object(value); keys(root, ['scenes'], 'art_root');
     if (!Array.isArray(root.scenes) || root.scenes.length !== intent.scenes.length) throw new Error('art_scene_count');
     const scenes = root.scenes.map((raw, index) => {
-      const art = object(raw); keys(art, ['layout', 'treatment']);
+      const art = object(raw); keys(art, ['layout', 'treatment'], 'art_scene');
       const scene = intent.scenes[index]!;
       const illustration = parseIllustrationBrief({ ...scene.illustration,
         composition: text(art.layout, layoutLimit, 'layout', true),
