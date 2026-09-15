@@ -457,17 +457,23 @@ let stage = 'request';
   // Image mode has its own controls (for example "Extra High"). The 6 Pro
   // requirement belongs to scientific review, not the native image composer.
   if (mode === 'prepare' || mode === 'execute') {
-    // Use editor transactions so its stored selection and rendered content agree.
+    // Opening the tool menu after inserting a long brief can crash this renderer.
+    // Start from the empty owned editor, activate the native tool, then insert
+    // before its pill. Never clear/fill the editor after activating the tool.
     await composer.focus();
     await composer.press('Control+A');
     await composer.press('Backspace');
+    stage = 'image_mode';
+    if (!await activateImageMode(page, composer, Math.min(request.deadlineAt, Date.now() + 30000))) throw Error('IMAGE_MODE_NOT_READY');
+    stage = 'prompt_fill';
+    await composer.focus();
+    await composer.press('Control+Home');
     await page.keyboard.insertText(prompt);
+  } else if (!await imageModeActive(composer)) {
+    // A prepared request must still have its original tool selection; do not
+    // reopen the menu over its already-filled prompt.
+    throw Error('IMAGE_MODE_LOST');
   }
-  // Selecting the image tool inserts an inline pill; filling afterwards removes it.
-  // Put it after the prompt, otherwise the editor can insert its spacer mid-sentence.
-  await composer.press('Control+End');
-  stage = 'image_mode';
-  if (!await activateImageMode(page, composer, Math.min(request.deadlineAt, Date.now() + 30000))) throw Error('IMAGE_MODE_NOT_READY');
   if (request.reference) {
     stage = 'reference_upload';
     if (mode === 'prepare' || mode === 'execute') await uploadReferenceImage(page, composer, request);
@@ -509,7 +515,8 @@ let stage = 'request';
   const failure = { stage, state: fs.existsSync(path.join(dir, 'submitted.json')) ? 'ambiguous_no_resend' : 'not_submitted', error: /^[A-Z0-9_]+$/.test(error.message) ? error.message : error.name };
   if (stage.startsWith('image_mode')) {
     // Keep only a fixed category: locator errors may embed the authored prompt or page URL.
-    failure.errorKind = /strict mode violation/.test(error.message) ? 'strict_locator'
+    failure.errorKind = /Target crashed/i.test(error.message) ? 'page_crashed'
+      : /strict mode violation/.test(error.message) ? 'strict_locator'
       : /closed|destroyed|detached/i.test(error.message) ? 'page_or_node_unavailable'
       : /timeout/i.test(error.message) ? 'timeout' : 'other';
   }

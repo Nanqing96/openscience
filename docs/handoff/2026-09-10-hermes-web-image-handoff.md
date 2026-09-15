@@ -1,7 +1,7 @@
 # Hermes / Workbench CURRENT Handoff
 
 ## 当前结论与下一动作（2026-09-15）
-- 当前用户要求实际用已安装设计Skill改善28b。线上旧composition明确要求内外同色，导致参考蓝金失效；普通base修订仍重跑science。候选新增既有请求revisionMode=art（baseAssetId、image、同locale、v2/current支持来源），直接复用全部科学字段，只运行既有art规划和末审；旧请求不变，无新入口/模型/表/依赖。自有Skill v4明确配色角色、标签层级、替换旧冲突及艺术复用，已同步本机；候选未部署，独立High复核进行中。实际下一步：交付后以4f为base生成艺术方案，用aa41实际PNG产一张私有候选，不发布。
+- 当前用户要求实际用已安装设计Skill改善28b。线上旧composition明确要求内外同色，导致参考蓝金失效；普通base修订仍重跑science。已部署既有请求revisionMode=art（baseAssetId、image、同locale、v2/current支持来源），复制全部科学字段，只运行既有art规划和末审；旧请求不变，无新入口/模型/表/依赖。自有Skill v4明确配色角色、标签层级、替换旧冲突及艺术复用，已同步Codex/Hermes；独立High GO，服务器build/start exit0，无测试。真实69ec3ebb-b28c-48c9-81d4-85dfc26ab5a5于05:15:43 UTC API202，直接base4f，实际sciencePreserved=true且baoyu水彩/构图/文字资料已消费，内蓝外赭金艺术方案已保存。6Pro revised只移除艺术模型额外刻度，科学字段仍完全相同；内部approval200。新图1cb8e12b-b81a-4ca6-893c-cf9800af556c于05:18:56 UTC API202，使用69ec方案+aa41原PNG，失败且未提交到Chat（image_mode_plus/not_submitted）；同长简报填入后点击菜单可复现Target crashed。容器OOM/PID事件均0，1.077/4GiB、251/1024；日志SIGILL后crash-handler SIGSYS，不据此关闭sandbox。原未发送简报先选图像模式再Control+Home插字，实见mode=true/exactText=true/no submit；候选runner仅改此顺序及page_crashed固定错误类别，保留最终文本/模式/参考/提交约束，High复核中。69ec方案和1cb8失败留存，不重规划、不公开发布；tmp/illustration-art-only-{start,observed,image-start}.json保留，发送脚本不可重跑。
 - 用户已确认Langfuse登录并授权执行：先完成既有工具/Skill联动、消除重复实现，再推进真实私有配图。基础联动已上线且有真实调用证据；通用科学/审美质量尚未完成，不能以部署或task succeeded代替。
 - 此前任务7d47cd45-1b07-4795-a0bb-e5ba3e70f53a于04:18:18 UTC科学blocked：新增了坐标分量、单色波数和区域名称，仍漏“k⊥是横向波矢模长”。75eac9d3-3ab3-468c-bc40-53d6f52bafa2此前也blocked；两份均无新资产/图片。原审阅正常返回，不是登录/代理/receiver故障。
 - 两次实际checkpoint比较均证实：除labels及由它派生的visualAction，科学/艺术字段与原59702完全相同；新调用仅共享科学skill v2及自有skill v3，没有重跑艺术规划。证据tmp/illustration-label-meaning-observed.log。
@@ -10,10 +10,10 @@
 - 新真实任务4f3b3260-f552-44ef-adbf-5273495a4033已API202（04:40:15 UTC），直接引用7d最新checkpoint/完整反馈；实际只在两个区域label补k⊥模长定义，其余科学/艺术字段完全不变。新checkpoint记录reviewFormat2、科学skill消费，无art调用；6Pro已accepted、corrections/issues均空，确认全部标签/圆形分界含义，内部approval200。回执tmp/illustration-review-issues-continuation-start.json及observed.json、final-response.json。禁止重跑该发送脚本。
 - 真实生图28b8b9ef-cea7-4000-b25d-57426559fed5于04:44:07 UTC API202，parent4f3b3260、style reference aa41，已succeeded并返回1672×941 PNG，资产仍draft。实际看图：kx/ky正交、k0圆形分界、内传播/外倏逝严格不等式及变量说明可见，未见前两图明显科学错误；内外同偏蓝，区分度及蓝金参考风格遵循仍可改善。实际bytes保存tmp/research-illustration-28b8.png；provenance为structured_brief/skillv3/aa41实际引用，未再语义改写。首次产品dashboard导航ERR_SSL_PROTOCOL_ERROR发生在任何写入前，已确认无receipt及公网HTTPS200后原脚本仅再执行一次成功，不是重复模型请求；TLS瞬态根因未定。回执tmp/illustration-reviewed-labels-image-start.json。
 ## 版本事实与工作区
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release。代码HEAD 32e7929212c947d158a184800efb7f07e043ab02；后续状态文档提交的HEAD以Git为准，文档提交不等于新应用release。
-- 生产release 32e7929212c947d158a184800efb7f07e043ab02；rollback 71373f2fd1c593e3556a6ffc658910e71ef32789。既有deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0；必要服务器build/start完成，公网/__release读回一致。日志tmp/illustration-review-issues-deploy.log。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release。代码HEAD 6430ca03ffc5367b233d108dcd43250c827dd53f；后续状态文档提交的HEAD以Git为准，文档提交不等于新应用release。
+- 生产release 6430ca03ffc5367b233d108dcd43250c827dd53f；rollback 32e7929212c947d158a184800efb7f07e043ab02。既有deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0；必要服务器build/start完成。日志tmp/illustration-art-reuse-deploy.log。
 - 专用发布树art-direction-release-41ae8902 detached于同一release。根E:/Miscellaneous/XGS为dirty main，仅导航至此；不是交付源。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。
-- Serena源码快照32e79292，installer exit0；缓存镜像23fcfab77fa1、tag04b5f91df4b4e86c210155cee83cd741f1521ca3复用，不混淆镜像版本与源码。日志tmp/illustration-review-issues-serena-install.log。
+- Serena源码快照6430ca03，installer exit0；缓存镜像23fcfab77fa1、tag04b5f91df4b4e86c210155cee83cd741f1521ca3复用，不混淆镜像版本与源码。日志tmp/illustration-art-reuse-serena.log。
 - Chat receiver独立bundle e74c9396dae51b294917dc52ed84893668029806，回退de97707f06eb0ff7d9cb100662af5ab53d73867b；telemetry独立abea68ef已安装，回退c2b6683e。Catalog/Skills bundle83179c454b75688176060fabf9e611072d46813c；Langfuse official4.35.0。
 - Renderer保持sha256:1c47a579ceb608f244878b41888eee50bda1135ff325cb7b49de3a275ee2013d。独立工具版本不冒称应用release；旧目录/镜像仍保留。
 
