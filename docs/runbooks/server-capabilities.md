@@ -1,6 +1,6 @@
 # 服务器能力与复用清单
 
-> Chat生图执行器已修先选模式再插字，保留沙箱/原请求校验；真实f424已成图并原请求恢复，延长canonical窗口后本批atlas/editorial原生Chat请求均实际成功入库。精确应用、独立provider与Serena版本见CURRENT handoff。
+> Chat执行器已有先选模式再插字、同请求恢复及一次性刷新标记修复；首批atlas/editorial实际成功入库，但修订封面7cd仍uncertain，浏览器资源错误与新Library入口尚未收口。用户选择先保存草稿、保留页面，不得重启或重发。精确应用、独立provider与Serena版本及恢复窗口见CURRENT handoff。
 
 当前版本与暂停状态统一见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)；产品目的、调用关系、真实效果查[能力索引](hermes-capability-registry.md#当前能力索引目的调用效果)。本轮新工具实际交付见紧接的表；更早日期段是历史操作收据，不作为当前release或下一步指令。健康不代表内容质量。
 

@@ -47,7 +47,9 @@
 
 | 问题 / 位置 | 后果 | 处理与后续 |
 |---|---|---|
-| runner原执行与recover-late共用waitAndDownload，无条件再写recovery.json | 已消费一次刷新标记时EEXIST提前结束延迟恢复，原诊断只有Error | 7cd真实故障及Git8aa21251/3ee10d6e查实；候选严格读取同canonical原标记，跳过重复写入/刷新后继续原观察和精确gallery，并保留固定系统错误代码。保持同一请求、时限及所有标记；不将恢复修复当成Chat已生成图片。当前任务仅在原图片可见后沿既有download路径接回，详见CURRENT |
+| runner原执行与recover-late共用waitAndDownload，无条件再写recovery.json | 已消费一次刷新标记时EEXIST提前结束延迟恢复，原诊断只有Error | 7cd真实故障及Git8aa21251/3ee10d6e查实；修复已High GO并独立部署，严格读取同canonical/shape/time原标记，跳过重复写入/刷新，保留原观察/gallery、固定系统错误代码及阶段。保持同一请求、时限和标记；本次仍未取得PNG，详见CURRENT |
+| Chrome页面大量ERR_INSUFFICIENT_RESOURCES；旧/images恢复入口变为Library | 原对话只见用户请求，Library页面空壳，无法确认原图；旧fallback无法靠精确chat链接找到图 | 新页同样失败，memory/pids/fd无碰限、bridge无chatgpt.com拒绝；不扩大资源/域白名单，不猜登录失效或已无图。用户选择先保存草稿，暂停重启/重发。Library需可证明原会话绑定后才能复用，不按最新图片猜测；精确结果/恢复窗口见CURRENT |
+| page-lifecycle只按终态结果和target归属回收，不读取后来输入的草稿 | 用户在完成的旧job页输入新草稿后可能被自动关页 | 本次只读High发现，当前两Chat草稿无job归属，原页全部保留；禁止以该回收或杀NetworkService代替本次安全恢复。后续恢复前先处理草稿；长期回收仍缺后续输入保护，未称已修复 |
 | Backstage应用/需求导航指向旧main；Langfuse CLI只读最新10条跨任务调用 | 沿管理入口读取不到当前需求，目标任务的规划/审阅调用易被较新调用挤出 | 已部署并实读交付分支导航，仍不当作production快照；原query.mjs增加--task UUID精确metadata过滤，时间/条数/白名单边界保持。625119fa、76918e55规划/审阅及99e4失败guide均已按原task定位，不增加观测写入或模型调用 |
 | Taskmaster currentTag仍指向八月已完成的任务组 | 当前多风格目标未进入已有任务管理工具，历史完成状态可被误当作当前完成 | 复用现有Taskmaster加入本批三项稳定验收，只有用户认可才done；CURRENT独占资产/反馈/版本，启动按任务ID对齐，旧tag保留历史。没有新任务数据库或额外状态生成模型 |
 | guide在艺术规划前再次扩写科学/构图内容 | 真实059f85ae虽然结构成功，却擅加曲线/偶极子/英语标签并将深墨色误作水墨 | 错误安排未确认且已取消；修复部署后7002真实页面返回及“确认制作”提交均与原要求全等，固定原稿family，无附加正文改动。真正设计由既有艺术planner/科学内容保留/末审承担，已创建76918e55；超过既有长度限制无动作澄清，不截断，也不新增语义分类器 |

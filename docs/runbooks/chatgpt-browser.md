@@ -1,6 +1,7 @@
 # Server ChatGPT browser — operator login research
 
-- CURRENT 2026-09-13：base bundle d1630135 / rollback92cc416e；实际image broker运行patches/b78fb94d568840f4ef686eee76645ec86ed62acf/bundle，image/review runner501da7a3，page-lifecycle d369ccc2。各patch/before与deployment.json保留回滚；浏览器镜像8aa21251，07:55:11Z自行重启保留登录，应用08ed不变。真实5260只提交一次、原图回收/规范化/产品succeeded100%/draft，精确媒体入口见CURRENT handoff。
+- 当前版本、原任务恢复窗口与用户决定仅见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)。2026-09-15：7cd恢复标记重复写入已修复部署；新页持续ERR_INSUFFICIENT_RESOURCES，资源未碰硬限，浏览器有未保存输入。用户明确选择先保存草稿、保留页面；不要整容器重启、杀NetworkService、重置标记或重发。旧/images页已引导Library，未确认对应原会话图片前不能猜取缩略图。
+- HISTORICAL 2026-09-13：base bundle d1630135 / rollback92cc416e；当时image broker运行patches/b78fb94d568840f4ef686eee76645ec86ed62acf/bundle，image/review runner501da7a3，page-lifecycle d369ccc2。各patch/before与deployment.json保留回滚；浏览器镜像8aa21251，07:55:11Z自行重启保留登录，应用08ed不变。真实5260只提交一次、原图回收/规范化/产品succeeded100%/draft；这些是历史证据，不得作为现行版本。
 - 历史人工恢复的活动判断复用review-runner.cjs既有可见Stop/停止按钮，再读取composer和未保存表单；不得以整页“生成中/generating”等历史文字阻止恢复。旧generatingPages=1即此误判。此次14页均无Stop/composer/dirty，取得三锁且队列空、确认profile/jobs持久化后才重启；证据/jobs/hermes-browser-{actual-state,pre-restart-actual,restart-container}-20260913b.json。
 - 已固化：正常键盘输入→Control+End→picture_v2工具，严格正文/模式校验；原Save弹窗不可用时，仅从唯一主图实际同源/estuary/content取PNG，禁止redirect、限30MiB后走原隔离normalize。download只在原deadline+1h内取已有结果；late marker不重复触发浏览器，但已保存结果可reconcile，保留错误/uncertain与原始marker。
 - 页面生命周期：page-lifecycle.cjs在创建/认领时记录instance+target+job；连接前只处理相同provider中归属严格匹配的其他任务页。完成结果需id/provider/hash/source/conversation/state对应，或无submitted且明确失败/过期；未完成提交、未过期prepare和未知旧页保留。固定localhost CDP、每请求2s、清理轮次有界；Chrome close需等待target消失后才写closed审计。
