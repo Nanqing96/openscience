@@ -2,7 +2,7 @@
 
 > CURRENT：恢复原定多风格科研配图任务；本批三类的交付差额、版本与下一步唯一见[Hermes CURRENT handoff](docs/handoff/2026-09-10-hermes-web-image-handoff.md)。工程能力定位/调用观测已有接线，产品目标与用户审美验收尚未自动联动，不称状态治理全部完成。能力按[当前能力索引](docs/runbooks/hermes-capability-registry.md)定向查实现、调用和真实结果；下表日期/版本均为对应改动的历史记录，不作为当前release或自动next action。
 
-任务纠偏入口：`AGENTS.md`与`.agents/skills/docs-sync/SKILL.md`按用户需求条款保留未完成交付项；`infra/development-platform/catalog/catalog-info.yaml`导航交付源码与需求，`telemetry/query.mjs --task`按原任务关联定位调用。`workspace-guide.ts`及Hermes结果/草稿/操作组件传递明确art/baseAssetId；自有配图Skill v5与原末审同轮检查明确艺术要求。候选/部署/实际结果仅见CURRENT。
+任务纠偏入口：`AGENTS.md`与`.agents/skills/docs-sync/SKILL.md`对齐既有Taskmaster当前tag与未完成交付项；`infra/development-platform/catalog/catalog-info.yaml`导航交付源码与需求，`telemetry/query.mjs --task`按原任务关联定位调用。`workspace-guide.ts`艺术路由保留原要求，Hermes结果/草稿/操作组件传递明确art/baseAssetId；自有配图Skill v5与原末审同轮检查明确艺术要求。部署、实际效果和未观察范围仅见CURRENT。
 
 Chat审阅接收：`infra/chatgpt-browser/review-runner.cjs`沿用既有broker，补就绪等待、原文锚定和空DOM时严格绑定的已完成final读取；同一a803请求实际恢复，无重发。精确bundle与应用release分开登记在CURRENT。
 

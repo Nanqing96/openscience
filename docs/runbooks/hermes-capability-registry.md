@@ -14,9 +14,9 @@
 | 原文科学审阅 | `extractor.ts` 的 `scientificReviewPrompt` → `packages/ai-gateway/src/gateway.ts` 的 `reviewScientific` → `infra/chatgpt-browser/review-broker.mjs`/`review-runner.cjs` | 已上线v5沿同一末审附加逐条建议，materializeReviewedClaimSuggestions将P定位映射现有Evidence索引；Domain共享契约进入原确认UI，无新审阅轮次。旧v4续取保留原身份；普通未终审首稿无建议。精确上线状态见CURRENT，科学效果未观察 |
 | 来源约束写作 | `apps/agent-worker/src/workspace-guide.ts` → `scientific-writing-source.ts`、`skills/scientific-writing.ts` | 写作有原始来源恢复和引用回填；本轮未重观其效果。它写稿，不负责验证坐标/色块的物理意义 |
 | 语义检索 | `apps/agent-worker/src/index.ts` 已接searchIndexer建索引；`packages/search/src/service.ts` 定义 `createHybridSearchService` 查询实现 | BGE容器本次只读观察运行。定向扫描未见应用调用该hybrid service，实际查询效果本轮未观察；配图没有调用它。相似度召回不证明科学蕴含，不能为“用上模型”强行串入 |
-| 画面规划 / 设计skill | `presentation/storyboard.ts` → `illustration-planner.ts` → `skills/installed-media-skills.ts` | 自有skill与3套原版Baoyu实际消费记录见d31e7ccc的designSkills；长Claim/整批证据二次分析仍产生错误曲线，已rejected。安装/Schema成功均不等于科学或审美合格 |
-| 候选画面审阅 | `presentation/handler.ts` → `illustration-review.ts` → 已有 `reviewScientific` | 真实25215cd1经就绪/Markdown原文锚定修复，仅发送一次并回收6 Pro blocked：变量及物理量/坐标混用，未生图。Langfuse六次调用关联已实证；私有checkpoint已部署且真实1da6写入、API隐藏；1da6末审revised、a38 accepted，仍未保证成图质量，见CURRENT，后续只在同输入下复用 |
-| Chat参考图生成 | `presentation/scene-image.ts` → `gateway.generateImage` → `infra/chatgpt-browser/` | 既有Chat生图曾返回图片；新参考图bytes路径已实际用于2196及8d6798，两次均回传PNG但有分界/标签/函数问题已拒绝；后续28b直接编译4f已审稿+同一aa41实际参考，图中坐标/分区/变量说明已可见，内外偏同蓝、风格区分待改善，保留draft不发布。保留喜欢的aa41参考、旧图和公开v1；Codex CLI仅备用且不自动切换 |
+| 画面规划 / 设计skill | `presentation/storyboard.ts` → `illustration-planner.ts` → `skills/installed-media-skills.ts` | 自有v5与Baoyu参考已有真实消费；76918e55艺术修订只改变composition/treatment，与原稿科学字段全等，沿用原证据，不重跑全文分析。早期错误曲线候选已拒绝。具体风格交付差额见CURRENT，安装/Schema成功不等于科学或审美合格 |
+| 候选画面审阅 | `presentation/handler.ts` → `illustration-review.ts` → 已有 `reviewScientific` | 既有6Pro末审同时核对科学约束和明确艺术要求，不加新阶段。76918e55实际revised修正深墨背景/线条对比歧义，科学字段保持；按同任务ID已在Langfuse读回MiniMax艺术规划和6Pro审阅两次调用。最终PNG和用户审美认可仍是不同证据，见CURRENT |
+| Chat图像生成 / 参考图 | `presentation/scene-image.ts` → `gateway.generateImage` → `infra/chatgpt-browser/` | 服务器Chat直接执行已审方案；原参考图bytes和本批无参考图新风格均有真实成图。学术图c3a497已看图、仍待用户认可，初次封面ac166未合格，修订结果只见CURRENT。保留喜欢的aa41、旧图和公开v1；Codex CLI仅备用且不自动切换 |
 | Hermes对话与执行授权 | `apps/api/src/routes/agent.ts`、`research-runs.ts` → `packages/domain/src/agent/research-run.ts`、worker `index.ts` | 对话承接修改、核对、执行；当前能力参数/权限以这些入口为准。开发用MCP与skill目录不自动成为Hermes工具 |
 | 私有编辑 / 回收站 | `apps/api/src/routes/research-objects.ts`、`trash.ts` → Domain；`infra/private-cleanup/` | 草稿编辑与公开发行分开；公开资料保留。最近清除证据见历史f8e44815，本轮未删除任何数据 |
 | 公开发布 / 标准API | `apps/api/src/routes/publications.ts`、`research.ts`、`research-record.ts`；`packages/domain/src/research-intelligence/publication-snapshot.ts` | 发布快照和署名/许可进入公开成果；公开API不应曝光内部生产信息。本轮未改两篇公开v1；页面与API入口以代码为准 |
@@ -47,15 +47,16 @@
 
 | 问题 / 位置 | 后果 | 处理与后续 |
 |---|---|---|
-| Backstage应用/需求导航指向旧main；Langfuse CLI只读最新10条跨任务调用 | 沿管理入口读取不到当前需求，目标任务的规划/审阅调用易被较新调用挤出 | 实读catalog后比对origin/main缺多风格条款，候选统一交付分支导航，仍不当作production快照；原query.mjs增加--task UUID精确metadata过滤，时间/条数/白名单边界保持。部署与实际查询见CURRENT，不增加观测写入或模型调用 |
+| runner原执行与recover-late共用waitAndDownload，无条件再写recovery.json | 已消费一次刷新标记时EEXIST提前结束延迟恢复，原诊断只有Error | 7cd真实故障及Git8aa21251/3ee10d6e查实；候选严格读取同canonical原标记，跳过重复写入/刷新后继续原观察和精确gallery，并保留固定系统错误代码。保持同一请求、时限及所有标记；不将恢复修复当成Chat已生成图片。当前任务仅在原图片可见后沿既有download路径接回，详见CURRENT |
+| Backstage应用/需求导航指向旧main；Langfuse CLI只读最新10条跨任务调用 | 沿管理入口读取不到当前需求，目标任务的规划/审阅调用易被较新调用挤出 | 已部署并实读交付分支导航，仍不当作production快照；原query.mjs增加--task UUID精确metadata过滤，时间/条数/白名单边界保持。625119fa、76918e55规划/审阅及99e4失败guide均已按原task定位，不增加观测写入或模型调用 |
 | Taskmaster currentTag仍指向八月已完成的任务组 | 当前多风格目标未进入已有任务管理工具，历史完成状态可被误当作当前完成 | 复用现有Taskmaster加入本批三项稳定验收，只有用户认可才done；CURRENT独占资产/反馈/版本，启动按任务ID对齐，旧tag保留历史。没有新任务数据库或额外状态生成模型 |
-| guide在艺术规划前再次扩写科学/构图内容 | 真实059f85ae虽然结构成功，却擅加曲线/偶极子/英语标签并将深墨色误作水墨 | 原请求未确认；艺术路由候选改为用户原话直传、原稿family、提议式总结，无附加正文改动；真正设计继续由既有艺术planner/科学内容保留/末审承担。超过既有长度限制无动作澄清，不截断，也不新增语义分类器 |
+| guide在艺术规划前再次扩写科学/构图内容 | 真实059f85ae虽然结构成功，却擅加曲线/偶极子/英语标签并将深墨色误作水墨 | 错误安排未确认且已取消；修复部署后7002真实页面返回及“确认制作”提交均与原要求全等，固定原稿family，无附加正文改动。真正设计由既有艺术planner/科学内容保留/末审承担，已创建76918e55；超过既有长度限制无动作澄清，不截断，也不新增语义分类器 |
 | Hermes真实艺术修订的结构回复连续拒绝，只记录nested_fields | 原稿虽合格，无法定位具体字段，通用重试也未修复；没有创建新图 | 原任务与原稿资格已实读；在原validationDiagnostic/validationFeedback接具体字段反馈与原回复修复，不放宽校验、不增加重试次数、不给日志增加正文。部署与观察结果见CURRENT |
-| workspace-guide艺术意图未传既有revisionMode；前端自行选择最新原稿 | 换风格仍可能重跑科学规划，确认时可能绑定到不同原稿 | 候选沿原结果类型/解析/草稿/回放传递成对art/baseAssetId，服务端提供限量同作用域合格方案；不明确则澄清，前端固定原稿/版本，普通科学修订保持。无新接口或表，实际部署/自然语言结果见CURRENT |
-| 艺术规划保留旧科学已批布局；末审只查科学误导、不查明确艺术要求被忽略 | 本批封面请求深墨负空间，15a方案改成暖白、ac166成图仍像教材图 | 候选自有Skill v5及原planner区分明确审美接受与科学通过；同一次既有6Pro末审核对userRequest的明确构图/材质要求，仍只改艺术字段，不加阶段/接口。实际效果见CURRENT，未知不得称已解决审美 |
+| workspace-guide艺术意图未传既有revisionMode；前端自行选择最新原稿 | 换风格仍可能重跑科学规划，确认时可能绑定到不同原稿 | 已部署原结果类型/解析/草稿/回放传递成对art/baseAssetId；7002→769实际UI请求正确绑定原稿和版本。不明确则澄清，普通科学修订保持；无新接口或表，后续换论文效果仍需真实任务观察 |
+| 艺术规划保留旧科学已批布局；末审只查科学误导、不查明确艺术要求被忽略 | 本批封面请求深墨负空间，15a方案改成暖白、ac166成图仍像教材图 | 自有Skill v5及原planner已部署；同一次既有6Pro末审核对userRequest，769实际保留深墨负空间/少量铜橙并修正线条对比，仍只改艺术字段，不加阶段/接口。最终画面效果见CURRENT，不能把方案通过称为用户认可 |
 | CURRENT将重复水彩微调写为下一步，progress/index将本批其他风格暂停；工程观测被笼统称作治理完成 | 原定三类风格交付被局部返工替代，工具虽有调用记录却无法识别目标漂移 | 2026-09-15按需求基线及用户纠正恢复三类交付差额，认可淡彩保留，先补学术/封面。静态确认catalog维护组件依赖、Serena查询符号、telemetry connector仅导出调用元数据；没有产品目标/风格/用户审美验收的自动联动。此次纠正现有入口不等于该软件缺口已实现；后续复用既有任务/资产/审阅标识连接结果，不另建任务库或靠服务健康推断目标完成 |
 | Chat长简报填入后打开原生生图菜单，renderer崩溃 | 1cb8在image_mode_plus失败未提交，原日志other无法定位 | 同原简报真实故障诊断复现Target crashed；先选原生生图再插入文字可保留mode/exactText，runner已改顺序并记录page_crashed，High GO且独立安装，f424实际完整简报/模式/参考已提交并成图；canonical慢于30秒已续接原结果，无重发，现max120秒且保留结果恢复时间，保留原发送/参考校验，不关闭sandbox。独立交付与实际图片结果见CURRENT |
-| 28b原composition写明内外同色；base艺术修订仍重跑science | 参考配色被旧指令覆盖，局部审美调整有科学漂移与重复调用风险 | 已部署显式revisionMode=art复用原base科学字段，只改composition/treatment；真实69ec字段保持、已消费baoyu构图/水彩/文字参考，自有Skill v4补角色区分/文字层级；6Pro只移除额外刻度，1cb8未提交的菜单崩溃已修，原方案复用于f424真实图；冷暖/层级改善，四角纸纹偏重，尚待用户审美认可。当前仅显式API请求使用，普通Hermes自然语言快捷路由未自动选择；精确交付和实际图见CURRENT |
+| 28b原composition写明内外同色；base艺术修订仍重跑science | 参考配色被旧指令覆盖，局部审美调整有科学漂移与重复调用风险 | 历史69ec显式art修订保持科学字段并消费baoyu，f424已成图；当时未接Hermes自然语言。该入口限制现已由上述7002→769真实UI链路修复。原图仍draft，不能计入新增风格；精确交付及余项见CURRENT |
 | production-release-retention默认将非active/rollback目录列入清理，忽略独立工具仍使用历史源码 | Catalog挂载83179导致9c30部署最终阶段拒绝并回滚 | 正常发布只登记rollback且空清理意图保留历史；明确清理才使用原严格挂载/引用规则。High静态GO，精确部署结果见CURRENT |
 | cloud-sync/evaluation-source-sync把MSYS的/c/...路径传给原生Windows OpenSSH | 指定项目密钥不可读，身份选择可能偏离预期 | 共用ssh-identity-path转换，保留参数数组与host-key规则，启用IdentitiesOnly；不修改密钥/配置。正式上传效果见CURRENT |
 | Worker 创建的 Gateway audit sink 未带已有执行上下文，Langfuse requestCorrelation 为空 | 调用失败无法从管理工具准确回到原任务及其技能/资产结果 | index.ts共用现有audit sink，每次record读取已有AsyncLocalStorage taskId，只补空requestId；原view/connector直接消费。已上线，25215六次调用及1da6/2196成功调用均真实关联task；旧记录不猜测回填 |

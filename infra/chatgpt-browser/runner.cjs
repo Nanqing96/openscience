@@ -133,9 +133,18 @@ async function waitAndDownload(browser, page, request) {
   const conversation = canonicalUrl(read('conversation.json').url);
   const firstDeadline = request.deadlineAt - 105000;
   if (await observeConversation(browser, page, request, conversation, firstDeadline)) return;
-  once('recovery.json', { phase: 'reload_original_once', conversation, at: new Date().toISOString() });
-  await page.reload({ waitUntil: 'domcontentloaded', timeout: Math.min(30000, Math.max(1, request.deadlineAt - Date.now() - 75000)) });
-  if (canonicalUrl(page.url()) !== conversation) throw Error('CONVERSATION_CHANGED');
+  if (fs.existsSync(path.join(dir, 'recovery.json'))) {
+    const recovery = read('recovery.json');
+    if (!recovery || typeof recovery !== 'object' || Array.isArray(recovery)
+      || Object.keys(recovery).length !== 3 || Object.keys(recovery).some(key => !['phase', 'conversation', 'at'].includes(key))
+      || recovery.phase !== 'reload_original_once' || recovery.conversation !== conversation
+      || typeof recovery.at !== 'string' || !Number.isFinite(Date.parse(recovery.at))) throw Error('INVALID_RECOVERY_STATE');
+    // A late recovery continues observing the same request; the one reload was already used.
+  } else {
+    once('recovery.json', { phase: 'reload_original_once', conversation, at: new Date().toISOString() });
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: Math.min(30000, Math.max(1, request.deadlineAt - Date.now() - 75000)) });
+    if (canonicalUrl(page.url()) !== conversation) throw Error('CONVERSATION_CHANGED');
+  }
   if (await observeConversation(browser, page, request, conversation, request.deadlineAt - 70000)) return;
   if (await recoverFromImages(browser, page.context(), request, conversation, request.deadlineAt - 45000)) return;
   throw Error('RESULT_TIMEOUT_NO_RESEND');
@@ -412,6 +421,7 @@ let stage = 'request';
       process.exit(0);
     }
     if (mode === 'resume' || mode === 'recover' || mode === 'recover-late') {
+      stage = 'image_result';
       await waitAndDownload(browser, page, request);
       if (created || await bounded(page.evaluate(() => window.name), 2000).catch(() => '') === `xgs-image-${id}`) {
         await bounded(page.close({ runBeforeUnload: false }), 3000).catch(() => {});
@@ -515,6 +525,7 @@ let stage = 'request';
   process.exit(0);
 })().catch(async error => {
   const failure = { stage, state: fs.existsSync(path.join(dir, 'submitted.json')) ? 'ambiguous_no_resend' : 'not_submitted', error: /^[A-Z0-9_]+$/.test(error.message) ? error.message : error.name };
+  if (failure.error === 'Error' && ['EEXIST', 'ENOENT'].includes(error.code)) failure.error = error.code;
   if (stage.startsWith('image_mode')) {
     // Keep only a fixed category: locator errors may embed the authored prompt or page URL.
     failure.errorKind = /Target crashed/i.test(error.message) ? 'page_crashed'
