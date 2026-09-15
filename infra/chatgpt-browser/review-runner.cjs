@@ -98,7 +98,7 @@ function reviewPrompt(request) {
 }
 async function findUserAnchor(page, prompt) {
   const expected = normalizeUserText(prompt);
-  const found = await page.locator('[data-message-author-role]').evaluateAll((elements, wanted) => {
+  let found = await page.locator('[data-message-author-role]').evaluateAll((elements, wanted) => {
     const normalize = value => String(value ?? '').replace(/\u00a0/g, ' ').trim();
     const users = elements.filter(element => element.getAttribute('data-message-author-role') === 'user');
     const matching = users.filter(element => Array.from(element.querySelectorAll('*'))
@@ -106,6 +106,17 @@ async function findUserAnchor(page, prompt) {
     if (matching.length !== 1 || matching[0] !== users.at(-1)) return null;
     return { userMessageId: matching[0].getAttribute('data-message-id') ?? '' };
   }, expected).catch(() => null);
+  if (!found) {
+    // Chat renders Markdown in user turns. Compare the turn's original copied
+    // text rather than weakening identity to a rendered prefix or substring.
+    const users = page.locator('[data-message-author-role="user"]');
+    if (await users.count() !== 1) return null;
+    const latest = users.last();
+    const userMessageId = await latest.getAttribute('data-message-id').catch(() => null);
+    if (UUID.test(userMessageId || '') && normalizeUserText(await copiedMessageText(latest, page)) === expected) {
+      found = { userMessageId };
+    }
+  }
   if (!found || !UUID.test(found.userMessageId)) return null;
   return { userMessageId: found.userMessageId, userMessageHash: crypto.createHash('sha256').update(expected).digest('hex'), submittedAt: Date.now() };
 }
@@ -186,12 +197,9 @@ async function visibleFailureCode(page) {
   if (/network error|connection error|failed to fetch|网络错误|连接错误/.test(text)) return 'NETWORK_ERROR';
   return null;
 }
-async function assistantResponseText(page, assistantId, domText) {
-  const visible = String(domText ?? '').trim();
-  if (visible) return visible;
-  const assistant = page.locator(`[data-message-author-role="assistant"][data-message-id="${assistantId}"]`);
-  if (await assistant.count() !== 1) return '';
-  const copy = assistant.locator('xpath=ancestor::section[1]').getByTestId('copy-turn-action-button');
+async function copiedMessageText(message, page) {
+  if (await message.count() !== 1) return '';
+  const copy = message.locator('xpath=ancestor::section[1]').getByTestId('copy-turn-action-button');
   if (await copy.count() !== 1 || !await copy.isVisible().catch(() => false)) return '';
   await page.evaluate(() => {
     window.__xgsScienceReviewCopy = null;
@@ -201,11 +209,16 @@ async function assistantResponseText(page, assistantId, domText) {
   });
   // ChatGPT may render a transparent turn-action overlay above the visible copy
   // control after a long Pro response. The button is already uniquely scoped to
-  // the anchored assistant turn, so invoke its DOM click handler directly rather
+  // the exact message turn, so invoke its DOM click handler directly rather
   // than waiting for pointer hit-testing against unrelated overlay geometry.
   await copy.evaluate(element => element.click());
   await page.waitForFunction(() => typeof window.__xgsScienceReviewCopy === 'string' && window.__xgsScienceReviewCopy.length > 0, null, { timeout: 3000 }).catch(() => {});
   return page.evaluate(() => window.__xgsScienceReviewCopy ?? '').catch(() => '');
+}
+async function assistantResponseText(page, assistantId, domText) {
+  const visible = String(domText ?? '').trim();
+  if (visible) return visible;
+  return copiedMessageText(page.locator(`[data-message-author-role="assistant"][data-message-id="${assistantId}"]`), page);
 }
 async function waitForReview(page, request, deadlineAt, recovered = false) {
   const conversation = canonicalUrl(read('conversation.json').url);
@@ -217,21 +230,21 @@ async function waitForReview(page, request, deadlineAt, recovered = false) {
     if (page.isClosed() || canonicalUrl(page.url()) !== conversation) throw Error('CONVERSATION_CHANGED');
     const failure = await visibleFailureCode(page); if (failure) throw Error(failure);
     const messages = page.locator('[data-message-author-role]');
-    const anchored = await messages.evaluateAll((elements, input) => {
-      const normalize = value => String(value ?? '').replace(/\u00a0/g, ' ').trim();
-      const { messageId, expected } = input;
+    const anchored = await messages.evaluateAll((elements, messageId) => {
       const index = elements.findIndex(element => element.getAttribute('data-message-author-role') === 'user' && element.getAttribute('data-message-id') === messageId);
       if (index < 0 || elements.length !== index + 2 || elements[index + 1]?.getAttribute('data-message-author-role') !== 'assistant') return null;
-      const promptMatches = Array.from(elements[index].querySelectorAll('*')).some(descendant => normalize(descendant.innerText) === expected);
-      return { promptMatches, assistantText: elements[index + 1]?.innerText ?? '', assistantId: elements[index + 1]?.getAttribute('data-message-id') ?? '' };
-    }, { messageId: anchor.userMessageId, expected: expectedPrompt }).catch(() => null);
-    if (anchored?.promptMatches && UUID.test(anchored.assistantId)
+      return { assistantText: elements[index + 1]?.innerText ?? '', assistantId: elements[index + 1]?.getAttribute('data-message-id') ?? '' };
+    }, anchor.userMessageId).catch(() => null);
+    if (anchored && UUID.test(anchored.assistantId)
       && crypto.createHash('sha256').update(expectedPrompt).digest('hex') === anchor.userMessageHash) {
       const stopVisible = await page.getByRole('button', { name: /Stop|停止/ }).isVisible().catch(() => false);
       const text = stopVisible ? '' : (await assistantResponseText(page, anchored.assistantId, anchored.assistantText)).trim();
       if (text.length >= 20 && !stopVisible) {
         if (text === stable) stableCount += 1; else { stable = text; stableCount = 0; }
         if (stableCount >= 2) {
+          const currentAnchor = await findUserAnchor(page, reviewPrompt(request));
+          if (!currentAnchor || currentAnchor.userMessageId !== anchor.userMessageId
+            || currentAnchor.userMessageHash !== anchor.userMessageHash) throw Error('USER_MESSAGE_ANCHOR_CHANGED');
           if (Buffer.byteLength(text, 'utf8') > 64 * 1024) throw Error('RESPONSE_TOO_LARGE');
           const responseFile = recovered ? 'recovered-response.txt' : 'response.txt';
           const resultFile = recovered ? 'recovered-result.json' : 'result.json';
