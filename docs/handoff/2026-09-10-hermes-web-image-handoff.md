@@ -2,15 +2,17 @@
 
 ## 当前结论与下一动作（2026-09-15）
 - 用户已确认Langfuse登录并授权执行：先完成既有工具/Skill联动、消除重复实现，再推进真实私有配图。基础联动已上线且有真实调用证据；通用科学/审美质量尚未完成，不能以部署或task succeeded代替。
-- 最新任务7d47cd45-1b07-4795-a0bb-e5ba3e70f53a于04:18:18 UTC科学blocked：新增了坐标分量、单色波数和区域名称，仍漏“k⊥是横向波矢模长”。75eac9d3-3ab3-468c-bc40-53d6f52bafa2此前也blocked；两份均无新资产/图片。原审阅正常返回，不是登录/代理/receiver故障。
+- 此前任务7d47cd45-1b07-4795-a0bb-e5ba3e70f53a于04:18:18 UTC科学blocked：新增了坐标分量、单色波数和区域名称，仍漏“k⊥是横向波矢模长”。75eac9d3-3ab3-468c-bc40-53d6f52bafa2此前也blocked；两份均无新资产/图片。原审阅正常返回，不是登录/代理/receiver故障。
 - 两次实际checkpoint比较均证实：除labels及由它派生的visualAction，科学/艺术字段与原59702完全相同；新调用仅共享科学skill v2及自有skill v3，没有重跑艺术规划。证据tmp/illustration-label-meaning-observed.log。
-- **已停止人工改提示词→新任务→重复末审循环。下一步先修“审阅反馈→局部修订”的信息回传缺口，再生成一次实际图片并看图；不要重发下面已失败任务、重分析整篇或绕过blocked。** 定向High确认两处断点：自由文本反馈无法逐项对应，首轮来源限制丢掉最新反馈。候选已补既有末审issues、patch逐项对应与最多两层显式修订，待High/必要服务器build/start；无新平台或自动重试循环。
+- **反馈回传修复已部署，4f方案accepted，28b真实成图已看。下一步是艺术风格遵循与两域区分度，不再回到工具调研、整篇科学重规划或重发失败任务。当前草稿未发布，不能称审美目标全部完成。** 定向High确认两处断点：自由文本反馈无法逐项对应，首轮来源限制丢掉最新反馈。已补既有末审issues、patch逐项对应与最多两层显式修订，独立High GO，32e7929212c947d158a184800efb7f07e043ab02已部署，必要服务器build/start exit0；无新平台或自动重试循环。
 
+- 新真实任务4f3b3260-f552-44ef-adbf-5273495a4033已API202（04:40:15 UTC），直接引用7d最新checkpoint/完整反馈；实际只在两个区域label补k⊥模长定义，其余科学/艺术字段完全不变。新checkpoint记录reviewFormat2、科学skill消费，无art调用；6Pro已accepted、corrections/issues均空，确认全部标签/圆形分界含义，内部approval200。回执tmp/illustration-review-issues-continuation-start.json及observed.json、final-response.json。禁止重跑该发送脚本。
+- 真实生图28b8b9ef-cea7-4000-b25d-57426559fed5于04:44:07 UTC API202，parent4f3b3260、style reference aa41，已succeeded并返回1672×941 PNG，资产仍draft。实际看图：kx/ky正交、k0圆形分界、内传播/外倏逝严格不等式及变量说明可见，未见前两图明显科学错误；内外同偏蓝，区分度及蓝金参考风格遵循仍可改善。实际bytes保存tmp/research-illustration-28b8.png；provenance为structured_brief/skillv3/aa41实际引用，未再语义改写。首次产品dashboard导航ERR_SSL_PROTOCOL_ERROR发生在任何写入前，已确认无receipt及公网HTTPS200后原脚本仅再执行一次成功，不是重复模型请求；TLS瞬态根因未定。回执tmp/illustration-reviewed-labels-image-start.json。
 ## 版本事实与工作区
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release。代码HEAD 71373f2fd1c593e3556a6ffc658910e71ef32789；后续状态文档提交的HEAD以Git为准，文档提交不等于新应用release。
-- 生产release 71373f2fd1c593e3556a6ffc658910e71ef32789；rollback ed24cb1c79f9374023f0e1cbf36c613a869c5da0。既有deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0；必要服务器build/start完成，公网/__release读回一致。日志tmp/illustration-label-clarification-deploy.log。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release。代码HEAD 32e7929212c947d158a184800efb7f07e043ab02；后续状态文档提交的HEAD以Git为准，文档提交不等于新应用release。
+- 生产release 32e7929212c947d158a184800efb7f07e043ab02；rollback 71373f2fd1c593e3556a6ffc658910e71ef32789。既有deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0；必要服务器build/start完成，公网/__release读回一致。日志tmp/illustration-review-issues-deploy.log。
 - 专用发布树art-direction-release-41ae8902 detached于同一release。根E:/Miscellaneous/XGS为dirty main，仅导航至此；不是交付源。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。
-- Serena源码快照71373f2f，installer exit0；缓存镜像23fcfab77fa1、tag04b5f91df4b4e86c210155cee83cd741f1521ca3复用，不混淆镜像版本与源码。日志tmp/illustration-label-clarification-serena-install.log。
+- Serena源码快照32e79292，installer exit0；缓存镜像23fcfab77fa1、tag04b5f91df4b4e86c210155cee83cd741f1521ca3复用，不混淆镜像版本与源码。日志tmp/illustration-review-issues-serena-install.log。
 - Chat receiver独立bundle e74c9396dae51b294917dc52ed84893668029806，回退de97707f06eb0ff7d9cb100662af5ab53d73867b；telemetry独立abea68ef已安装，回退c2b6683e。Catalog/Skills bundle83179c454b75688176060fabf9e611072d46813c；Langfuse official4.35.0。
 - Renderer保持sha256:1c47a579ceb608f244878b41888eee50bda1135ff325cb7b49de3a275ee2013d。独立工具版本不冒称应用release；旧目录/镜像仍保留。
 
@@ -20,7 +22,7 @@
 - Chat调用日志中的succeeded表示调用正常返回，审阅结论仍可blocked。token/cost未知保持未知；订阅通道代码cost0不代表订阅总成本为0。采集有120秒提交延迟/60秒轮询/分页，不为补日志重放模型。
 - IllustrationBrief v2分离科学encoding与艺术composition；既有末审仅修改艺术字段。共享critical-thinking与自有配图skill确实由science/review两阶段加载，provenance记录id/version；旧v1仍可读/直接编译，不能静默重画。
 - handler规划后、Chat前保存私有storyboardCheckpoint，原Domain retry保留、公开投影隐藏；同来源/输入/原base才复用，CAS及provider前/落库时的权限和来源重验保留。真实1da6已保存且API隐藏，不假造旧任务checkpoint。
-- 新revisionTaskId复用同actor/RO/version/Claims/locale/style原failed checkpoint与完整原审阅反馈；模型仅给已有labels加prefix/suffix，其余由代码保持；新任务仍末审。来源/权限/并发独立High GO，旧provenance版本发现后已修3。两次实际不漂移，但未完整解决反馈，见当前结论。
+- revisionTaskId现可复用同actor/RO/version/Claims/locale/style最新failed checkpoint与反馈，最多两层、递归重建原identity；仅给已有labels加prefix/suffix。新末审issues保存在私有storyboardReview，复用既有candidate/source/request/response身份，patch按issueId逐项对应；公开隐藏。旧checkpoint无reviewFormat仍用原协议；新plan记录2。独立High GO、必要build/start通过，真实4f继承7d且非label字段保持，末审accepted。结构覆盖不等于语义完成；现代blocked issues的后续消费尚未在新真实任务中观察，旧7d本次用完整legacy反馈，不能伪称覆盖该分支。
 - 自有openscience-research-illustration skill v3已同步本机Codex与Hermes：来源先于画面、标签名称/含义、科学修订与艺术修订分开；精确函数图交数据renderer，Chat用于概念插图。不把固定论文变量写成通用模板。
 - 原结构化repair补固定路径/字段/长度诊断，仅完整八字段单scene允许无损包装；未知字段仍拒绝。03a9/982f/b5e旧失败无Chat/asset/checkpoint，不重跑。
 - Chat receiver修复页面就绪及Markdown原文锚定；e74进一步在DOM/Copy为空时严格绑定原会话、原用户全文、可见final节点/current_node/完成状态/父链读取同源已完成回复。独立High GO，a803由原broker自动恢复blocked，无重发；接口变化失败关闭，不保证永久稳定。日志tmp/review-stored-final-install.log、review-stored-final-recovered.json。
@@ -42,7 +44,7 @@
 
 ## 约束、保护对象与读入顺序
 - 禁止测试/预检/CI/本机构建；本机仅静态编辑/Git/传输。服务器必要build/start及真实产品结果观察已执行，无Codex生图、公开发布或清除请求。
-- Chat生图优先，Codex CLI仅保留；科学认识必须由原始文献及已审结果产生，参考图只用于美术。新风格扩展/Figma/视频/第三篇/批量暂缓，先完成一幅合格真实图。
+- Chat生图优先，Codex CLI仅保留；科学认识必须由原始文献及已审结果产生，参考图只用于美术。新风格扩展/Figma/视频/第三篇/批量暂缓，先改善现有真实图的风格遵循并由用户判断审美。
 - RO9067a2d5-42ad-4c06-b234-753728b71064，private version e77dc3c7-95cb-4269-ac3c-24276fea74e7，Claim93416292-0dbb-42b1-8810-6bdf77804c1f及40Evidence保留，identity dbec53fff80645ec6698eea26720e4157b74a72561e7d4ee6283ad5c70374e13。
 - 喜爱图aa41a018-b2ff-4ffb-9557-19ecabe104bc、公开OSR-2026-000023/v1/version72c315af及deep-sub-cycle公开v1均不改。失败草稿/原图/原件/笔记仍保留。
-- 下一轮：本页→能力台账相关行→实际代码/任务；Git历史保留详细过程，不加载全部历史或复跑失败任务。当前文档压缩不代表旧事实被撤销。当前未提交另含五文件反馈修复，归本任务；保留无关spec。
+- 下一轮：本页→能力台账相关行→实际代码/任务；Git历史保留详细过程，不加载全部历史或复跑失败任务。当前文档压缩不代表旧事实被撤销。反馈修复已提交32e79292；当前仅本任务状态文档及保留的无关spec可能dirty。

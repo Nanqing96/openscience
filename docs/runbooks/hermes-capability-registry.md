@@ -16,7 +16,7 @@
 | 语义检索 | `apps/agent-worker/src/index.ts` 已接searchIndexer建索引；`packages/search/src/service.ts` 定义 `createHybridSearchService` 查询实现 | BGE容器本次只读观察运行。定向扫描未见应用调用该hybrid service，实际查询效果本轮未观察；配图没有调用它。相似度召回不证明科学蕴含，不能为“用上模型”强行串入 |
 | 画面规划 / 设计skill | `presentation/storyboard.ts` → `illustration-planner.ts` → `skills/installed-media-skills.ts` | 自有skill与3套原版Baoyu实际消费记录见d31e7ccc的designSkills；长Claim/整批证据二次分析仍产生错误曲线，已rejected。安装/Schema成功均不等于科学或审美合格 |
 | 候选画面审阅 | `presentation/handler.ts` → `illustration-review.ts` → 已有 `reviewScientific` | 真实25215cd1经就绪/Markdown原文锚定修复，仅发送一次并回收6 Pro blocked：变量及物理量/坐标混用，未生图。Langfuse六次调用关联已实证；私有checkpoint已部署且真实1da6写入、API隐藏；1da6末审revised、a38 accepted，仍未保证成图质量，见CURRENT，后续只在同输入下复用 |
-| Chat参考图生成 | `presentation/scene-image.ts` → `gateway.generateImage` → `infra/chatgpt-browser/` | 既有Chat生图曾返回图片；新参考图bytes路径已实际用于2196及8d6798，两次均回传PNG；实际看图发现分界位置/标签/函数曲线问题，未公开放行。保留喜欢的aa41参考、旧图和公开v1；Codex CLI仅备用且不自动切换 |
+| Chat参考图生成 | `presentation/scene-image.ts` → `gateway.generateImage` → `infra/chatgpt-browser/` | 既有Chat生图曾返回图片；新参考图bytes路径已实际用于2196及8d6798，两次均回传PNG但有分界/标签/函数问题已拒绝；后续28b直接编译4f已审稿+同一aa41实际参考，图中坐标/分区/变量说明已可见，内外偏同蓝、风格区分待改善，保留draft不发布。保留喜欢的aa41参考、旧图和公开v1；Codex CLI仅备用且不自动切换 |
 | Hermes对话与执行授权 | `apps/api/src/routes/agent.ts`、`research-runs.ts` → `packages/domain/src/agent/research-run.ts`、worker `index.ts` | 对话承接修改、核对、执行；当前能力参数/权限以这些入口为准。开发用MCP与skill目录不自动成为Hermes工具 |
 | 私有编辑 / 回收站 | `apps/api/src/routes/research-objects.ts`、`trash.ts` → Domain；`infra/private-cleanup/` | 草稿编辑与公开发行分开；公开资料保留。最近清除证据见历史f8e44815，本轮未删除任何数据 |
 | 公开发布 / 标准API | `apps/api/src/routes/publications.ts`、`research.ts`、`research-record.ts`；`packages/domain/src/research-intelligence/publication-snapshot.ts` | 发布快照和署名/许可进入公开成果；公开API不应曝光内部生产信息。本轮未改两篇公开v1；页面与API入口以代码为准 |
@@ -51,10 +51,10 @@
 | cloud-sync/evaluation-source-sync把MSYS的/c/...路径传给原生Windows OpenSSH | 指定项目密钥不可读，身份选择可能偏离预期 | 共用ssh-identity-path转换，保留参数数组与host-key规则，启用IdentitiesOnly；不修改密钥/配置。正式上传效果见CURRENT |
 | Worker 创建的 Gateway audit sink 未带已有执行上下文，Langfuse requestCorrelation 为空 | 调用失败无法从管理工具准确回到原任务及其技能/资产结果 | index.ts共用现有audit sink，每次record读取已有AsyncLocalStorage taskId，只补空requestId；原view/connector直接消费。已上线，25215六次调用及1da6/2196成功调用均真实关联task；旧记录不猜测回填 |
 | Chat模型标签含slash，被SQL/view消费者各层过滤 | Langfuse有真实调用却model为unknown | 三层仅放行两个固定源码标签；已知view短事务刷新，marker/role/view/ACL异常拒绝，High GO并独立安装；未知历史不回填 |
-| 科学blocked候选无资产，局部修订仍重规划全篇 | 59702缺类别名称，34ce补名称又丢两坐标 | 已部署revisionTaskId只读原failed task checkpoint，以prefix/suffix澄清既有label并保留原索引/符号/坐标/艺术；原文/权限重验，新task仍科学末审。真实75eac/7d均保持其他字段，但反馈含义遗漏仍blocked；候选补结构化issues与patch逐项对应，复用最新failed plan/feedback，最多两层显式来源，权限/现有身份逐层重验。部署及实际结果见CURRENT |
+| 科学blocked候选无资产，局部修订仍重规划全篇 | 59702缺类别名称，34ce补名称又丢两坐标 | 已部署revisionTaskId只读原failed task checkpoint，以prefix/suffix澄清既有label并保留原索引/符号/坐标/艺术；原文/权限重验，新task仍科学末审。真实75eac/7d均保持其他字段，但反馈含义遗漏仍blocked；已部署结构化issues与patch逐项对应，复用最新failed plan/feedback，最多两层显式来源，权限/现有身份逐层重验。真实4f直接继承7d完整旧反馈，字段保持且末审accepted；新结构化blocked消费尚待正常任务观察。部署及实际结果见CURRENT |
 | Chat final已完成但DOM和Copy为空 | 已付款且完成的审阅被误作超时，重复运行会浪费调用 | 既有receiver加严格会话/原文用户/可见final节点及完成父链绑定的同源读取；High GO且安装，a803由原broker恢复blocked，无重发。接口变化失败关闭，不泄露分析/Token；科学blocked仍必须回上游 |
 | 结构化repair只报unexpected_fields或invalid_shape_or_length | 03a9/982f/b5e真实任务反复修错层级、重复付费仍失败 | 原planner及共享brief提供固定路径/预期字段/长度反馈；仅字段集合精确相等时兼容单scene外层，保留全部原校验，不丢未知字段。部署及实际新任务结果见CURRENT |
-| labels遗漏轴/分类阈值，且把可量化函数图当作概念画 | 第二张图片分界已改正却仍不完整；公式正确不能保证曲线正确 | 自有skill科学选题/末审按实际编译契约补标签完整性与data-renderer边界；v3已同步Codex/Hermes，真实75e/7d仍漏变量定义；逐项反馈连接正在收尾，实际结果见CURRENT，不再追加一串通用生图禁令 |
+| labels遗漏轴/分类阈值，且把可量化函数图当作概念画 | 第二张图片分界已改正却仍不完整；公式正确不能保证曲线正确 | 自有skill科学选题/末审按实际编译契约补标签完整性与data-renderer边界；v3已同步Codex/Hermes，真实75e/7d仍漏变量定义；逐项反馈连接已上线，真实4f继承最新稿并补缺失定义获accepted，28b图中标签已可见、配色区分仍待改进，实际结果见CURRENT，不再追加一串通用生图禁令 |
 | 审阅失败前未持久化付费画面candidate | 重试可能重复MiniMax规划，无法复用原审阅结果 | handler保存私有storyboardCheckpoint；原Domain retry保留、API隐藏，仅相同来源/输入复用；真实1da6保存已观察。科学blocked须新修订，不假造旧任务checkpoint |
 | 根目录更新未进入交付树：AGENTS 和 17 个流程 Skill/引用文件 | 后续 session 按旧测试/逐步审批/派工规则执行，重复耗费与漂移 | 已将现有精简规则带入交付分支，保留独有脚本/参考；根目录同步导航，不新增工具 |
 | 旧 handoff/计划/index 将当时版本或待办标作当前 | 重复部署、重新生成或复跑已完成阶段 | 旧执行记录逐份加历史适用说明；设计说明区分需求有效性与运行状态；唯一 CURRENT 定锚，未提交独立设计稿保留 |
