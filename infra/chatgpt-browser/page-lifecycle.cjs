@@ -6,7 +6,6 @@ const { isDeepStrictEqual } = require('node:util');
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const TARGET = /^[A-F0-9]{32}$/i;
 const RECORD = /^browser-target-([0-9a-f-]{36})\.([A-F0-9]{32})\.json$/i;
-const CONVERSATION = /^https:\/\/chatgpt\.com\/c\/[0-9a-f-]{36}$/i;
 function readJson(file, maximum = 32768) {
   const stat = fs.lstatSync(file);
   if (!stat.isFile() || stat.isSymbolicLink() || stat.size > maximum) throw Error('INVALID_PAGE_RECORD');
@@ -61,19 +60,13 @@ function reclaimReason(jobDir, id, provider, targetUrl) {
     // An unexpired prepared page can still be used; leave it intact.
     const errorFile = path.join(jobDir, 'operator-error.json');
     const failed = fs.existsSync(errorFile) && readJson(errorFile).state === 'not_submitted';
-    return (failed || request.deadlineAt <= Date.now()) && ['about:blank', 'https://chatgpt.com/'].includes(targetUrl)
+    // A Chat page may contain a prepared prompt or a later human draft. The job
+    // ledger cannot prove its live contents are disposable before attaching.
+    return (failed || request.deadlineAt <= Date.now()) && targetUrl === 'about:blank'
       ? 'finished_before_submission' : null;
   }
-  const conversation = readJson(path.join(jobDir, 'conversation.json')).url;
-  if (!CONVERSATION.test(conversation) || targetUrl !== conversation) return null;
-  const files = provider === 'chatgpt-web' ? ['result.json'] : ['recovered-result.json', 'result.json'];
-  for (const file of files) {
-    if (!fs.existsSync(path.join(jobDir, file))) continue;
-    const result = readJson(path.join(jobDir, file), 96 * 1024);
-    if (result.id === id && result.provider === provider && result.promptHash === request.promptHash
-      && isDeepStrictEqual(result.source, request.source) && result.conversation === conversation
-      && result.state === (provider === 'chatgpt-web' ? 'downloaded' : 'received')) return 'result_saved';
-  }
+  // A saved result does not rule out subsequent user input in that conversation.
+  // Normal runners close their own completed pages; retain exceptional leftovers.
   return null;
 }
 async function beforeAttach(root, provider, currentId) {
