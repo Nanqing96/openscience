@@ -1,51 +1,48 @@
 # Hermes / Workbench CURRENT Handoff
-## 目标与约束
-- 最新：a803同一Chat会话已完成blocked，但DOM正文为空、Copy无内容。e74c9396接收器增加严格身份绑定的会话final读取；独立High GO，等待旧receiver退出和原锁释放后安装exit0，原broker自动生成job/spool recovered结果。未重发、未放行科学错误，日志tmp/review-stored-final-install.log及review-stored-final-recovered.json。
-- 新私有任务59702f05-be92-4dca-aad0-6d17416d3c83已API202：复用同一已审Claim/完整原文，但省略baseAssetId，以免新的二维分类焦点继承旧一维曲线。上游接收a803真实blocked反馈；新Chat已正常回收blocked，唯一指出两域labels只有判据而缺可见类别名称，没有图像资产。回执tmp/illustration-fresh-focus-start.json及fresh-focus-live.json；禁止重跑该脚本。
-- 2026-09-15真实私有配图25215cd1-e37a-4155-922d-3c06ae9aaec5五次MiniMax后Chat提交前失败；两处runner修复后同原请求仅发送一次、现已自动回收blocked。6 Pro指出k_z误作矢势分量、k与k⊥混用、Bessel形状因子与k_z曲线/量纲混合，禁止该方案生图。原review job及spool均有recovered-result/response；不是成功资产。下一任务将原审阅反馈交回既有planner，不能手工替代科学分析。
-- 修订任务1da6b754-0678-41b7-af4b-240d401a56d4已succeeded；真实checkpoint先保存、API仅result:{}，正常Chat发送/锚定/回收无兼容错误。6 Pro revised仅改composition：k₀分界置低波矢、f近1区，振荡过零在倏逝区，f作纵轴、k_z只作区域说明；方案已按修正保存，内部approval API200。回执tmp/illustration-revision-20260915-start.json。
-- 生图2196c4bc-347f-4ad5-a75b-3e9721efe491实际成功回传1672×941 PNG，parent1da6/schema2直接编译+aa41实际reference上传，Langfuse仅1次image成功/80秒，无新语义改写。已实际看图：淡彩和公式清楚，但错误把k₀分界放在首次过零点，API200标rejected；本地tmp/research-illustration-2196.png保留，未发布。回执tmp/illustration-image-20260915-start.json。
-- 局部修订a38aa258-029a-4404-889d-54048b1085ec已获6 Pro accepted及内部approval200；生图8d6798b4-0865-4b58-8940-c7947f641bad实际回传1672×941 PNG，独立分界位置纠正，但漏横轴/分界变量且函数曲线仍靠模型猜形。本地tmp/research-illustration-8d6798.png保留，不发布。已追到实际request的labels遗漏，不是下载乱码。
-- 自有skill在Scientific intent/Scientific review补入可见标签完整性与函数曲线必须data renderer的通用规则；两阶段真实loader均读取相应段，High静态GO，本机同步及654bd6b8服务器部署exit0。8d已API200拒绝；03a9c46f分类修订因三次unexpected_fields失败，未到Chat、无checkpoint，不盲重试。现有keys校验补固定层级/预期缺失字段及extra计数反馈，High静态GO，69bc9b5b已部署exit0；982febb4在原repair中已修science_root extra_count3，随后共享brief长度/形状错误仍过于笼统而失败；无Chat/asset/checkpoint。共享Domain parser现补全部固定字段/类型/长度/计数诊断，接受谓词不变，8e741874 High GO且部署exit0；b5e608b2三次失败仍是root包装：两次missing_scenes/extra7，一次extra3；无Chat/asset。ed24cb1c增加精确八字段单scene无损包装，未知字段仍拒绝，High GO且部署exit0；a803553c-831d-41d8-8173-c3e632867966已完成结构化规划、保存checkpoint，Chat审阅已回收blocked（见首条），不能重发或生图；变量、二维/一维混用和跨域装饰需要上游修正。回执tmp/illustration-classification-wrapper-20260915-start.json及wrapper-live.json。回执tmp/illustration-classification-feedback-20260915-start.json及feedback-live.json。收据tmp/illustration-classification-resume-20260915-start.json及resume-live.json；不重发旧任务。
-- 用户2026-09-15确认Langfuse已登录，要求继续并说明后续任务。先收尾既有科学审阅结果复用，再沿正常研究任务恢复配图质量优化；不新增治理平台/模型阶段，新增风格、Figma、视频、第三篇和批量仍暂缓。
-- 禁止测试、预检、CI、本机构建；本机仅静态读写/Git/传输。真实规划及审阅调用见上文，必要服务器构建/启动与阻塞故障取证按现有规则执行；没有新provider或公开发布。
-- Chat为主要生图手段，Codex CLI保留备用。科学认识来自上游已审解析/分析，不能用未审semanticStage或参考图作为科学证据。
-- 34ce4da4-f55a-461e-afb0-0a77f54206d9已blocked：类别名称补齐却重写掉原kx/ky，证实全量重规划漂移。已停止手工新任务循环，回执tmp/illustration-category-labels-review.json；没有新图。
-- 候选代码未部署：新增revisionTaskId窄标签修订，引用同actor/RO/version/Claims/locale/style的failed原任务checkpoint与完整服务端review反馈。仅给既有labels加prefix/suffix，保留全部其他科学/艺术字段；新task重新审阅，旧请求不改。来源/原base与权限在保存、发送、完成时沿既有identity重验。自有skill v3补类别名称与复用规则；独立High指出成图skill provenance仍为2，已同步3；其余权限/来源/并发/局部保持静态GO。无测试/本机构建，准备必要服务器交付。
-## 版本事实（2026-09-15）
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release；完整当前HEAD从Git读取，文档提交及工具bundle不等于应用release。
-- 生产release ed24cb1c79f9374023f0e1cbf36c613a869c5da0，rollback 8e741874f48f5d4aab8b626af94200a217d3e880。既有deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0；必要build/start、release切换和收尾完成。日志tmp/illustration-scene-wrapper-deploy.log（之前诊断修复日志brief-feedback/schema-location）；skill部署tmp/illustration-label-skill-deploy.log；checkpoint此前日志tmp/storyboard-checkpoint-deploy.log，不代表科学/审美验收。
-- 干净专用发布树art-direction-release-41ae8902 detached在e74c9396（receiver源码交付，不等于应用release）；根dirty main不是交付基线。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。
-- Serena源码快照与生产同为ed24cb1c；原缓存镜像23fcfab77fa1复用，installer exit0，日志tmp/illustration-scene-wrapper-serena-install.log。Catalog仍独立使用83179c454b75688176060fabf9e611072d46813c源码/镜像及挂载。
-- Langfuse bundle83179/official v4.35.0；telemetry独立abea68ef已安装exit0，仅固定模型标签及既有视图刷新，日志tmp/telemetry-model-view-install.log；旧镜像c2b6683e保留回退，state/凭据不变。Skills镜像83179；依赖图报告源89d05，仅选定scope，不冒充当前全仓图。
-- Chat receiver独立bundle e74c9396dae51b294917dc52ed84893668029806；回退de97707f。既有就绪等待/原文锚定加DOM及Copy为空时的final读取，严格绑定会话/原用户全文/可见assistant/current_node/完成状态/父链。High GO、installer exit0；Gateway源码不变，复用ed24 dist及原renderer，不重建浏览器/账号/代理。真实a803恢复成功，详见首条；平台API字段变化会失败关闭，不能承诺永久稳定。
-## 本轮交付：既有末审结果直接进入确认
-- extractor.ts沿既有model/web末审增加v5可选claimSuggestions，通常只产少量实际主张，8000字符输出提示优先保障六字段。无新模型轮次，普通未终审首稿仍无建议；旧v4恢复保留原合同/提示词/请求身份。
-- materializeReviewedClaimSuggestions按本轮真实P定位映射最终evidenceSegments索引；拒绝关系冲突、合并段覆盖不足或缺有效父项的建议。Shared Domain parser校验类型、来源索引及父子关系；无效可选建议回退原六字段，不额外重审。
-- Domain仅对review_received/v5且未被用户改写、未blocked的字段暴露建议，失效父项后代递归移除；Hermes原确认UI预填结论、条件、局限、父关系和引用关系，无新审核面板，不自动选中/确认。
-- 编辑结论/条件/局限/关系后须重新确认引用关联；修复组件自动恢复attachSourceQuote的问题。旧API请求仍兼容；服务端原权限、快照、来源恢复、事务与并发约束保留。
-- 共享12条Claim容量用于Domain/API/UI及research-run，沿用既有192条Evidence批次上限，无迁移。保存Claim级来源关系，不是每条condition的独立证据表。
-- 独立High主路径及两处收尾静态GO；必要服务器构建通过。新建议、确认交互与下游科学质量尚未在正常新任务中观察，不能宣称自动质量已达标。
-## 工具实际使用与持久维护
-- Backstage此前实际返回agent-worker owner及Gateway/parser/skills依赖；它是维护目录，不是运行或质量事实。
-- Serena在新生产快照实际定位materializeReviewedClaimSuggestions的唯一调用：extractor.ts:2566，reviewAndMaterializeCanonicalProposal共同物化路径；日志tmp/reviewed-claims-serena-references.log。
-- Langfuse于2026-09-15 01:34:25 UTC经原受限查询入口读回该真实任务全部6次调用，requestCorrelation均为25215cd1：五次MiniMax成功、一次scientific_review失败。采集有120秒提交延迟、60秒轮询及分页，无需重启/重放；旧unknown不猜测回填。任务关联已实证，不代表科学质量。
-- 同一真实查询已读回1da6三次MiniMax+一次科学审阅成功、2196一次image成功并关联task。SQL view/connector/query仅放行两个源码固定Chat模型标签，安装时验证既有marker/role/view/ACL、原子marker替换，High GO且独立安装完成；不放宽任意字符串/Secret边界，不回填旧unknown。已有真实8d调用的受限view实读返回chatgpt-web/6-pro-image-generation-tool；新Langfuse记录已实际显示a803的chatgpt-web/6-pro与task关联，59702两次MiniMax已读回；原任务的transport failed日志不因后续恢复而篡改。收据tmp/telemetry-known-model-view-observed.json及illustration-category-labels-live.json。
-- 用户已确认Langfuse登录。账号按明确要求改密，同事务密码比对成功、旧会话失效、私有凭据文件0600原子同步；文档不存密码。容器Prisma使用已安装pnpm生成客户端路径，根入口缺生成client。
-- 登录入口http://localhost:3130/auth/sign-in；沿用ssh-run.sh --development-tunnel。容器重建/IP变化后重开隧道；后台采集/查询用独立服务身份，不依赖网页登录。SMTP/SSO/定时备份/自动保留期未配置。
-- Vercel Skills曾实际list得到31技能、find返回候选；安装、runtime注入、实际产物provenance和质量分别记录。开发工具不自动赋权给科研用户Hermes。
-- 当前浏览器桥fetch失败；Windows控制因无法可靠确定浏览器URL而终止，未代操作产品UI。用户本人登录是用户确认，不冒称工具观察。
-- 与既有Chat“规划Hermes可信闭环”6aa2df58-0c20-83ea-838d-4e1129091d79讨论两轮，已纠正其旧共编/误删说法；最新回复225a4636-ca84-4eea-8a9a-5dfa30460054，回执tmp/chat-foundation-plan-20260915.json。接口不暴露模型档位，未验证6 Pro选择。
-- 既有AGENTS/architecture-guard/docs-sync及17流程Skill持续适用：按产品目的查能力/真实调用/结果后补缺口，有变化回合结束前同步、关键节点保存、中断后读Git；不是应用关闭回调，也不保证绝对零债。
-## 已交付的相关基础
-- Worker Gateway audit sink从已有AsyncLocalStorage任务上下文补空requestId，原view/Langfuse connector直接消费；已有ID和事务行为保持。
-- 配图planner/review沿用确认Claim/Evidence及parentClaimId；共享critical-thinking runtime，合并Skill usage去重，保留原权限/来源/事务重验。
-- IllustrationBrief v2分开科学encoding与composition；末审只改既有场景艺术字段。v1可读/直接编译，旧v1修订显式要求新方案，不静默重画。
-- 正常发布只登记rollback、写空清理意图，保留全部历史目录/镜像；明确清理才走原严格约束。Windows传输共用ssh-identity-path且IdentitiesOnly；正式上传无旧identity警告。
-## 下一步与保护对象
-- handler内部result.storyboardCheckpoint已部署：规划后审阅前CAS保存原document/promptHash/designSkills及现有输入身份；Domain重试保留、公开投影剔除，真实1da6已保存且API隐藏。同输入才复用已回收review，旧任务无checkpoint或来源变化阻断；High GO。科学blocked必须明确新修订任务，不用同ID重试，不假造旧25215的provenance，不改变provider恢复限制。
-- 先沿下一份正常私有研究/配图任务观察“上游已审结论→用户确认→画面方案→Chat图像”的结果与任务关联，再决定是否要修上游或调艺术方向。不要重跑旧失败脚本、自动重审整篇或把上线当质量通过。
-- v2局部审阅、参考图bytes输入和真实Chat图像返回已观察；两幅图均暴露具体质量缺口，不能据accepted或task succeeded称成图合格。新确认UI科学效果仍未观察；无工具保证通用科学/审美质量或零技术债。逐条condition独立来源表不在本次实现内。
-- RO9067a2d5-42ad-4c06-b234-753728b71064；private e77dc3c7-95cb-4269-ac3c-24276fea74e7；Claim93416292-0dbb-42b1-8810-6bdf77804c1f及40Evidence保留。
-- 喜爱图aa41a018-b2ff-4ffb-9557-19ecabe104bc、公开OSR-2026-000023/v1/version72c315af与deep-sub-cycle公开v1均不改；本轮未删原件/历史/笔记，真实私有配图任务见上文，无清除请求。
-- 下轮读本页→能力台账匹配行→实际代码/任务；无需加载历史全文或重启治理调研。
+
+## 当前结论与下一动作（2026-09-15）
+- 用户已确认Langfuse登录并授权执行：先完成既有工具/Skill联动、消除重复实现，再推进真实私有配图。基础联动已上线且有真实调用证据；通用科学/审美质量尚未完成，不能以部署或task succeeded代替。
+- 最新任务7d47cd45-1b07-4795-a0bb-e5ba3e70f53a于04:18:18 UTC科学blocked：新增了坐标分量、单色波数和区域名称，仍漏“k⊥是横向波矢模长”。75eac9d3-3ab3-468c-bc40-53d6f52bafa2此前也blocked；两份均无新资产/图片。原审阅正常返回，不是登录/代理/receiver故障。
+- 两次实际checkpoint比较均证实：除labels及由它派生的visualAction，科学/艺术字段与原59702完全相同；新调用仅共享科学skill v2及自有skill v3，没有重跑艺术规划。证据tmp/illustration-label-meaning-observed.log。
+- **已停止人工改提示词→新任务→重复末审循环。下一步先修“审阅反馈→局部修订”的信息回传缺口，再生成一次实际图片并看图；不要重发下面已失败任务、重分析整篇或绕过blocked。** 定向High确认两处断点：自由文本反馈无法逐项对应，首轮来源限制丢掉最新反馈。候选已补既有末审issues、patch逐项对应与最多两层显式修订，待High/必要服务器build/start；无新平台或自动重试循环。
+
+## 版本事实与工作区
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release；branch codex/onchip-video-release。代码HEAD 71373f2fd1c593e3556a6ffc658910e71ef32789；后续状态文档提交的HEAD以Git为准，文档提交不等于新应用release。
+- 生产release 71373f2fd1c593e3556a6ffc658910e71ef32789；rollback ed24cb1c79f9374023f0e1cbf36c613a869c5da0。既有deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0；必要服务器build/start完成，公网/__release读回一致。日志tmp/illustration-label-clarification-deploy.log。
+- 专用发布树art-direction-release-41ae8902 detached于同一release。根E:/Miscellaneous/XGS为dirty main，仅导航至此；不是交付源。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。
+- Serena源码快照71373f2f，installer exit0；缓存镜像23fcfab77fa1、tag04b5f91df4b4e86c210155cee83cd741f1521ca3复用，不混淆镜像版本与源码。日志tmp/illustration-label-clarification-serena-install.log。
+- Chat receiver独立bundle e74c9396dae51b294917dc52ed84893668029806，回退de97707f06eb0ff7d9cb100662af5ab53d73867b；telemetry独立abea68ef已安装，回退c2b6683e。Catalog/Skills bundle83179c454b75688176060fabf9e611072d46813c；Langfuse official4.35.0。
+- Renderer保持sha256:1c47a579ceb608f244878b41888eee50bda1135ff325cb7b49de3a275ee2013d。独立工具版本不冒称应用release；旧目录/镜像仍保留。
+
+## 已交付代码及已观察效果
+- 既有科学末审v5同轮输出可选claimSuggestions，materializeReviewedClaimSuggestions将真实P定位映射最终Evidence索引；Domain共用校验进入原Hermes确认UI，不另加审阅模型。上游blocked/用户改写/无效父项不暴露建议，旧v4恢复及原六字段回退保留。12条Claim/192条Evidence共用现有限制。新正常论文的确认交互与科学效果尚未观察。
+- Worker复用AsyncLocalStorage补Gateway空requestId；原Langfuse connector/view消费，不另建任务库。25215全部6次、1da6规划/审阅、2196及8d生图均真实关联；75e审阅及7d规划也已查询到。Chat两个固定model标签经SQL/connector/query精确放行，旧unknown不猜测回填。
+- Chat调用日志中的succeeded表示调用正常返回，审阅结论仍可blocked。token/cost未知保持未知；订阅通道代码cost0不代表订阅总成本为0。采集有120秒提交延迟/60秒轮询/分页，不为补日志重放模型。
+- IllustrationBrief v2分离科学encoding与艺术composition；既有末审仅修改艺术字段。共享critical-thinking与自有配图skill确实由science/review两阶段加载，provenance记录id/version；旧v1仍可读/直接编译，不能静默重画。
+- handler规划后、Chat前保存私有storyboardCheckpoint，原Domain retry保留、公开投影隐藏；同来源/输入/原base才复用，CAS及provider前/落库时的权限和来源重验保留。真实1da6已保存且API隐藏，不假造旧任务checkpoint。
+- 新revisionTaskId复用同actor/RO/version/Claims/locale/style原failed checkpoint与完整原审阅反馈；模型仅给已有labels加prefix/suffix，其余由代码保持；新任务仍末审。来源/权限/并发独立High GO，旧provenance版本发现后已修3。两次实际不漂移，但未完整解决反馈，见当前结论。
+- 自有openscience-research-illustration skill v3已同步本机Codex与Hermes：来源先于画面、标签名称/含义、科学修订与艺术修订分开；精确函数图交数据renderer，Chat用于概念插图。不把固定论文变量写成通用模板。
+- 原结构化repair补固定路径/字段/长度诊断，仅完整八字段单scene允许无损包装；未知字段仍拒绝。03a9/982f/b5e旧失败无Chat/asset/checkpoint，不重跑。
+- Chat receiver修复页面就绪及Markdown原文锚定；e74进一步在DOM/Copy为空时严格绑定原会话、原用户全文、可见final节点/current_node/完成状态/父链读取同源已完成回复。独立High GO，a803由原broker自动恢复blocked，无重发；接口变化失败关闭，不保证永久稳定。日志tmp/review-stored-final-install.log、review-stored-final-recovered.json。
+- 正常发布只登记rollback及空清理意图，保留被独立工具挂载的历史目录；明确清理才走原约束。Windows传输共用ssh-identity-path及IdentitiesOnly，正式上传未再出现旧密钥路径警告。
+
+## 真实画面结果与失败谱系（不得重跑收据脚本）
+- 25215cd1-e37a-4155-922d-3c06ae9aaec5：五次MiniMax后接收故障，修复后原请求仅发送一次；审阅blocked变量/物理量/坐标混用。旧任务无checkpoint，无图。
+- 1da6b754-0678-41b7-af4b-240d401a56d4修订方案revised、内部approved；2196c4bc-347f-4ad5-a75b-3e9721efe491用aa41实际PNG生成1672×941图，错把k0分界放首次过零点，已rejected。tmp/research-illustration-2196.png保留。
+- a38aa258-029a-4404-889d-54048b1085ec局部方案accepted、内部approved；8d6798b4-0865-4b58-8940-c7947f641bad生成1672×941图，分界纠正但漏坐标/阈值且函数形状不可靠，已rejected。tmp/research-illustration-8d6798.png保留。
+- a803553c-831d-41d8-8173-c3e632867966有checkpoint，审阅恢复blocked二维/一维及跨域映射错误；59702f05-be92-4dca-aad0-6d17416d3c83更换科学焦点、无base，二维分类方案blocked缺可见区域名称；34ce4da4-f55a-461e-afb0-0a77f54206d9全量再规划补名称却丢kx/ky，blocked。
+- 75eac/7d47均引用59702原checkpoint而非串联修订；原公式/构图保持，模型仍遗漏定义。完整API回执及审阅分别在tmp/illustration-scoped-clarification-*、illustration-complete-label-meaning-*、illustration-label-meaning-observed.log；服务器/jobs/research-illustration-20260915-*.json保留幂等收据。
+
+## 工具联动、登录及持续维护
+- Backstage标准私有目录实际返回agent-worker owner与Gateway/parser/skills依赖；Serena实际查询科学末审调用方及materializeReviewedClaimSuggestions唯一共同物化路径；Langfuse实际读回上述任务。目录/代码引用/调用与产物质量分别判断，详见能力台账匹配行。
+- 用户确认Langfuse已登录，账号按指定改密，原服务API身份不变；文档不记密码。入口http://localhost:3130/auth/sign-in，沿ssh-run.sh --development-tunnel；容器IP变更需重开隧道。后台采集不依赖网页登录；SMTP/SSO/定时备份/自动保留期未配置。
+- 既有Chat讨论“规划Hermes可信闭环”6aa2df58-0c20-83ea-838d-4e1129091d79两轮已纳入实现；回执tmp/chat-foundation-plan-20260915.json，接口未验证模型档位。当前本机浏览器桥恢复失败，不重复重启；服务器既有CDP仍用于实际产品任务。
+- AGENTS/architecture-guard/docs-sync及17流程Skill在交付树持续适用；有实际变化的回合final前同步，关键节点保存，中断后核Git。不是应用关闭回调、自动提交或绝对零技术债保证；无需重启工具市场调研。
+- BGE建索引存在，hybrid query应用调用/实际效果尚未观察；不能为了用上模型强塞进配图。逐condition独立证据表不在本轮实现内。
+
+## 约束、保护对象与读入顺序
+- 禁止测试/预检/CI/本机构建；本机仅静态编辑/Git/传输。服务器必要build/start及真实产品结果观察已执行，无Codex生图、公开发布或清除请求。
+- Chat生图优先，Codex CLI仅保留；科学认识必须由原始文献及已审结果产生，参考图只用于美术。新风格扩展/Figma/视频/第三篇/批量暂缓，先完成一幅合格真实图。
+- RO9067a2d5-42ad-4c06-b234-753728b71064，private version e77dc3c7-95cb-4269-ac3c-24276fea74e7，Claim93416292-0dbb-42b1-8810-6bdf77804c1f及40Evidence保留，identity dbec53fff80645ec6698eea26720e4157b74a72561e7d4ee6283ad5c70374e13。
+- 喜爱图aa41a018-b2ff-4ffb-9557-19ecabe104bc、公开OSR-2026-000023/v1/version72c315af及deep-sub-cycle公开v1均不改。失败草稿/原图/原件/笔记仍保留。
+- 下一轮：本页→能力台账相关行→实际代码/任务；Git历史保留详细过程，不加载全部历史或复跑失败任务。当前文档压缩不代表旧事实被撤销。当前未提交另含五文件反馈修复，归本任务；保留无关spec。

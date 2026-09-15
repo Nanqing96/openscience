@@ -383,23 +383,39 @@ export async function requireStoryboardRevisionTask(prisma: Pick<Prisma.Transact
     if (!id) return undefined;
     if (payload.kind !== 'interactive_html' || payload.storyboard?.output !== 'image' || payload.storyboard.baseAssetId)
         throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision requires an image plan without a base asset');
-    const task = await prisma.agentTask.findUnique({ where: { id }, include: { session: true } });
-    if (!task || task.deletedAt || task.kind !== 'presentation.generate' || task.status !== 'failed'
-        || task.session.userId !== actorId || task.session.deletedAt || task.session.status !== 'active'
-        || task.session.researchObjectId !== payload.researchObjectId)
-        throw new PresentationAssetError('NOT_FOUND', 'Storyboard revision task not found');
-    const original = parsePresentationGenerationPayload(task.payload);
-    if (original.kind !== 'interactive_html' || original.storyboard?.output !== 'image' || original.storyboard.revisionTaskId
-        || original.researchObjectId !== payload.researchObjectId || original.versionId !== payload.versionId
-        || JSON.stringify(original.sourceClaimIds) !== JSON.stringify(payload.sourceClaimIds)
-        || original.storyboard.locale !== payload.storyboard.locale || original.storyboard.style !== payload.storyboard.style)
-        throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision task is invalid for these sources and settings');
-    const prefix = '[blocked] Illustration needs upstream scientific revision: ';
-    const feedback = task.error?.startsWith(prefix) ? task.error.slice(prefix.length) : '';
-    if (!feedback.trim() || feedback.length >= 300)
-        throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision requires complete scientific review feedback');
-    const checkpoint = task.result && typeof task.result === 'object' && !Array.isArray(task.result) ? task.result.storyboardCheckpoint : undefined;
-    if (!checkpoint || typeof checkpoint !== 'object' || Array.isArray(checkpoint))
-        throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision requires a saved private plan');
-    return { task, payload: original, feedback, identity: JSON.stringify({ id: task.id, updatedAt: task.updatedAt, executionAttempt: task.executionAttempt, payload: task.payload, result: task.result, error: task.error }) };
+    const settings = payload.storyboard;
+    const readTask = async (taskId: string) => {
+        const task = await prisma.agentTask.findUnique({ where: { id: taskId }, include: { session: true } });
+        if (!task || task.deletedAt || task.kind !== 'presentation.generate' || task.status !== 'failed'
+            || task.session.userId !== actorId || task.session.deletedAt || task.session.status !== 'active'
+            || task.session.researchObjectId !== payload.researchObjectId)
+            throw new PresentationAssetError('NOT_FOUND', 'Storyboard revision task not found');
+        const original = parsePresentationGenerationPayload(task.payload);
+        if (original.kind !== 'interactive_html' || original.storyboard?.output !== 'image'
+            || original.researchObjectId !== payload.researchObjectId || original.versionId !== payload.versionId
+            || JSON.stringify(original.sourceClaimIds) !== JSON.stringify(payload.sourceClaimIds)
+            || original.storyboard.locale !== settings.locale || original.storyboard.style !== settings.style)
+            throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision task is invalid for these sources and settings');
+        const result = task.result && typeof task.result === 'object' && !Array.isArray(task.result) ? task.result : undefined;
+        const checkpoint = result?.storyboardCheckpoint;
+        if (!checkpoint || typeof checkpoint !== 'object' || Array.isArray(checkpoint))
+            throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision requires a saved private plan');
+        const review = result?.storyboardReview;
+        const hasStructuredReview = Boolean(review && typeof review === 'object' && !Array.isArray(review));
+        const prefix = '[blocked] Illustration needs upstream scientific revision: ';
+        const feedback = task.error?.startsWith(prefix) ? task.error.slice(prefix.length) : '';
+        // Modern review contents and their source/candidate binding are validated by the worker.
+        if (!feedback.trim() || (!hasStructuredReview && feedback.length >= 300))
+            throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision requires complete scientific review feedback');
+        return { task, payload: original, feedback, identity: JSON.stringify({ id: task.id, updatedAt: task.updatedAt, executionAttempt: task.executionAttempt, payload: task.payload, result: task.result, error: task.error }) };
+    };
+    const source = await readTask(id);
+    const rootId = source.payload.storyboard?.revisionTaskId;
+    if (rootId) {
+        if (rootId === id) throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision chain is cyclic');
+        const root = await readTask(rootId);
+        if (root.payload.storyboard?.revisionTaskId)
+            throw new PresentationAssetError('VALIDATION_ERROR', 'Storyboard revision chain exceeds two links');
+    }
+    return source;
 }

@@ -777,7 +777,8 @@ export async function retryAgentTask(
             result: task.kind === 'presentation.generate' && isJsonRecord(task.payload)
               && isJsonRecord(task.payload.storyboard) && task.payload.storyboard.output === 'image'
               && isJsonRecord(task.result) && isJsonRecord(task.result.storyboardCheckpoint)
-              ? { storyboardCheckpoint: task.result.storyboardCheckpoint } as Prisma.InputJsonValue
+              ? { storyboardCheckpoint: task.result.storyboardCheckpoint,
+                ...('storyboardReview' in task.result ? { storyboardReview: task.result.storyboardReview } : {}) } as Prisma.InputJsonValue
               : Prisma.JsonNull,
             error: null, dispatchedAt: null,
             retryCount: 1,
@@ -1060,6 +1061,7 @@ export function projectAgentTaskResult(rawResult: unknown, kind: string): Record
   delete publicResult.sourceMapAvailable;
   delete publicResult.sourceMapIdentity;
   delete publicResult.storyboardCheckpoint;
+  delete publicResult.storyboardReview;
   if (sourceMapRef === undefined) return publicResult;
   try {
     const reference = parseDocumentSourceMapReference(sourceMapRef);

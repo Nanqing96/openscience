@@ -14,7 +14,7 @@ import { HostVideoSpool } from './host-video-spool';
 import { Prisma } from '@prisma/client';
 import { loadInstalledMediaSkills, mergeDesignSkillUsage, type DesignSkillUsage } from '../skills/installed-media-skills';
 import { requireStyleReferenceImage } from '@openscience/domain';
-import { reviewIllustrationStoryboard } from './illustration-review';
+import { readStoredIllustrationIssues, reviewIllustrationStoryboard } from './illustration-review';
 import { clarifyIllustrationLabels } from './illustration-planner';
 
 function presentationClaimContent(claims: readonly PresentationClaim[]): string {
@@ -23,7 +23,7 @@ function presentationClaimContent(claims: readonly PresentationClaim[]): string 
   })));
 }
 
-type StoryboardPlan = Awaited<ReturnType<typeof generateStoryboard>>;
+type StoryboardPlan = Awaited<ReturnType<typeof generateStoryboard>> & { reviewFormat?: 2 };
 type StoryboardCheckpointIdentity = {
   payload: PresentationGenerationPayload;
   sourceEvidenceIdentity: string;
@@ -48,7 +48,8 @@ function readStoryboardCheckpoint(result: unknown, expected: StoryboardCheckpoin
     throw new Error('[blocked] Saved storyboard plan is invalid');
   }
   const planned = checkpoint.planned as Record<string, unknown>;
-  if (Object.keys(planned).some(key => !['document', 'promptHash', 'designSkills'].includes(key))
+  if (Object.keys(planned).some(key => !['document', 'promptHash', 'designSkills', 'reviewFormat'].includes(key))
+    || (planned.reviewFormat !== undefined && planned.reviewFormat !== 2)
     || typeof planned.promptHash !== 'string' || !/^[a-f0-9]{64}$/u.test(planned.promptHash)) {
     throw new Error('[blocked] Saved storyboard provenance is invalid');
   }
@@ -65,19 +66,28 @@ function readStoryboardCheckpoint(result: unknown, expected: StoryboardCheckpoin
     document: parseStoryboardDocument(planned.document, expected.payload.sourceClaimIds, 'image'),
     promptHash: planned.promptHash,
     designSkills: planned.designSkills as DesignSkillUsage[] | undefined,
+    ...(planned.reviewFormat === 2 ? { reviewFormat: 2 as const } : {}),
   };
 }
 
+type StoryboardPlanningContext = {
+  base: Awaited<ReturnType<typeof requireStoryboardBase>>;
+  revision: Awaited<ReturnType<typeof requireStoryboardRevisionTask>>;
+  revisionContext?: StoryboardPlanningContext;
+  identity: string | null;
+};
 async function readStoryboardPlanningContext(
   prisma: Pick<Prisma.TransactionClient, 'presentationAsset' | 'agentTask'>,
   payload: PresentationGenerationPayload,
   actorId: string,
-) {
+  depth = 0,
+): Promise<StoryboardPlanningContext> {
+  if (depth > 2) throw new Error('[blocked] Storyboard revision depth exceeded');
   const base = await requireStoryboardBase(prisma, payload);
   const revision = await requireStoryboardRevisionTask(prisma, payload, actorId);
-  const revisionBase = revision ? await requireStoryboardBase(prisma, revision.payload) : undefined;
-  return { base, revision, revisionBase,
-    identity: revision ? JSON.stringify({ revision: revision.identity, base: revisionBase?.identity ?? null }) : base?.identity ?? null };
+  const revisionContext = revision ? await readStoryboardPlanningContext(prisma, revision.payload, actorId, depth + 1) : undefined;
+  return { base, revision, revisionContext,
+    identity: revision ? JSON.stringify({ revision: revision.identity, base: revisionContext?.identity ?? null }) : base?.identity ?? null };
 }
 
 async function readReviewedPresentationEvidence(
@@ -338,6 +348,7 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
     } else if (payload.storyboard) {
       if (!options.gateway) throw new Error('[blocked] storyboard planner unavailable');
       let planned: StoryboardPlan;
+      let persistPlan: ((planned: StoryboardPlan, review?: Awaited<ReturnType<typeof reviewIllustrationStoryboard>>['provenance']) => Promise<void>) | undefined;
       if (payload.storyboard.output === 'image') {
         if (!options.gateway.reviewScientific) throw new Error('[blocked] Illustration scientific review unavailable');
         if (owner.deletedAt || owner.session.deletedAt || owner.session.status !== 'active'
@@ -347,25 +358,8 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
         const identity: StoryboardCheckpointIdentity = {
           payload, sourceEvidenceIdentity, claimContent: presentationClaimContent(claims), baseIdentity: planningContext.identity,
         };
-        const saved = readStoryboardCheckpoint(owner.result, identity);
-        if (saved) {
-          planned = saved;
-        } else {
-          if (task.executionAttempt > 1) {
-            throw new Error('[blocked] Previous paid storyboard attempt has no saved plan; explicit new planning is required');
-          }
-          if (planningContext.revision) {
-            const previous = readStoryboardCheckpoint(planningContext.revision.task.result, {
-              payload: planningContext.revision.payload, sourceEvidenceIdentity,
-              claimContent: presentationClaimContent(claims), baseIdentity: planningContext.revisionBase?.identity ?? null,
-            });
-            if (!previous) throw new Error('[blocked] Scientific label clarification has no saved plan');
-            await requireIllustrationOriginalArtifacts(deps.prisma, sourceEvidence, researchObject.workspaceId);
-            planned = await clarifyIllustrationLabels(options.gateway, claims, payload.storyboard, previous,
-              planningContext.revision.feedback);
-          } else {
-            planned = await generateStoryboard(options.gateway, claims, payload.storyboard, base?.view);
-          }
+        let expectedResult = owner.result;
+        persistPlan = async (planned, review) => {
           const checkpoint = { ...identity, planned };
           // Persist the paid plan before Chat review. A failed review must not restart planning.
           await deps.prisma.$transaction(async tx => {
@@ -389,18 +383,45 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
             if ((await readStoryboardPlanningContext(tx, payload, scope.userId)).identity !== identity.baseIdentity) {
               throw new Error('[blocked] Storyboard base changed before checkpoint save');
             }
-            if (owner.result !== null && (typeof owner.result !== 'object' || Array.isArray(owner.result))) {
+            if (expectedResult !== null && (typeof expectedResult !== 'object' || Array.isArray(expectedResult))) {
               throw new Error('[blocked] Storyboard task result is invalid');
             }
             const savedCheckpoint = await tx.agentTask.updateMany({ where: {
               id: task.id, kind: 'presentation.generate', status: 'running', deletedAt: null,
               executionAttempt: task.executionAttempt,
               payload: { equals: owner.payload as Prisma.InputJsonValue },
-              result: { equals: owner.result === null ? Prisma.AnyNull : owner.result as Prisma.InputJsonValue },
-            }, data: { result: JSON.parse(JSON.stringify({ ...(owner.result as Record<string, unknown> | null),
-              storyboardCheckpoint: checkpoint })) as Prisma.InputJsonValue } });
+              result: { equals: expectedResult === null ? Prisma.AnyNull : expectedResult as Prisma.InputJsonValue },
+            }, data: { result: JSON.parse(JSON.stringify({ ...(expectedResult as Record<string, unknown> | null),
+              storyboardCheckpoint: checkpoint, ...(review ? { storyboardReview: review } : {}) })) as Prisma.InputJsonValue } });
             if (savedCheckpoint.count !== 1) throw new Error('[blocked] Storyboard checkpoint owner changed');
           }, { isolationLevel: 'Serializable' });
+          expectedResult = JSON.parse(JSON.stringify({ ...(expectedResult as Record<string, unknown> | null),
+            storyboardCheckpoint: checkpoint, ...(review ? { storyboardReview: review } : {}) }));
+        };
+        const saved = readStoryboardCheckpoint(owner.result, identity);
+        if (saved) {
+          planned = saved;
+        } else {
+          if (task.executionAttempt > 1) {
+            throw new Error('[blocked] Previous paid storyboard attempt has no saved plan; explicit new planning is required');
+          }
+          if (planningContext.revision) {
+            const previous = readStoryboardCheckpoint(planningContext.revision.task.result, {
+              payload: planningContext.revision.payload, sourceEvidenceIdentity,
+              claimContent: presentationClaimContent(claims), baseIdentity: planningContext.revisionContext?.identity ?? null,
+            });
+            if (!previous) throw new Error('[blocked] Scientific label clarification has no saved plan');
+            await requireIllustrationOriginalArtifacts(deps.prisma, sourceEvidence, researchObject.workspaceId);
+            const result = planningContext.revision.task.result as Record<string, unknown>;
+            const issues = readStoredIllustrationIssues(result.storyboardReview, previous.document, claims,
+              planningContext.revision.task.id, sourceEvidenceIdentity);
+            const feedback = issues ? (result.storyboardReview as { summary: string }).summary : planningContext.revision.feedback;
+            planned = await clarifyIllustrationLabels(options.gateway, claims, payload.storyboard, previous, feedback, issues);
+          } else {
+            planned = await generateStoryboard(options.gateway, claims, payload.storyboard, base?.view);
+          }
+          planned.reviewFormat = 2;
+          await persistPlan(planned);
         }
       } else {
         planned = await generateStoryboard(options.gateway, claims, payload.storyboard, base?.view);
@@ -409,11 +430,22 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       designSkills = planned.designSkills;
       if (payload.storyboard.output === 'image') {
         if (!options.gateway.reviewScientific) throw new Error('[blocked] Illustration scientific review unavailable');
+        const priorReview = owner.result && typeof owner.result === 'object' && !Array.isArray(owner.result)
+          ? owner.result.storyboardReview : undefined;
+        if (priorReview !== undefined) {
+          readStoredIllustrationIssues(priorReview, planned.document, claims, task.id, sourceEvidenceIdentity);
+          throw new Error('[blocked] Illustration needs upstream scientific revision: ' + (priorReview as { summary: string }).summary.slice(0, 300));
+        }
         const reviewed = await reviewIllustrationStoryboard({ reviewScientific: options.gateway.reviewScientific.bind(options.gateway) }, claims, payload.storyboard, planned.document, {
           authorizationContext: Object.freeze({ taskId: task.id, actorId: scope.userId, workspaceId: researchObject.workspaceId }),
           illustrationContext: { executionAttempt: task.executionAttempt, claimContent: presentationClaimContent(claims), baseIdentity: planningContext.identity },
           researchObjectId: payload.researchObjectId, versionId: payload.versionId, sourceEvidenceIdentity,
+          structuredIssues: planned.reviewFormat === 2,
         });
+        if (reviewed.provenance.decision === 'blocked') {
+          await persistPlan!(planned, reviewed.provenance);
+          throw new Error('[blocked] Illustration needs upstream scientific revision: ' + reviewed.provenance.summary.slice(0, 300));
+        }
         storyboardDocument = reviewed.document; illustrationReview = reviewed.provenance;
         designSkills = mergeDesignSkillUsage(designSkills, reviewed.designSkills);
       }
