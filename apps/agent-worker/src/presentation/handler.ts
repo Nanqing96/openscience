@@ -1,9 +1,10 @@
 import { planSceneImagePrompt } from './scene-image';
 import type { AiGateway, OcrAuthorizationContext, ScienceReviewInput } from '@openscience/ai-gateway';
-import { requireSceneImageParent, requireStoryboardBase, requireVideoGenerationParents, type StoryboardDocument } from '@openscience/domain';
+import { parseStoryboardDocument, requireSceneImageParent, requireStoryboardBase, requireVideoGenerationParents, type PresentationGenerationPayload, type StoryboardDocument } from '@openscience/domain';
 import { generateStoryboard, renderStoryboard } from './storyboard';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
+import { isDeepStrictEqual } from 'node:util';
 import { DETERMINISTIC_PRESENTATION_GENERATOR, DETERMINISTIC_PRESENTATION_GENERATOR_VERSION, HERMES_AUTHORITY_REARM_MARKER, PRESENTATION_ASSET_LABEL, parsePresentationGenerationPayload, requireHermesPresentationTaskAuthority, requirePresentationWriteScope, withPresentationAssetWrite } from '@openscience/domain';
 import type { TaskHandler } from '../index';
 import { generateClaimChartSvg, canonicalPresentationClaims, type PresentationClaim } from './chart-generator';
@@ -19,6 +20,51 @@ function presentationClaimContent(claims: readonly PresentationClaim[]): string 
   return JSON.stringify(canonicalPresentationClaims(claims).map(({ id, parentClaimId, kind, statement, assessment, conditions, limitations, extractionStatus }) => ({
     id, parentClaimId, kind, statement, assessment, conditions, limitations, extractionStatus,
   })));
+}
+
+type StoryboardPlan = Awaited<ReturnType<typeof generateStoryboard>>;
+type StoryboardCheckpointIdentity = {
+  payload: PresentationGenerationPayload;
+  sourceEvidenceIdentity: string;
+  claimContent: string;
+  baseIdentity: string | null;
+};
+
+/** This worker-only task.result field is omitted by the public task projection. */
+function readStoryboardCheckpoint(result: unknown, expected: StoryboardCheckpointIdentity): StoryboardPlan | undefined {
+  if (!result || typeof result !== 'object' || Array.isArray(result)
+    || !Object.hasOwn(result, 'storyboardCheckpoint')) return undefined;
+  const saved = (result as Record<string, unknown>).storyboardCheckpoint;
+  if (!saved || typeof saved !== 'object' || Array.isArray(saved)) throw new Error('[blocked] Saved storyboard checkpoint is invalid');
+  const checkpoint = saved as Record<string, unknown>;
+  if (Object.keys(checkpoint).sort().join(',') !== 'baseIdentity,claimContent,payload,planned,sourceEvidenceIdentity'
+    || !isDeepStrictEqual(checkpoint.payload, expected.payload)
+    || checkpoint.sourceEvidenceIdentity !== expected.sourceEvidenceIdentity
+    || checkpoint.claimContent !== expected.claimContent || checkpoint.baseIdentity !== expected.baseIdentity) {
+    throw new Error('[blocked] Saved storyboard inputs changed; explicit new planning is required');
+  }
+  if (!checkpoint.planned || typeof checkpoint.planned !== 'object' || Array.isArray(checkpoint.planned)) {
+    throw new Error('[blocked] Saved storyboard plan is invalid');
+  }
+  const planned = checkpoint.planned as Record<string, unknown>;
+  if (Object.keys(planned).some(key => !['document', 'promptHash', 'designSkills'].includes(key))
+    || typeof planned.promptHash !== 'string' || !/^[a-f0-9]{64}$/u.test(planned.promptHash)) {
+    throw new Error('[blocked] Saved storyboard provenance is invalid');
+  }
+  if (planned.designSkills !== undefined && (!Array.isArray(planned.designSkills)
+    || planned.designSkills.some(usage => !usage || typeof usage !== 'object' || Array.isArray(usage)
+      || Object.keys(usage).some(key => !['id', 'resources', 'upstreamCommit', 'version'].includes(key))
+      || typeof usage.id !== 'string' || !usage.id.trim()
+      || !Array.isArray(usage.resources) || usage.resources.some((resource: unknown) => typeof resource !== 'string')
+      || (usage.upstreamCommit !== undefined && typeof usage.upstreamCommit !== 'string')
+      || (usage.version !== undefined && typeof usage.version !== 'string')))) {
+    throw new Error('[blocked] Saved storyboard skill provenance is invalid');
+  }
+  return {
+    document: parseStoryboardDocument(planned.document, expected.payload.sourceClaimIds, 'image'),
+    promptHash: planned.promptHash,
+    designSkills: planned.designSkills as DesignSkillUsage[] | undefined,
+  };
 }
 
 async function readReviewedPresentationEvidence(
@@ -277,7 +323,63 @@ export function createPresentationGenerationHandler(options: { gateway?: Pick<Ai
       generator = `OpenScience Hermes scene image / ${result.provider}`; generatorVersion = result.model; promptHash = result.promptHash;
     } else if (payload.storyboard) {
       if (!options.gateway) throw new Error('[blocked] storyboard planner unavailable');
-      const planned = await generateStoryboard(options.gateway, claims, payload.storyboard, base?.view);
+      let planned: StoryboardPlan;
+      if (payload.storyboard.output === 'image') {
+        if (!options.gateway.reviewScientific) throw new Error('[blocked] Illustration scientific review unavailable');
+        if (owner.deletedAt || owner.session.deletedAt || owner.session.status !== 'active'
+          || owner.executionAttempt !== task.executionAttempt || !isDeepStrictEqual(owner.payload, task.payload)) {
+          throw new Error('[blocked] Storyboard task was superseded or changed');
+        }
+        const identity: StoryboardCheckpointIdentity = {
+          payload, sourceEvidenceIdentity, claimContent: presentationClaimContent(claims), baseIdentity: base?.identity ?? null,
+        };
+        const saved = readStoryboardCheckpoint(owner.result, identity);
+        if (saved) {
+          planned = saved;
+        } else {
+          if (task.executionAttempt > 1) {
+            throw new Error('[blocked] Previous paid storyboard attempt has no saved plan; explicit new planning is required');
+          }
+          planned = await generateStoryboard(options.gateway, claims, payload.storyboard, base?.view);
+          const checkpoint = { ...identity, planned };
+          // Persist the paid plan before Chat review. A failed review must not restart planning.
+          await deps.prisma.$transaction(async tx => {
+            const { owner: currentOwner, payload: currentPayload } = await requireIllustrationReviewAuthority(tx, {
+              taskId: task.id, actorId: scope.userId, workspaceId: researchObject.workspaceId,
+            });
+            if (currentOwner.executionAttempt !== task.executionAttempt || !isDeepStrictEqual(currentOwner.payload, owner.payload)
+              || !isDeepStrictEqual(currentPayload, payload)
+              || await tx.trashEntry.findFirst({ where: { kind: 'asset', resourceId: task.id,
+                state: { in: ['trashed', 'purge_pending', 'purged'] } }, select: { id: true } })) {
+              throw new Error('[blocked] Storyboard task changed before checkpoint save');
+            }
+            const currentClaims = await tx.claimNode.findMany({ where: { id: { in: payload.sourceClaimIds },
+              researchObjectId: payload.researchObjectId, versionId: payload.versionId } });
+            if (currentClaims.length !== payload.sourceClaimIds.length || currentClaims.some(claim => claim.extractionStatus !== 'succeeded')
+              || presentationClaimContent(currentClaims as PresentationClaim[]) !== identity.claimContent) {
+              throw new Error('[blocked] Storyboard Claims changed before checkpoint save');
+            }
+            await requireUnchangedEvidence(tx);
+            await requireIllustrationOriginalArtifacts(tx, sourceEvidence, researchObject.workspaceId);
+            if (((await requireStoryboardBase(tx, payload))?.identity ?? null) !== identity.baseIdentity) {
+              throw new Error('[blocked] Storyboard base changed before checkpoint save');
+            }
+            if (owner.result !== null && (typeof owner.result !== 'object' || Array.isArray(owner.result))) {
+              throw new Error('[blocked] Storyboard task result is invalid');
+            }
+            const savedCheckpoint = await tx.agentTask.updateMany({ where: {
+              id: task.id, kind: 'presentation.generate', status: 'running', deletedAt: null,
+              executionAttempt: task.executionAttempt,
+              payload: { equals: owner.payload as Prisma.InputJsonValue },
+              result: { equals: owner.result === null ? Prisma.AnyNull : owner.result as Prisma.InputJsonValue },
+            }, data: { result: JSON.parse(JSON.stringify({ ...(owner.result as Record<string, unknown> | null),
+              storyboardCheckpoint: checkpoint })) as Prisma.InputJsonValue } });
+            if (savedCheckpoint.count !== 1) throw new Error('[blocked] Storyboard checkpoint owner changed');
+          }, { isolationLevel: 'Serializable' });
+        }
+      } else {
+        planned = await generateStoryboard(options.gateway, claims, payload.storyboard, base?.view);
+      }
       storyboardDocument = planned.document; promptHash = planned.promptHash;
       designSkills = planned.designSkills;
       if (payload.storyboard.output === 'image') {

@@ -1,6 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## 目标与约束
-- 2026-09-15用户“执行”：真实私有配图任务25215cd1-e37a-4155-922d-3c06ae9aaec5创建01:28:52 UTC，API202仅提交一次；五次MiniMax成功，01:29:39科学审阅提交前失败，无submitted/conversation。实读Chat已登录6 Pro；composer先出现，模型控件约5秒后hydration，原runner立即判错。当前修复既有30秒等待与发送前模式复核，保留不重发；尚待交付及续用原candidate。回执tmp/research-illustration-20260915-start.json，原request仍在服务器jobs/review/<task>/request.json。
+- 2026-09-15真实私有配图25215cd1-e37a-4155-922d-3c06ae9aaec5五次MiniMax后Chat提交前失败；两处runner修复后同原请求仅发送一次、现已自动回收blocked。6 Pro指出k_z误作矢势分量、k与k⊥混用、Bessel形状因子与k_z曲线/量纲混合，禁止该方案生图。原review job及spool均有recovered-result/response；不是成功资产。下一任务将原审阅反馈交回既有planner，不能手工替代科学分析。
 - 用户2026-09-15确认Langfuse已登录，要求继续并说明后续任务。先收尾既有科学审阅结果复用，再沿正常研究任务恢复配图质量优化；不新增治理平台/模型阶段，新增风格、Figma、视频、第三篇和批量仍暂缓。
 - 禁止测试、预检、CI、本机构建；本机仅静态读写/Git/传输。执行了必要服务器构建/启动及现有工具只读查询；没有新模型、生图、论文确认或公开发布。
 - Chat为主要生图手段，Codex CLI保留备用。科学认识来自上游已审解析/分析，不能用未审semanticStage或参考图作为科学证据。
@@ -10,7 +10,7 @@
 - 干净专用发布树art-direction-release-41ae8902 detached在3a60503c；根dirty main不是交付基线。无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖。
 - Serena源码快照与生产同为3a60503c；缓存镜像23fcfab77fa1复用，installer exit0，日志tmp/reviewed-claims-serena-install.log。Catalog仍独立使用83179c454b75688176060fabf9e611072d46813c源码/镜像及挂载。
 - Langfuse bundle83179/official v4.35.0；telemetry镜像c2b6683e8e804d07f2928ee4df2cba8d91fb5703；Skills镜像83179；依赖图报告源89d05，仅选定scope，不冒充当前全仓图。
-- Chat receiver bundle8e4兼容v1/v2，本轮无provider/账号/代理变更。Squid7:7.2-1.alnx4.openscience.1.x86_64及回退见服务器清单。
+- Chat receiver已独立更新de97707f06eb0ff7d9cb100662af5ab53d73867b：就绪等待和原文消息锚定，两次High静态GO、installer exit0；Gateway源码未变，复用8e4原dist和renderer镜像，不重建应用/浏览器/账号/代理。日志tmp/review-hydration-install.log、review-anchor-install.log；生产应用仍3a。Squid及回退见服务器清单。
 ## 本轮交付：既有末审结果直接进入确认
 - extractor.ts沿既有model/web末审增加v5可选claimSuggestions，通常只产少量实际主张，8000字符输出提示优先保障六字段。无新模型轮次，普通未终审首稿仍无建议；旧v4恢复保留原合同/提示词/请求身份。
 - materializeReviewedClaimSuggestions按本轮真实P定位映射最终evidenceSegments索引；拒绝关系冲突、合并段覆盖不足或缺有效父项的建议。Shared Domain parser校验类型、来源索引及父子关系；无效可选建议回退原六字段，不额外重审。
@@ -34,6 +34,7 @@
 - IllustrationBrief v2分开科学encoding与composition；末审只改既有场景艺术字段。v1可读/直接编译，旧v1修订显式要求新方案，不静默重画。
 - 正常发布只登记rollback、写空清理意图，保留全部历史目录/镜像；明确清理才走原严格约束。Windows传输共用ssh-identity-path且IdentitiesOnly；正式上传无旧identity警告。
 ## 下一步与保护对象
+- handler新增内部result.storyboardCheckpoint：规划后审阅前CAS保存原document/promptHash/designSkills及现有输入身份；Domain重试保留、公开投影剔除。同输入才复用，旧任务无checkpoint或来源变化阻断；候选待High/服务器交付，不假造旧25215的planner provenance。尚未补自动重发或改变provider恢复限制。
 - 先沿下一份正常私有研究/配图任务观察“上游已审结论→用户确认→画面方案→Chat图像”的结果与任务关联，再决定是否要修上游或调艺术方向。不要重跑旧失败脚本、自动重审整篇或把上线当质量通过。
 - 新确认UI、v2局部审阅与参考图bytes路径尚无正常新任务的端到端质量证据；无工具保证通用科学/审美质量或零技术债。逐条condition独立来源表不在本次实现内。
 - RO9067a2d5-42ad-4c06-b234-753728b71064；private e77dc3c7-95cb-4269-ac3c-24276fea74e7；Claim93416292-0dbb-42b1-8810-6bdf77804c1f及40Evidence保留。
