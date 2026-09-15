@@ -8,6 +8,7 @@ OpenScience 是科研基础设施平台：Research Object / SDF / 公开出版�
 - 用户最新纠正优先；需求基线为 docs/OpenScience_Kimi_Development_Spec.md，具体设计按索引选相关章节。设计要求、候选实现、线上版本、产物质量分别判断。
 - CURRENT只能记录执行状态，不能改写用户目标。决定下一步前对照需求条款与仍未完成的交付项；局部返工或暂停不取消其他目标，移除交付项必须有明确用户范围变更。各项已有任务/资产和反馈只在CURRENT短表汇总，progress/index引用它。
 - CURRENT handoff 保存任务、branch/HEAD/release/rollback、证据和未决项；以 Git 和必要的只读服务器元数据定锚。其他文档中的旧 release、测试结果和 next action 是历史，不能自动续跑。
+- 现有Taskmaster使用当前交付树为projectRoot；启动读取currentTag的稳定验收清单，与CURRENT的对应任务ID对齐。工具保存验收条件，CURRENT保存执行证据；要求用户认可的交付不得因模型/部署成功置done。根main不维护第二份活动任务。
 - docs/progress.md 是短状态摘要；project_index.md 是定位索引；ADR 记录长期决策。Memory 只保存 XGS- 决策/纠错，不复制操作日志或维护另一份任务库。
 - 修改能力前定向读 docs/runbooks/hermes-capability-registry.md，核对入口、调用方、上游产物和真实效果，再决定复用、补接或替换。安装、本机读取、Hermes 注入、结果合格是不同事实。
 - Backstage 定位职责/依赖；Serena 定位指定源版本的符号/引用；dependency-cruiser 定位跨包影响；Langfuse 查既有模型调用；Portainer/Netdata 查资源。按问题选工具，不每轮全跑；生产快照不能证明候选代码。

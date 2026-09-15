@@ -1,4 +1,47 @@
 {
+  "multistyle-research-illustration": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "学术机制图与科学分类图谱",
+        "description": "复用已审核的上游科学解析，按科学关系选择图谱或机制表达，形成区别于淡彩与编辑封面的学术候选。用户明确认可后才完成。",
+        "status": "in-progress",
+        "dependencies": [],
+        "priority": "high",
+        "details": "需求：docs/OpenScience_Kimi_Development_Spec.md 的 2026-09-14 图片能力推进。执行及用户反馈：docs/handoff/2026-09-10-hermes-web-image-handoff.md#illustration-delivery。此任务只保存稳定交付条件；资产、版本、反馈、下一步仅在 CURRENT。",
+        "testStrategy": "不触发测试或模型演练；实际授权成图后核看，done 只依据用户明确审美认可。",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "编辑封面插画",
+        "description": "使用现有设计技能，以构图、文字层级与材质形成编辑封面表达，复用科学内容且不以简单换色代替风格设计。用户明确认可后才完成。",
+        "status": "in-progress",
+        "dependencies": [],
+        "priority": "high",
+        "details": "需求：docs/OpenScience_Kimi_Development_Spec.md 的 2026-09-14 图片能力推进。执行及用户反馈：docs/handoff/2026-09-10-hermes-web-image-handoff.md#illustration-delivery。此任务只保存稳定交付条件；资产、版本、反馈、下一步仅在 CURRENT。",
+        "testStrategy": "不触发测试或模型演练；实际授权成图后核看，done 只依据用户明确审美认可。",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "淡彩手绘",
+        "description": "保留用户已明确认可的淡彩手绘成果；未经新要求不默认重画，不把它作为所有科研插图的固定模板。",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "details": "需求：docs/OpenScience_Kimi_Development_Spec.md 的 2026-09-14 图片能力推进。执行及用户反馈：docs/handoff/2026-09-10-hermes-web-image-handoff.md#illustration-delivery。此任务只保存稳定交付条件；资产、版本、反馈、下一步仅在 CURRENT。",
+        "testStrategy": "依据用户既有明确认可，原图保留；不为更新任务状态重复生图。",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "taskCount": 3,
+      "completedCount": 1,
+      "tags": ["multistyle-research-illustration"]
+    }
+  },
   "master": {
     "tasks": [
       {

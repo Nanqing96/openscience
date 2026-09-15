@@ -29,6 +29,8 @@ git status --short
 
 决定下一动作及改写 CURRENT 前，将最新用户决定、需求基线的具体条款和上一轮未完成交付项对照。CURRENT 是执行状态记录，不能覆盖用户目标；局部修复、暂缓出图、工具安装或单次成功均不能取消其他交付项。只有用户明确改变范围才移除对应目标，并记录该决定；阶段性暂停须保留被暂停项与恢复条件。
 
+若项目已有 `.taskmaster/state.json`，同时读取其 currentTag，将未完成任务 ID 与 CURRENT 交付表对齐。Taskmaster 保存稳定验收条件，CURRENT 独占资产、反馈、版本与下一动作；状态同步不复制叙述。要求用户认可的交付仅在用户明确认可后置 done，不能因调用/部署成功或本轮结束置 done；不用 parse/expand 或额外模型调用整理状态。
+
 ## 2. 同步合同
 
 - `docs/progress.md`：是 CURRENT progress window，不是永久日志；最多 120 lines。只保留最近状态、当前版本、未完成项与最新证据，旧条目由 Git history 保存，必要时转入明确标记的 archive，且不得默认读取。

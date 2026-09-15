@@ -1,6 +1,6 @@
 # 服务器能力与复用清单
 
-> Chat生图执行器已修先选模式再插字，保留沙箱/原请求校验；真实f424已成图并原请求恢复，canonical等待延长但新窗口的自然任务效果尚待后续观察。精确应用、独立provider与Serena版本见CURRENT handoff。
+> Chat生图执行器已修先选模式再插字，保留沙箱/原请求校验；真实f424已成图并原请求恢复，延长canonical窗口后本批atlas/editorial原生Chat请求均实际成功入库。精确应用、独立provider与Serena版本见CURRENT handoff。
 
 当前版本与暂停状态统一见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)；产品目的、调用关系、真实效果查[能力索引](hermes-capability-registry.md#当前能力索引目的调用效果)。本轮新工具实际交付见紧接的表；更早日期段是历史操作收据，不作为当前release或下一步指令。健康不代表内容质量。
 
@@ -10,10 +10,10 @@
 
 | 入口 | 现有运行方式与实际证据 |
 |---|---|
-| Backstage目录API | `openscience-development-catalog-catalog-1`；标准实体实际返回Hermes owner/deps，匿名401；SQLite独立state，只读Token身份，无Docker socket/生产DB |
+| Backstage目录API | `openscience-development-catalog-catalog-1`；标准实体实际返回Hermes owner/deps及当前交付分支需求链接，匿名401；SQLite独立state，只读Token身份，无Docker socket/生产DB |
 | Serena只读MCP | `openscience-development-serena-serena-1`；实际三工具列表、Gateway符号及extractor调用返回；快照按CURRENT区分候选与生产，缓存独立，不加载仓库脚本/Secret/测试/依赖目录 |
 | Langfuse | `openscience-development-langfuse-*`六个独立服务，官方v4.35.0；独立PG/Redis/ClickHouse/MinIO，登录页200，实际API读回已有调用；无provider keys、外部AI任务或论文正文 |
-| Gateway元数据 | `openscience-development-gateway-audit`；专用只读`xgs_telemetry.gateway_calls`视图/角色，无原表SELECT；真实配图25215cd1六次调用已在Langfuse全部按taskId关联。120秒提交延迟、60秒轮询及分页不是丢日志；采集checkpoint和凭据持久保存 |
+| Gateway元数据 | `openscience-development-gateway-audit`；专用只读`xgs_telemetry.gateway_calls`视图/角色，无原表SELECT；真实配图25215cd1六次调用已在Langfuse全部按taskId关联。120秒提交延迟、60秒轮询及分页不是丢日志；采集checkpoint和凭据持久保存；现有query支持--task UUID并已读回实际规划/审阅和失败guide的调用 |
 | 模块依赖 / 技能CLI | 复用现有dependency-cruiser18.1.0，真实19模块/4跨包边；Vercel Skills1.5.26 list/find已实际使用，不安装搜索结果 |
 | 访问 | `ssh-run.sh --development-tunnel`在SSH中解析固定容器内部IP，本机127.0.0.1:3130/3131/3132；不增加服务器listener或外网network。容器重建后重开隧道。Docker24纯internal网络的ports声明不会生成映射，不能据compose配置声称可访问 |
 | Langfuse账号 | 与OpenScience独立；2026-09-15按用户明确要求完成单账号改密，同事务密码比对成功并使旧会话失效，私有凭据文件同步0600。用户已确认网页登录成功；交接说明见`infra/development-platform/langfuse/README.md`。未配置SMTP，不能依赖忘记密码链接 |

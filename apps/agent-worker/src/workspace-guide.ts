@@ -535,27 +535,95 @@ export async function workspaceGuideHandler(
   }
   const resultGuard: SchemaGuard<WorkspaceGuideResult> = (value): value is WorkspaceGuideResult => workspaceGuideResultGuard(value)
     && (value.presentationDraft?.revisionMode !== 'art' || artBaseIds.has(value.presentationDraft.baseAssetId!));
+  // Diagnose fixed field names only: rejected user/model text and identifiers must not enter logs.
+  const validationDiagnostic = (value: unknown): string => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return 'guide:root_shape';
+    const shape = value as Record<string, unknown>;
+    const issues: string[] = [];
+    const textIssue = (field: string, text: unknown, max: number, allowEmpty = false) => {
+      if (typeof text !== 'string') issues.push(`${field}_type`);
+      else {
+        if (!allowEmpty && !text.trim()) issues.push(`${field}_empty`);
+        if (text.length > max) issues.push(`${field}_length_${text.length}_max_${max}`);
+      }
+    };
+    if (!hasOnlyKeys(shape, ['summary', 'nextSteps', 'needsMoreInformation', 'presentationDraft', 'draftChanges'])) issues.push('root_keys');
+    textIssue('summary', shape.summary, 1200);
+    if (typeof shape.needsMoreInformation !== 'boolean') issues.push('needs_more_information_type');
+    if (shape.presentationDraft !== undefined) {
+      const draft = shape.presentationDraft;
+      if (!draft || typeof draft !== 'object' || Array.isArray(draft)) issues.push('presentation_shape');
+      else {
+        const item = draft as Record<string, unknown>;
+        if (!hasOnlyKeys(item, ['action', 'instruction', 'style', 'researchObjectId', 'versionId', 'revisionMode', 'baseAssetId'])) issues.push('presentation_keys');
+        if (typeof item.action !== 'string') issues.push('presentation_action_type');
+        else if (!['storyboard.create', 'storyboard.revise', 'scene.image', 'video.create'].includes(item.action)) issues.push('presentation_action_enum');
+        if (item.style !== undefined) {
+          if (typeof item.style !== 'string') issues.push('presentation_style_type');
+          else if (!['technical', 'ink', 'watercolor'].includes(item.style)) issues.push('presentation_style_enum');
+        }
+        textIssue('presentation_instruction', item.instruction, 1000, item.action === 'scene.image' || item.action === 'video.create');
+        if (item.action === 'scene.image' && typeof item.instruction === 'string' && item.instruction !== '') issues.push('presentation_instruction_must_be_empty');
+        if (item.revisionMode !== undefined || item.baseAssetId !== undefined) {
+          if (item.revisionMode === undefined || item.baseAssetId === undefined) issues.push('presentation_art_pair');
+          if (item.revisionMode !== 'art') issues.push('presentation_revision_mode_art_required');
+          if (item.action !== 'storyboard.revise') issues.push('presentation_art_action_revise_required');
+          textIssue('presentation_base_asset_id', item.baseAssetId, 100);
+          if (item.revisionMode === 'art' && typeof item.baseAssetId === 'string' && !artBaseIds.has(item.baseAssetId)) issues.push('presentation_base_asset_id_ineligible');
+        }
+        textIssue('presentation_research_object_id', item.researchObjectId, 100);
+        textIssue('presentation_version_id', item.versionId, 100);
+        if (!presentationVersion) issues.push('presentation_context_missing');
+        else {
+          if (typeof item.researchObjectId === 'string' && item.researchObjectId !== presentationVersion.researchObjectId) issues.push('presentation_research_object_scope');
+          if (typeof item.versionId === 'string' && item.versionId !== presentationVersion.id) issues.push('presentation_version_scope');
+        }
+      }
+    }
+    if (!Array.isArray(shape.nextSteps)) issues.push('next_steps_type');
+    else {
+      if (shape.nextSteps.length > 1) issues.push(`next_steps_length_${shape.nextSteps.length}_max_1`);
+      shape.nextSteps.slice(0, 2).forEach((candidate, index) => {
+        const prefix = `next_steps_${index}`;
+        if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) { issues.push(`${prefix}_shape`); return; }
+        const step = candidate as Record<string, unknown>;
+        if (!hasOnlyKeys(step, ['label', 'intent', 'targetId'])) issues.push(`${prefix}_keys`);
+        textIssue(`${prefix}_label`, step.label, 120);
+        if (typeof step.intent !== 'string') issues.push(`${prefix}_intent_type`);
+        else if (!INTENTS.has(step.intent as WorkspaceGuideIntent)) issues.push(`${prefix}_intent_enum`);
+        if (step.targetId !== undefined) textIssue(`${prefix}_target_id`, step.targetId, 100, true);
+        if ((step.intent === 'start-import' && step.targetId !== undefined)
+          || (step.intent === 'open-task' && (typeof step.targetId !== 'string' || !taskIds.includes(step.targetId)))
+          || (step.intent === 'open-ro' && (typeof step.targetId !== 'string' || !researchObjectIds.includes(step.targetId)))
+          || (['prepare-publication', 'review-media'].includes(String(step.intent)) && (step.targetId !== ownerTask.session.researchObjectId || typeof step.targetId !== 'string' || !researchObjectIds.includes(step.targetId)))) issues.push(`${prefix}_target_scope`);
+      });
+    }
+    if (shape.draftChanges !== undefined) {
+      const changes = shape.draftChanges;
+      if (!changes || typeof changes !== 'object' || Array.isArray(changes)) issues.push('draft_changes_shape');
+      else {
+        const fields = ['problem', 'insight', 'method', 'results', 'limitations', 'reproducibility'];
+        const items = changes as Record<string, unknown>;
+        if (!Object.keys(items).length) issues.push('draft_changes_empty');
+        if (!hasOnlyKeys(items, fields)) issues.push('draft_changes_keys');
+        for (const field of fields) if (field in items) textIssue(`draft_changes_${field}`, items[field], 4000);
+        const length = JSON.stringify(items).length;
+        if (length > 18000) issues.push(`draft_changes_length_${length}_max_18000`);
+        if (!editorDraft || shape.needsMoreInformation) issues.push('draft_changes_context');
+      }
+    }
+    return `guide:${issues.join(',') || 'guard_rejected'}`.slice(0, 500);
+  };
   const result = await gateway.completeStructured(resultGuard, [
     { role: 'system', content: system },
     { role: 'user', content: user },
   ], {
     ...(editorDraft ? SCIENTIFIC_SYNTHESIS_OPTIONS : { temperature: 0.2 }),
-    validationFeedback: () => 'The previous JSON did not match the output contract. For scene.image instruction MUST be exactly "" to execute an approved image plan unchanged. For image changes use storyboard.revise with a complete nonempty instruction; for a new image plan use storyboard.create. Do not mix image execution and plan instructions. Video.create retains its existing empty-approved/nonempty-plan instruction flow. Return summary as a nonempty string (max 1200 characters), nextSteps as an array with at most one {label,intent,targetId} entry, and needsMoreInformation as a boolean. Omit unused optional fields; no nulls, patches, wrappers or extra keys. '
-      + (editorDraft ? 'For editing use nextSteps:[], needsMoreInformation:false and draftChanges:{problem:"full text"} with only requested English field keys (problem,insight,method,results,limitations,reproducibility); string values only, max 4000 characters each, max 18000 in total. Omit presentationDraft unless a valid presentationContext exists.'
-        : 'The only optional root key is presentationDraft; include it only for an applicable presentationContext, with action, instruction, researchObjectId, versionId and optional style. Never emit draftChanges or edits. Navigation intent must be open-task, open-ro, start-import, prepare-publication or review-media and use only authorized IDs.')
-      + ' Only for an explicit art-only storyboard.revise, add revisionMode:"art" together with baseAssetId copied from an unambiguously selected artRevisionEligible planState entry. Otherwise omit both fields. Never guess a base from recency or treat a scientific content revision as art-only.',
-    validationDiagnostic: (value) => {
-      if (!value || typeof value !== 'object' || Array.isArray(value)) return 'guide:root';
-      const shape = value as Record<string, unknown>;
-      const issues: string[] = [];
-      if (!hasOnlyKeys(shape, ['summary', 'nextSteps', 'needsMoreInformation', 'presentationDraft', 'draftChanges'])) issues.push('root_keys');
-      if (typeof shape.summary !== 'string' || !shape.summary.trim() || shape.summary.length > 1200) issues.push('summary');
-      if (typeof shape.needsMoreInformation !== 'boolean') issues.push('needs_more_information');
-      if (!Array.isArray(shape.nextSteps) || shape.nextSteps.length > 1) issues.push('next_steps');
-      if (shape.draftChanges !== undefined && (!shape.draftChanges || typeof shape.draftChanges !== 'object' || Array.isArray(shape.draftChanges))) issues.push('draft_shape');
-      if (shape.presentationDraft === null) issues.push('presentation_null');
-      return 'guide:' + (issues.join(',') || 'nested_fields');
-    },
+    includeRejectedResponseOnRetry: true,
+    validationDiagnostic,
+    validationFeedback: (value) => `Repair the rejected JSON at these exact fields: ${validationDiagnostic(value)}. Return one complete replacement object, preserving supported content and requested action. Omit unused optional fields; no nulls or extra keys. summary: nonempty string<=1200; needsMoreInformation: boolean; nextSteps: at most one {label,intent,targetId}, label<=120, authorized targetId<=100 (omit for start-import). `
+      + 'presentationDraft keys: action,instruction,researchObjectId,versionId, optional style, and paired revisionMode/baseAssetId. action: storyboard.create|storyboard.revise|scene.image|video.create. instruction must be a string<=1000: exactly "" for scene.image; nonempty for storyboard actions; video.create preserves its empty-execution/nonempty-plan flow. style: technical|ink|watercolor; put other artistic directions in instruction. Copy both scope ids from presentationContext. Only explicit art-only storyboard.revise may pair revisionMode:"art" with an unambiguously selected artRevisionEligible baseAssetId from planState; never choose by recency. '
+      + (editorDraft ? 'draftChanges: only problem,insight,method,results,limitations,reproducibility with full nonempty strings<=4000 each and JSON<=18000; nextSteps:[] and needsMoreInformation:false for edits. Do not combine edits and presentationDraft.' : 'Omit draftChanges; only presentationDraft is an optional root key.'),
   });
   const allowedTaskIds = new Set(taskIds);
   const allowedResearchObjectIds = new Set(researchObjectIds);

@@ -234,7 +234,7 @@ Chat生图操作：`infra/chatgpt-browser/runner.cjs`在空编辑器先选择原
 | Rejected local Hermes Blender prototype (not repository content) | 少年星图龙只保留 `hermes-constellation-dragon/apps/web/assets/hermes/HermesConstellationDragon.blend`（SHA-256 `9CF4694D…DDFA5`）；`.blend1`、渲染/contact sheet、manifest、旧脚本/合同已清理 | **用户视觉 NO-GO / HISTORICAL SOURCE ONLY**；二进制进回收站，禁止误读为候选资产 |
 | `.github/workflows/ci.yml` | PR/main 全仓 build/typecheck/lint/test 与生产视觉门禁；在任何会启动 Chromium 的 unit/visual gate 前安装固定 lockfile 对应浏览器，失败前无 evidence 目录时 artifact 上传只告警 | CURRENT CI gate；禁止用本地浏览器缓存替代 clean Ubuntu runner |
 | `.cursor/` | Cursor 编辑器配置 | 工具自管 |
-| `.taskmaster/` | task-master 任务状态；`optical-editorial-v3` 15/15 done；CURRENT `hermes-research-intelligence` 12/12 done | 工具自管；ECS acceptance complete on `b32d81c` |
+| `.taskmaster/` | 当前稳定验收清单 `multistyle-research-illustration`（3项）；执行证据与下一动作仅见 CURRENT 配图交付表。`hermes-research-intelligence` 12/12 与 `optical-editorial-v3` 15/15 为历史完成 | 现有工具状态；只凭用户认可关闭审美交付，不用历史完成替代当前目标 |
 | `.memory/memory.jsonl` | Memory MCP 知识图谱存储（MEMORY_FILE_PATH 指定） | 工具自管，随 git 备份 |
 | `src/` | 未来代码 | 空 |
 
