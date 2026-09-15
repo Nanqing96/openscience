@@ -1126,7 +1126,7 @@ export async function confirmIngestionTask(
           }
         }
         const core = commit.snapshot.core as Record<string, string>;
-        return { task: { ...taskToView(task), state: 'confirmed', error: null },
+        return { task: { ...taskToView(task), state: 'confirmed' as const, error: null },
           sdf: { core, nodes: SDF_NODE_TYPES.map(nodeType => ({ nodeType, content: core[nodeType] ?? '' })) }, confirmation: confirmationView(commit),
           indexTaskId };
       }, { isolationLevel: 'Serializable', timeout: 30_000 });
