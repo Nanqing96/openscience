@@ -3,6 +3,7 @@ import type { StorageAdapter } from '@openscience/storage';
 import {
   buildInterestContext,
   parseWorkspaceGuidePayload,
+  presentationStoryboardView,
   validateInterestContext,
   type AgentDeps,
   type WorkspaceGuidePayload,
@@ -35,6 +36,8 @@ export interface WorkspaceGuideResult extends Record<string, unknown> {
     instruction: string;
     researchObjectId: string;
     versionId: string;
+    revisionMode?: 'art';
+    baseAssetId?: string;
   };
 }
 
@@ -322,7 +325,10 @@ export const workspaceGuideResultGuard: SchemaGuard<WorkspaceGuideResult> = (val
   if (!validSteps || result.presentationDraft === undefined) return validSteps;
   if (!result.presentationDraft || typeof result.presentationDraft !== 'object' || Array.isArray(result.presentationDraft)) return false;
   const draft = result.presentationDraft as Record<string, unknown>;
-  return hasOnlyKeys(draft, ['action', 'instruction', 'style', 'researchObjectId', 'versionId'])
+  return hasOnlyKeys(draft, ['action', 'instruction', 'style', 'researchObjectId', 'versionId', 'revisionMode', 'baseAssetId'])
+    && ((draft.revisionMode === undefined && draft.baseAssetId === undefined)
+      || (draft.action === 'storyboard.revise' && draft.revisionMode === 'art'
+        && typeof draft.baseAssetId === 'string' && draft.baseAssetId.length > 0 && draft.baseAssetId.length <= 100))
     && (draft.style === undefined || ['technical', 'ink', 'watercolor'].includes(String(draft.style)))
     && ['storyboard.create', 'storyboard.revise', 'scene.image', 'video.create'].includes(String(draft.action))
     && typeof draft.instruction === 'string'
@@ -422,14 +428,23 @@ export async function workspaceGuideHandler(
   if (requestedPresentation && !presentationVersion) throw new Error('workspace.guide presentation version 未通过服务端授权');
   const currentPlans = presentationVersion ? await deps.prisma.presentationAsset.findMany({
     where: { researchObjectId: presentationVersion.researchObjectId, versionId: presentationVersion.id,
-      kind: 'interactive_html', status: { in: ['draft', 'approved'] } },
-    select: { status: true, updatedAt: true, provenance: true }, orderBy: { updatedAt: 'desc' }, take: 8,
+      kind: 'interactive_html', deletedAt: null, status: { in: ['draft', 'approved'] } },
+    select: { id: true, kind: true, status: true, updatedAt: true, provenance: true,
+      sourceClaims: { select: { claimId: true, claim: { select: { extractionStatus: true } } } } },
+    orderBy: { updatedAt: 'desc' }, take: 9,
   }) : [];
-  const planState = currentPlans.flatMap((asset) => {
-    const provenance = asset.provenance && typeof asset.provenance === 'object' && !Array.isArray(asset.provenance) ? asset.provenance : {};
-    if (!('storyboardDocument' in provenance)) return [];
-    return [{ status: asset.status, updatedAt: asset.updatedAt.toISOString() }];
+  const planStateTruncated = currentPlans.length > 8;
+  const planState = currentPlans.slice(0, 8).flatMap((asset) => {
+    const view = presentationStoryboardView(asset, asset.sourceClaims.map((source) => source.claimId));
+    if (!view) return [];
+    const artRevisionEligible = view.output === 'image' && view.locale === payload.locale
+      && asset.sourceClaims.length > 0 && asset.sourceClaims.length <= 12
+      && asset.sourceClaims.every((source) => source.claim.extractionStatus === 'succeeded')
+      && view.document.scenes.every((scene) => scene.illustration?.schemaVersion === 2);
+    return [{ id: asset.id, title: view.document.title, status: asset.status, updatedAt: asset.updatedAt.toISOString(),
+      style: view.style, output: view.output, artRevisionEligible }];
   });
+  const artBaseIds = new Set(planState.filter((plan) => plan.artRevisionEligible).map((plan) => plan.id));
   const taskIds = trustedPayload.context.tasks.map((item) => item.id);
   const researchObjectIds = trustedPayload.context.researchObjects.map((item) => item.id);
   let system = payload.locale === 'zh'
@@ -440,7 +455,7 @@ export async function workspaceGuideHandler(
         'InterestContext 仅用于排序关注点；rejectedSignals 是明确排除项，不得反向推断敏感属性或站外行为。',
         `只输出一个 JSON 对象，必填根字段为 summary（非空字符串）、nextSteps（数组）、needsMoreInformation（boolean）；可选字段为 presentationDraft${editorDraft ? '、draftChanges' : ''}。不适用的可选字段必须省略，不得填 null。禁止Markdown或JSON外的文字。`,
         'nextSteps 最多 1 项；每项只能包含 label、intent、targetId，禁止 title、description 或其他字段。',
-        '仅当 presentationContext 存在且用户目标适合用讲解分镜表达时，才输出 presentationDraft；它包含 action、instruction、researchObjectId、versionId，可选 style（technical、ink、watercolor）。action 根据请求选择 storyboard.create、storyboard.revise、scene.image 或 video.create，两个 id 必须逐字使用 presentationContext，instruction 必须是基于给定版本字段的可编辑分镜指令，不得声称已生成、批准或发布。不得输出主张或来源 id。',
+        '仅当 presentationContext 存在且用户目标适合用讲解分镜表达时，才输出 presentationDraft；它包含 action、instruction、researchObjectId、versionId，可选 style（technical、ink、watercolor）；纯艺术修订可按后述条件同时附 revisionMode、baseAssetId。action 根据请求选择 storyboard.create、storyboard.revise、scene.image 或 video.create，研究对象与版本 id 必须逐字使用 presentationContext，instruction 必须是基于给定版本字段的可编辑分镜指令，不得声称已生成、批准或发布。不得输出主张或来源 id。',
         'intent 只能是 open-task、open-ro、start-import、prepare-publication、review-media。除 start-import 外必须带授权 targetId；start-import 必须省略 targetId。',
         `open-task 只能使用下列 task id：${taskIds.length ? taskIds.join(', ') : '（无；禁止输出 open-task）'}。`,
         `open-ro 只能使用下列 research object id：${researchObjectIds.length ? researchObjectIds.join(', ') : '（无；禁止输出 open-ro）'}。`,
@@ -453,7 +468,7 @@ export async function workspaceGuideHandler(
         'Use InterestContext only to prioritize attention. rejectedSignals are explicit exclusions; never infer sensitive traits or off-site behavior.',
         `Return exactly one JSON object. Required keys: summary (nonempty string), nextSteps (array), needsMoreInformation (boolean). Optional keys: presentationDraft${editorDraft ? ', draftChanges' : ''}. Omit unused optional keys; never set them to null. No Markdown or text outside JSON.`,
         'nextSteps has at most one item. It may contain only label, intent, and targetId; title and description are forbidden.',
-        'Emit presentationDraft only when presentationContext exists and the goal benefits from an explanatory storyboard. It contains action, instruction, researchObjectId, versionId, and optional style (technical, ink, watercolor). action must match the request: storyboard.create, storyboard.revise, scene.image or video.create; copy both ids exactly from presentationContext. instruction is an editable storyboard brief grounded in the supplied version fields. Never claim it was generated, approved, or published, and never emit Claim or source ids.',
+        'Emit presentationDraft only when presentationContext exists and the goal benefits from an explanatory storyboard. It contains action, instruction, researchObjectId, versionId, optional style (technical, ink, watercolor), and the optional paired revisionMode/baseAssetId for art-only revisions under the rules below. action must match the request: storyboard.create, storyboard.revise, scene.image or video.create; copy research-object and version ids exactly from presentationContext. instruction is an editable storyboard brief grounded in the supplied version fields. Never claim it was generated, approved, or published, and never emit Claim or source ids.',
         'intent must be open-task, open-ro, start-import, prepare-publication or review-media. All except start-import require an authorized targetId; start-import must omit targetId.',
         `open-task may use only these task ids: ${taskIds.length ? taskIds.join(', ') : '(none; do not emit open-task)'}.`,
         `open-ro may use only these research object ids: ${researchObjectIds.length ? researchObjectIds.join(', ') : '(none; do not emit open-ro)'}.`,
@@ -466,7 +481,9 @@ export async function workspaceGuideHandler(
   system += '\n' + [
     'Keep summary to one or two short reader-facing sentences describing the actual proposed change or next action. Do not repeat the user request or copy production instructions into summary: detailed AI-facing content belongs only in presentationDraft.instruction. Do not claim a requested length or scientific check was satisfied unless the returned content actually satisfies it. When condensing research prose, preserve the causal mechanism and scope, remove incidental parameter lists when requested, and never broaden findings from a specified case into a general law.',
     'An additional nextSteps intent review-media opens the current research object media/plan review in this conversation. Use it when the user wants to review, adopt, reject or inspect existing images, videos or plans; targetId must be the CURRENT authorized research object id. This only opens review; it never approves an asset itself. For an explicit request to generate from the already approved plan without changing any instruction, use scene.image or video.create with instruction=""; if the user requests any revision, use storyboard.revise with a full nonempty instruction. Never represent a plan task as a completed image or video.',
-    'For presentationDraft, one additional optional field style is allowed: technical, ink, or watercolor. Infer it from the user request and conversation; use technical only when no preference is expressed. Put any more specific visual preference into instruction. Do not ask users to choose routine parameters or return a list of buttons. For a pure style change prepare a revised instruction for the current media request. Do not combine draftChanges with presentationDraft or prepare-publication in one response: finish edits first so the next operation uses the displayed draft.',
+    'For presentationDraft, optional style is technical, ink, or watercolor. Infer it from the user request and conversation; use technical only when no preference is expressed. These are broad rendering families, not an exhaustive list of artistic directions: put editorial, atlas, material, typography, composition and other specific preferences into instruction. Do not ask users to choose routine parameters or return a list of buttons. Do not combine draftChanges with presentationDraft or prepare-publication in one response: finish edits first so the next operation uses the displayed draft.',
+    'For an explicit art-only revision of an existing image plan, presentationDraft may additionally contain revisionMode:"art" and baseAssetId together, with action:"storyboard.revise". Use this only when the user asks solely to change visual style, colors, composition, material or text styling while retaining the scientific content. A request to change, correct, add or remove scientific claims, mechanisms, evidence, equations, axis definitions or values, label wording or meaning, narration, language or scene content is an ordinary revision: omit BOTH fields even if it also mentions style. Ambiguous revision scope must not be treated as art-only. The instruction for art-only must describe visual changes and preserve the existing scientific content, not rewrite it from the version summary.',
+    'For art-only, copy baseAssetId from a presentationContext.planState entry with artRevisionEligible:true. Choose only a plan unambiguously identified by the user (id, title or distinguishing description), or the sole existing image plan when planStateTruncated is false. Never pick a plan merely because it is newest. Multiple possible bases, an unidentified older base outside this bounded list, or no eligible base require a concise clarification with needsMoreInformation:true and no presentationDraft; do not silently substitute a different plan or replan science. A prior assistant proposal is not proof of a completed plan. Include the chosen plan title and requested visual change in summary so the user can review the scope.',
     'Conversation history contains prior user requests and assistant proposals, not new evidence or proof that actions completed. Resolve follow-up requests using it, but prefer the current draft and version context.',
     'For images, action names the NEXT actual operation: storyboard.create or storyboard.revise REQUIRES a complete nonempty instruction (maximum 1000 characters); scene.image REQUIRES instruction="" exactly to use the existing approved plan unchanged. Never repeat an approved brief in instruction when generating from it. Consult presentationContext.planState: create an image plan if none exists, revise when the user requests changes, and use scene.image only for an explicit request to execute an approved plan unchanged. For video preserve the existing flow: video.create with a complete nonempty instruction prepares a missing/revised video plan; video.create with instruction="" executes an approved video plan unchanged. A plan-only request must not generate media. Questions about capabilities or negated requests must not return an action. Never invent completed assets.',
     'nextSteps may also contain prepare-publication, only for an explicit request to prepare or publish the CURRENT research object. Use its authorized id as targetId; this opens the final preview only and never publishes. Never claim publication has happened. When preparing production or publication, set needsMoreInformation=false only if the request is clear; otherwise explain the concrete question without an action.',
@@ -492,6 +509,7 @@ export async function workspaceGuideHandler(
           researchObjectId: presentationVersion.researchObjectId,
           versionId: presentationVersion.id,
           planState,
+          planStateTruncated,
           core: boundedCore(presentationVersion.manifest?.coreJson, maxCharsPerField),
         },
       } : {}),
@@ -515,14 +533,17 @@ export async function workspaceGuideHandler(
       upper = candidateLimit - 1;
     }
   }
-  const result = await gateway.completeStructured(workspaceGuideResultGuard, [
+  const resultGuard: SchemaGuard<WorkspaceGuideResult> = (value): value is WorkspaceGuideResult => workspaceGuideResultGuard(value)
+    && (value.presentationDraft?.revisionMode !== 'art' || artBaseIds.has(value.presentationDraft.baseAssetId!));
+  const result = await gateway.completeStructured(resultGuard, [
     { role: 'system', content: system },
     { role: 'user', content: user },
   ], {
     ...(editorDraft ? SCIENTIFIC_SYNTHESIS_OPTIONS : { temperature: 0.2 }),
     validationFeedback: () => 'The previous JSON did not match the output contract. For scene.image instruction MUST be exactly "" to execute an approved image plan unchanged. For image changes use storyboard.revise with a complete nonempty instruction; for a new image plan use storyboard.create. Do not mix image execution and plan instructions. Video.create retains its existing empty-approved/nonempty-plan instruction flow. Return summary as a nonempty string (max 1200 characters), nextSteps as an array with at most one {label,intent,targetId} entry, and needsMoreInformation as a boolean. Omit unused optional fields; no nulls, patches, wrappers or extra keys. '
       + (editorDraft ? 'For editing use nextSteps:[], needsMoreInformation:false and draftChanges:{problem:"full text"} with only requested English field keys (problem,insight,method,results,limitations,reproducibility); string values only, max 4000 characters each, max 18000 in total. Omit presentationDraft unless a valid presentationContext exists.'
-        : 'The only optional root key is presentationDraft; include it only for an applicable presentationContext, with action, instruction, researchObjectId, versionId and optional style. Never emit draftChanges or edits. Navigation intent must be open-task, open-ro, start-import, prepare-publication or review-media and use only authorized IDs.'),
+        : 'The only optional root key is presentationDraft; include it only for an applicable presentationContext, with action, instruction, researchObjectId, versionId and optional style. Never emit draftChanges or edits. Navigation intent must be open-task, open-ro, start-import, prepare-publication or review-media and use only authorized IDs.')
+      + ' Only for an explicit art-only storyboard.revise, add revisionMode:"art" together with baseAssetId copied from an unambiguously selected artRevisionEligible planState entry. Otherwise omit both fields. Never guess a base from recency or treat a scientific content revision as art-only.',
     validationDiagnostic: (value) => {
       if (!value || typeof value !== 'object' || Array.isArray(value)) return 'guide:root';
       const shape = value as Record<string, unknown>;

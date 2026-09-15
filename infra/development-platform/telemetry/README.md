@@ -52,7 +52,9 @@ state 必须跨容器重建保留，不能复制给不同项目或删除后“�
 
 ## 官方依据
 
-已安装查询入口：`docker exec openscience-development-gateway-audit node /app/query.mjs`；`--errors`仅加固定ERROR过滤。它使用官方GET、24h最多10条，重新白名单化输出并校验audit/trace/span身份；不请求正文。实际50回执与API抽读12条是不同证据，不声称逐条检查全部记录。
+查询入口：`docker exec openscience-development-gateway-audit node /app/query.mjs`；`--errors`加固定ERROR过滤，`--task <AgentTask UUID>`按已有requestCorrelation精确查询该任务，可组合使用。它使用官方GET、24h最多10条，重新白名单化输出并校验audit/trace/span身份；不请求正文。`hasMore`为true表示仍有未返回记录；空结果也可能超出24h或尚在采集延迟内，不等于未调用。更新的部署与真实效果以CURRENT为准。
+
+任务过滤复用[官方Observations API v2](https://langfuse.com/docs/api-and-data-platform/features/observations-api)的metadata stringObject过滤；高级filter中同时保留时间/服务/类型范围，响应再次检查任务关联。用结果中的原任务ID去读取已有AgentTask/资产provenance及审阅，不将调用succeeded转换成科学或审美通过，不为查询创建新模型调用。
 
 首次部署时connector早于目的服务创建留下单条pending，已停进程、保留原checkpoint备份，以容器创建时间确认不可能接受后仅清除此pending。正常网络不确定情况下沿用上面的保守reconciliation；不能把空查询结果当成安全重发依据。
 

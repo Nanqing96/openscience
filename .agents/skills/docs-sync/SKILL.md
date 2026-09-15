@@ -5,7 +5,7 @@ description: Sync actual project changes and decisions before ending a work turn
 
 # Docs Sync
 
-核心原则：**先定版本，再定 CURRENT；缩小 active-memory surface，不删除历史证据。**
+核心原则：**先核用户目标，再定版本与 CURRENT；缩小 active-memory surface，不删除历史证据。**
 
 ## 触发与执行边界
 
@@ -27,11 +27,13 @@ git status --short
 
 然后按相关主题执行 `rg -n "CURRENT|<topic>" project_index.md docs/handoff docs/specs docs/plans`。先读 **one CURRENT handoff per topic**，再读需求基线相关章节和 `docs/progress.md` 当前窗口；`project_index.md` 只用 `rg` 定向读取，never default-read 全文。`DEPRECATED`、`NO-GO`、`HISTORICAL` 或被 CURRENT handoff 取代的文件不得成为实施入口；文件名日期不能覆盖正文状态。
 
+决定下一动作及改写 CURRENT 前，将最新用户决定、需求基线的具体条款和上一轮未完成交付项对照。CURRENT 是执行状态记录，不能覆盖用户目标；局部修复、暂缓出图、工具安装或单次成功均不能取消其他交付项。只有用户明确改变范围才移除对应目标，并记录该决定；阶段性暂停须保留被暂停项与恢复条件。
+
 ## 2. 同步合同
 
 - `docs/progress.md`：是 CURRENT progress window，不是永久日志；最多 120 lines。只保留最近状态、当前版本、未完成项与最新证据，旧条目由 Git history 保存，必要时转入明确标记的 archive，且不得默认读取。
 - `project_index.md`：登记路径/用途，当前状态链接唯一 handoff；历史交付版本须标明是当时记录，不再复制可漂移的当前 release。设计仍适用不等于当前已部署。
-- CURRENT handoff：原地压缩到 80 行内，只保留 goal、branch / HEAD / release / rollback、done、constraints、open risks、next action、read-first；不得成为聊天 transcript。
+- CURRENT handoff：原地压缩到 80 行内，只保留 goal、branch / HEAD / release / rollback、done、constraints、open risks、next action、read-first。goal指向用户决定/需求条款；多项交付用一处短表保留已有任务/资产ID、用户反馈和剩余差额，next action必须推进未完成项或解除其具体阻塞，不得被最新返工覆盖。progress/index只引用该表，不另写动态下一步；不得成为聊天 transcript。
 - `AGENTS.md`：只记录长期规则、命令和拓扑；重大不可逆决策进入 ADR。规则及 Skill 修改须进入实际交付分支；根目录 dirty main 的更新不会自动传到 worktree。
 - Memory MCP 可用时只保存跨 session 的决策/纠错，不复制测试日志或 handoff。
 

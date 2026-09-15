@@ -1,4 +1,5 @@
 // Read at most ten existing Gateway observations through the official v2 API.
+// --task <UUID> follows the existing task correlation, not a new trace identity.
 // No SQL, ingestion, models, arbitrary URLs, response bodies or credentials are logged.
 // https://langfuse.com/docs/api-and-data-platform/features/observations-api
 const origin = 'http://development-langfuse-web:3000';
@@ -52,19 +53,36 @@ async function readJson(response) {
 }
 async function main() {
   const args = process.argv.slice(2);
-  if (args.length > 1 || (args.length === 1 && args[0] !== '--errors')) throw new Error('usage_invalid');
-  const errorsOnly = args[0] === '--errors';
+  let errorsOnly = false, taskId;
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--errors' && !errorsOnly) errorsOnly = true;
+    else if (args[i] === '--task' && taskId === undefined && UUID.test(args[i + 1] ?? '')) taskId = args[++i];
+    else throw new Error('usage_invalid');
+  }
   const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
   const secretKey = process.env.LANGFUSE_SECRET_KEY;
   if (!publicKey || !secretKey) throw new Error('credentials_missing');
   const until = new Date();
   const from = new Date(until.getTime() - 86_400_000);
   const query = new URLSearchParams({
-    fields: 'core,metadata,usage', name: 'ai.gateway.call', type: 'GENERATION',
+    fields: 'core,basic,metadata,usage', name: 'ai.gateway.call', type: 'GENERATION',
     environment: 'production-audit-metadata', limit: '10',
     fromStartTime: from.toISOString(), toStartTime: until.toISOString(),
   });
   if (errorsOnly) query.set('level', 'ERROR');
+  if (taskId) {
+    // Advanced filters take precedence over top-level parameters: retain the
+    // time, service and operation scope in the filter as well as the task ID.
+    query.set('filter', JSON.stringify([
+      { type: 'datetime', column: 'startTime', operator: '>=', value: from.toISOString() },
+      { type: 'datetime', column: 'startTime', operator: '<', value: until.toISOString() },
+      { type: 'string', column: 'name', operator: '=', value: 'ai.gateway.call' },
+      { type: 'stringOptions', column: 'type', operator: 'any of', value: ['GENERATION'] },
+      { type: 'stringOptions', column: 'environment', operator: 'any of', value: ['production-audit-metadata'] },
+      { type: 'stringObject', column: 'metadata', key: 'requestCorrelation', operator: '=', value: taskId },
+      ...(errorsOnly ? [{ type: 'stringOptions', column: 'level', operator: 'any of', value: ['ERROR'] }] : []),
+    ]));
+  }
   const response = await fetch(`${origin}/api/public/v2/observations?${query}`, {
     method: 'GET', redirect: 'error', signal: AbortSignal.timeout(15_000),
     headers: { Authorization: `Basic ${Buffer.from(`${publicKey}:${secretKey}`).toString('base64')}` },
@@ -80,6 +98,8 @@ async function main() {
   const observations = [];
   for (const row of result.data) {
     const safe = metadata(row?.metadata);
+    if (row.name !== 'ai.gateway.call' || row.environment !== 'production-audit-metadata'
+      || (taskId && safe.requestCorrelation !== taskId) || (errorsOnly && row.level !== 'ERROR')) continue;
     const traceId = safe.auditId.replaceAll('-', '');
     if (safe.auditId === unknown || row.traceId !== traceId || row.id !== traceId.slice(0, 16)
       || row.type !== 'GENERATION') continue;
@@ -93,6 +113,7 @@ async function main() {
   }
   console.log(JSON.stringify({
     event: 'gateway_audit_read', selection: errorsOnly ? 'errors' : 'all',
+    ...(taskId ? { taskId } : {}),
     fromStartTime: from.toISOString(), toStartTime: until.toISOString(),
     returned: result.data.length, matched: observations.length,
     hasMore: Boolean(result.meta?.cursor), observations,

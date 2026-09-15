@@ -1193,6 +1193,8 @@ export interface WorkspaceGuideResult {
     instruction: string;
     researchObjectId: string;
     versionId: string;
+    revisionMode?: 'art';
+    baseAssetId?: string;
   };
   writingDraft?: {
     title: string;

@@ -73,8 +73,9 @@ limiter defaults and allows the catalog and permission plugins to initialize.
 declarations derive dependency and consumption relations. Source annotations link
 real repository directories. `resource:production/application` points to the
 deployed environment and its release marker; `resource:candidate/onchip-video-release`
-points to the development branch/worktree. A repository `main` source link locates
-code; it is not an assertion that `main` equals the deployed SHA. The existing
+points to the development branch/worktree. Repository source and requirement links
+follow that active delivery branch; the old `main` lacks later product decisions.
+These links locate editable code, not the deployed SHA. The existing
 CURRENT handoff remains the only release/rollback and observed-result narrative.
 Runtime research skills and repository development skills are different entities:
 installation of a skill file does not imply that Hermes imports or executes it.

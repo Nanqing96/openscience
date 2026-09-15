@@ -1,16 +1,28 @@
 # Hermes / Workbench CURRENT Handoff
 
-## 当前结果与下一动作（2026-09-15）
-- 用户要求真正使用已安装设计/生图Skill改善配图。已修艺术复用路径，真实方案69ec消费原baoyu构图/水彩/文字资料；真实Chat图f424已生成、取回、入库并实际看过，仍draft，未发布。
-- 新图比28b有明确内蓝/外赭金区分、深灰轮廓与两级文字；坐标、边界、类别及变量定义可见。四角纸纹偏重，审美是否接受仍由用户判断，不能称通用质量全部完成。下一步按实际图反馈微调艺术，复用69ec科学内容；不重启工具调研、整篇分析或失败发送脚本。
-- 当前仅显式API请求使用revisionMode=art；普通Hermes自然语言快捷路由尚未自动选择这一模式，勿宣称该交互已完成。新风格/Figma/视频/第三篇/批量仍暂缓。
+## 产品目标、交付差额与下一动作（2026-09-15 用户纠偏）
+- 原定目标仍是通用、多风格科研配图：上游文献解析/科学分析与经审核关系 → 按用途选择艺术表达 → 服务器Chat生图 → 科学与用户审美审阅。需求依据为需求基线的“2026-09-14 图片能力推进”；不得把单篇圆图或用户认可的淡彩构图固定成通用模板。
+- 本批交付及已有资产只按下表续作；水墨保留为已有艺术方向，不扩充本批范围。后续水彩f424只是额外私有候选，不能计作新增风格完成。
+
+| 交付项 | 原任务/资产与实际用户反馈 | 当前差额 |
+|---|---|---|
+| 学术机制图（本场景按科学关系呈现分类图谱） | 旧cdce被否定；新方案625119fa-5d8a-4e2a-a007-ceac51a83071使用scientific资料、科学字段与69ec一致，6Pro accepted；图c3a49716-35e9-440c-b3d9-659c2d86632c成功，已看实图 | 清晰学术候选，保持draft，待用户审美认可 |
+| 编辑封面插画 | 旧1a1d被否定；方案15a314a6-44e1-4829-a4e1-c30f78039896经6Pro仅艺术修正；图ac16631b-782f-4b2f-9fdf-fcc033b867e0成功且已看 | 仍偏教材图/满铺网点，未达到封面目标，不计合格交付；保留候选 |
+| 淡彩手绘 | aa41a018-b2ff-4ffb-9557-19ecabe104bc用户认可 | 保留原图，不默认重画 |
+
+- 偏差已定位：前版CURRENT将“微调淡彩、暂停新增风格”写成下一步，progress/index又沿用，局部科学/执行器修复替代了原交付目标。新一轮不得继续默认重画淡彩图。
+- 下一步先用已安装设计参考和既有艺术修订能力，完成学术机制图、编辑封面两类缺项；科学内容复用已审上游成果，构图/字体/材质根据用途重新设计，不只换色。审美认可属于具体成图，不等于其旧科学方案免于复核。Figma/视频/第三篇/批量继续暂缓。
+- 已有69ec方案真实消费baoyu构图/水彩/文字资料，f424取回入库且实际看过，仍draft。revisionMode=art目前仅显式API使用，普通Hermes自然语言快捷路由尚未自动选择；此接线是通用交互缺口，不把手工API执行说成完整Hermes体验。
+- 2026-09-15续作：独立High定位41ae→ea436→3fa2→28197的目标漂移；现有AGENTS/docs-sync增加需求条款与未完成交付项对照、局部暂停不取消目标，根导航规则及已有Memory同步。Backstage线上需求/源码导航指向旧origin/main（缺多风格条款），候选改为交付分支；Langfuse原只看最新10条，候选加原任务ID过滤。无新管理平台/表/测试；科学内容仍复用69ec。
+- 候选Hermes接线：presentationDraft可成对携带revisionMode=art/baseAssetId，候选限同RO/version/locale与有效v2图片；原稿/版本明确绑定，指令自由改写清除art，原请求/不确定回放保留。缺少明确原稿时澄清，不按最新更新时间猜。7文件与防漂移改动已获独立High静态GO，尚未部署/观察自然语言结果。
+- ac166暴露明确封面要求被艺术规划忽略；末审虽已收到userRequest，仅检查科学误导。候选自有Skill v5/原planner/同一次末审补明确艺术要求符合性，继续只修composition/treatment，科学字段不变，不新增模型阶段或宣称审美通过。此前v4图库与本批两张图均保留。PNG在tmp/research-illustration-{atlas-c3a497,editorial-ac166}.png。
 
 ## 版本与工作区
 - 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；当前代码提交2e434fdee3d99b7798bf66a24c23b7fd869743e4，后续文档HEAD以Git为准。根dirty main只作导航，不作为部署源。
-- 应用production 6430ca03ffc5367b233d108dcd43250c827dd53f；rollback32e7929212c947d158a184800efb7f07e043ab02。deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0，必要服务器build/start完成，.release-id读回相同。日志tmp/illustration-art-reuse-deploy.log。发布树art-direction-release-41ae8902 detached6430。
+- 应用production 6430ca03ffc5367b233d108dcd43250c827dd53f（本轮.release-id实读相同）；rollback32e7929212c947d158a184800efb7f07e043ab02。既有deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0，必要服务器build/start完成。日志tmp/illustration-art-reuse-deploy.log。发布树art-direction-release-41ae8902 detached6430。
 - Chat provider独立bundle2e434fdee3d99b7798bf66a24c23b7fd869743e4；回退e57153f30281dce93a3cd968be63059911259b22（菜单顺序已修，canonical仍30秒）；再前e74c9396dae51b294917dc52ed84893668029806。两次installer exit0，复用未变6430 Gateway dist和原renderer，无浏览器重启/登录切换/沙箱放宽。日志tmp/illustration-{menu,canonical}-provider-{transfer,install}.log。
 - Serena source快照6430ca03（应用源码；不冒称含后续独立provider差异），缓存image23fcfab77fa1/tag04b5f91df4b4e86c210155cee83cd741f1521ca3；installer exit0，tmp/illustration-art-reuse-serena.log。Catalog/Skills bundle83179c454b75688176060fabf9e611072d46813c；Langfuse official4.35.0；telemetry独立abea68ef/rollbackc2b6683e。
-- Renderer保持sha256:1c47a579ceb608f244878b41888eee50bda1135ff325cb7b49de3a275ee2013d。无新依赖/表/迁移；未测试/预检/CI/本机构建。3段代码变更均独立High静态GO；日志/构建/实际图分别证明各自范围。
+- Renderer保持sha256:1c47a579ceb608f244878b41888eee50bda1135ff325cb7b49de3a275ee2013d。无新依赖/表/迁移；未测试/CI/本机构建。本轮审阅代理误执行一次只读git diff --check，仅报行尾提示，已停止后续预检。3段代码变更均独立High静态GO；日志/构建/实际图分别证明各自范围。
 - 无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖；其他历史文件、任务、图、工作树均保留。
 
 ## 本轮实际链路与文件
@@ -31,7 +43,7 @@
 - 原2196及8d两张图存在函数/轴科学问题，已rejected并保留；a803原Chat final曾DOM/Copy为空，e74 receiver严格绑定原会话/原文/可见节点恢复，无重发。恢复不回写旧遥测outcome；接口变化仍可能失败，不能声称永久稳定。
 
 ## 底层能力与持续状态
-- Backstage已实际查询职责/依赖；Serena已实际查符号/引用，版本如上；Langfuse真实按task关联规划/科学审阅/生图，详见台账。目录、源码、调用与产品质量不能互相替代。
+- Backstage已实际查询职责/依赖；Serena已实际查符号/引用；Langfuse真实按task关联规划/科学审阅/生图。当前源码catalog是维护的组件目录，Serena仅三个只读符号工具，telemetry导出调用元数据；没有三风格交付目标、审美反馈与产品完成度的自动联动。工程定位/观测已接通，不得标作防止产品目标漂移已完成，具体缺口见台账。
 - Worker AsyncLocalStorage补既有Gateway requestId；Chat两个固定model标签在view/connector/query精确放行。调用succeeded不等于科学accepted；未知token/cost不补零，代码cost0不等于订阅免费。采集120秒延迟/60秒轮询，不为补日志造任务。
 - 上游既有科学末审v5可同轮产出claimSuggestions，映射真实P→Evidence、复用原Hermes确认UI；旧v4恢复和六字段回退保留。新正常论文的确认效果未观察。BGE索引存在，hybrid query的正常应用效果未观察，勿强接到配图。
 - 用户已登录Langfuse并完成指定改密，服务身份不变；不记录/重问凭据。入口localhost:3130，经既有SSH私有转发；后台采集不依赖网页登录。SMTP/SSO/定时备份/保留期未配置。

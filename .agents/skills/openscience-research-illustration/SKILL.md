@@ -2,7 +2,7 @@
 name: openscience-research-illustration
 description: Plan and refine evidence-grounded research illustrations for OpenScience through Hermes and Chat image generation, using structured briefs, source-scoped visual references and reusable art directions. Use for paper illustrations, scientific concept images and research covers; quantitative plots require a data renderer.
 metadata:
-  version: "4"
+  version: "5"
 ---
 
 # OpenScience research illustration
@@ -52,7 +52,7 @@ Keep independent scientific domains distinct. Coordinate dimensionality, units a
 
 Choose composition from the relationship, not the style name. A process may use a sequence; classification may use a domain partition; a cover may use one expressive subject. Do not turn every paper into a process diagram, a decorated circle or a grid of summary cards. A small label budget is a reason to simplify the explanation, not to shrink text or drop an essential condition.
 
-For a revision, distinguish a local correction from a rejected overall design. Retain accepted aspects and unaffected science. Change the hierarchy and composition when the user rejected them; changing a background or recoloring a motif is insufficient. Preserve useful reference qualities without copying unrelated scientific content. Watercolor is one supported direction, not a default for every paper.
+For a revision, distinguish a local correction from a new style variant or a rejected overall design. Retain unaffected science and only artwork aspects explicitly accepted by the user. Scientific approval of an old plan does not make its layout or treatment aesthetically accepted. A new art direction or rejected design can change hierarchy, composition and material; changing a background or recoloring a motif is insufficient. Preserve useful reference qualities without copying unrelated scientific content. Watercolor is one supported direction, not a default for every paper.
 
 For an art-only revision of an existing structured image plan, use the existing storyboard generation request with `baseAssetId` and `revisionMode: "art"`. It reuses scientific fields directly and runs the installed art guidance plus the existing final scientific review. Locale and scientific content stay unchanged; a request to alter either needs the ordinary planning path. Replace rejected choices in composition/treatment rather than preserving them as old instructions alongside a conflicting reference.
 
@@ -71,6 +71,8 @@ Assess the picture a reader can actually see: `labels` is its exclusive visible-
 Retain the selected Claim's complete reviewed statement and Evidence while source roles remain field-scoped: an unselected passage marked `supports` may contain essential qualifiers. Claim kind/assessment are review context, not evidence or visible labels; preserve partial, disputed, counterexample and boundary meaning. Unconfirmed intermediate semanticStage output is not an approved finer-grained source. Do not silently reduce the context to subject citations alone.
 
 Use the existing Chat scientific review capability once for the final candidate. Accept it unchanged, or correct only the affected scene's composition/treatment while preserving scientific fields, scene order and unaffected artwork. A scientific error must identify the scene, field, source and needed upstream correction; it cannot be repaired by silently substituting another relationship or rewriting the complete storyboard. Compile accepted fields directly without another creative rewrite. Keep the review attached to the actual task, version, source evidence and candidate in internal provenance. A missing, ambiguous or unusable review does not authorize image generation. Scientific review is separate from the user's aesthetic approval.
+
+In that same existing review, compare composition and treatment with the explicit user art request. If the planner materially ignored a requested art direction, background, layout, texture or typography, use the existing composition/treatment correction fields to restore that request while preserving all science. Do not preserve a previous art choice merely because its scientific plan was approved. Distinguish an objective instruction mismatch from subjective taste; conformance does not certify beauty or replace the user's judgment. Do not add another review call or change science to accommodate decoration.
 
 ## Execution
 

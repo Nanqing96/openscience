@@ -59,7 +59,7 @@ export function loadInstalledMediaSkills(style: string, instruction: string, sta
     }).join('\n\n') : text;
     excerpts.push(`SOURCE: ${resource}${headings ? ` — sections: ${headings.join('; ')}` : ''}\n${selected}`);
     let entry = usage.find((item) => item.id === id);
-    if (!entry) { entry = { id, ...(id === 'openscience-research-illustration' ? { version: '4' } : { upstreamCommit: UPSTREAM_COMMIT }), resources: [] }; usage.push(entry); }
+    if (!entry) { entry = { id, ...(id === 'openscience-research-illustration' ? { version: '5' } : { upstreamCommit: UPSTREAM_COMMIT }), resources: [] }; usage.push(entry); }
     entry.resources.push(...(headings ? headings.map((heading) => `${relativePath}#${heading}`) : [relativePath]));
   }
 

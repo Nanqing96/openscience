@@ -14,6 +14,7 @@ export interface StoredPresentationDraft {
   language: 'zh' | 'en';
   selected: string[];
   parentId: string;
+  revisionMode?: 'art';
   scene: number;
 }
 
@@ -54,6 +55,7 @@ export function loadHermesPresentationDraft(storage: Storage | null, scope: Herm
       || typeof value.instruction !== 'string' || value.instruction.length > 1_000
       || !['watercolor', 'technical', 'ink'].includes(String(value.style)) || (value.language !== 'zh' && value.language !== 'en')
       || !Array.isArray(value.selected) || value.selected.length > 12 || value.selected.some((id) => typeof id !== 'string' || id.length > 100)
+      || (value.revisionMode !== undefined && (value.revisionMode !== 'art' || value.action !== 'storyboard.revise' || !value.parentId))
       || typeof value.parentId !== 'string' || value.parentId.length > 100 || typeof value.scene !== 'number' || !Number.isInteger(value.scene) || value.scene < 0) return null;
     return value as StoredPresentationDraft;
   } catch { return null; }

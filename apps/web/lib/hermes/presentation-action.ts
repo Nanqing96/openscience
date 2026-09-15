@@ -47,9 +47,15 @@ export function newestEligibleStoryboard(assets: PresentationAsset[], action: Pr
       && (action !== 'video.create' || asset.canGenerateVideo === true))
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0];
 }
+export function isEligibleArtStoryboard(asset: PresentationAsset | undefined, locale: StoryboardRequest['locale']): boolean {
+  return Boolean(asset && (asset.status === 'approved' || asset.status === 'draft') && asset.kind === 'interactive_html'
+    && asset.storyboard?.output === 'image' && asset.storyboard.locale === locale
+    && asset.storyboard.document.scenes.length > 0
+    && asset.storyboard.document.scenes.every((scene) => scene.illustration?.schemaVersion === 2));
+}
 export class SubmissionIntent {
   private signature = ''; private key = ''; private busy = false; private uncertain = false;
-  draft?: { action: PresentationAction; instruction: string; style: 'watercolor' | 'technical' | 'ink'; language?: 'zh' | 'en'; selected: string[]; parentId: string; scene: number; updateBrief?: boolean };
+  draft?: { action: PresentationAction; instruction: string; style: 'watercolor' | 'technical' | 'ink'; language?: 'zh' | 'en'; selected: string[]; parentId: string; scene: number; updateBrief?: boolean; revisionMode?: 'art' };
   request?: { action: PresentationAction; sourceIds: string[]; payload: StoryboardRequest | { storyboardAssetId: string; sceneIndex: number } | { profile: 'content-driven-v1'; storyboardAssetId: string; sceneImageAssetIds: string[] } };
   get isUncertain() { return this.uncertain; }
   get isBusy() { return this.busy; }

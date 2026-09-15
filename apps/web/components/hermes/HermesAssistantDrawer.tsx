@@ -121,6 +121,9 @@ function resultFromTask(task: AgentTaskView): WorkspaceGuideResult | null {
     if (!candidate || typeof candidate !== 'object' || !['storyboard.create', 'storyboard.revise', 'scene.image', 'video.create'].includes(String(candidate.action))
       || typeof candidate.instruction !== 'string' || (candidate.action === 'scene.image' ? candidate.instruction !== '' : !candidate.instruction.trim() && candidate.action !== 'video.create') || candidate.instruction.length > 1_000
       || (candidate.style !== undefined && !['technical', 'ink', 'watercolor'].includes(String(candidate.style)))
+      || !((candidate.revisionMode === undefined && candidate.baseAssetId === undefined)
+        || (candidate.revisionMode === 'art' && candidate.action === 'storyboard.revise'
+          && typeof candidate.baseAssetId === 'string' && candidate.baseAssetId.length > 0 && candidate.baseAssetId.length <= 100))
       || typeof candidate.researchObjectId !== 'string' || typeof candidate.versionId !== 'string') return null;
     presentationDraft = {
       action: candidate.action as NonNullable<WorkspaceGuideResult['presentationDraft']>['action'],
@@ -128,6 +131,7 @@ function resultFromTask(task: AgentTaskView): WorkspaceGuideResult | null {
       researchObjectId: candidate.researchObjectId as string,
       versionId: candidate.versionId as string,
       ...(candidate.style ? { style: candidate.style as 'technical' | 'ink' | 'watercolor' } : {}),
+      ...(candidate.revisionMode === 'art' ? { revisionMode: 'art' as const, baseAssetId: candidate.baseAssetId as string } : {}),
     };
   }
   let draftEdit: WorkspaceGuideResult['draftEdit'];
@@ -402,6 +406,8 @@ function HermesAssistantDrawerContent({
         const version = prepared?.versionId || scopedPresentationDraft?.versionId || requestedVersion || resolvedGuideVersion;
         if (ownerRef.current !== owner) return;
         if (!version) throw new Error(tc('prepareVersionFailed'));
+        // A prepared version may differ after draft edits; an art proposal belongs to its original base and version.
+        if (scopedPresentationDraft?.revisionMode === 'art' && version !== scopedPresentationDraft.versionId) throw new Error(tc('draftChanged'));
         prepared?.assertCurrent();
         assertPrepared.current = prepared?.assertCurrent ?? null;
         offeredDraft.current = base;

@@ -1,6 +1,8 @@
 # Standard Backstage entities. This file is a maintained inventory, not a live
 # release database or evidence that a capability produced correct results.
 # Production release/rollback and candidate status remain in the CURRENT handoff.
+# Repository links follow the active delivery branch, whose requirements include
+# current user decisions. They are navigation, not a deployed source snapshot.
 apiVersion: backstage.io/v1alpha1
 kind: Group
 metadata:
@@ -37,7 +39,7 @@ metadata:
   name: research-infrastructure
   title: Research infrastructure
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/docs/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/docs/
 spec:
   owner: group:default/openscience-maintainers
 ---
@@ -48,11 +50,11 @@ metadata:
   title: OpenScience product
   description: Research objects, source-grounded understanding, collaboration and publication. Inventory membership is not a quality claim.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/
   links:
     - url: https://github.com/photonics-dhl/OpenScience/blob/codex/onchip-video-release/docs/handoff/2026-09-10-hermes-web-image-handoff.md
       title: CURRENT release, rollback, candidates and observed limitations
-    - url: https://github.com/photonics-dhl/OpenScience/blob/main/docs/OpenScience_Kimi_Development_Spec.md
+    - url: https://github.com/photonics-dhl/OpenScience/blob/codex/onchip-video-release/docs/OpenScience_Kimi_Development_Spec.md
       title: Requirements baseline
 spec:
   owner: group:default/openscience-maintainers
@@ -76,7 +78,7 @@ metadata:
   name: web
   title: OpenScience web
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/web/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/web/
   tags: [nextjs, product]
 spec:
   type: website
@@ -93,7 +95,7 @@ metadata:
   title: OpenScience API
   description: Fastify boundary for research, workspaces, publication and durable Hermes tasks.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/api/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/api/
   tags: [fastify, product]
 spec:
   type: service
@@ -114,7 +116,7 @@ metadata:
   title: Hermes agent worker
   description: Durable research tasks use the existing Gateway, parser and explicitly imported runtime skills. Success status does not establish scientific quality.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/agent-worker/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/agent-worker/
   tags: [hermes, worker]
   links:
     - url: https://github.com/photonics-dhl/OpenScience/blob/codex/onchip-video-release/docs/runbooks/hermes-capability-registry.md
@@ -140,7 +142,7 @@ metadata:
   title: Shared AI Gateway
   description: The existing library owns provider routing, configured fallback and model call metadata. No new provider calls are introduced by this catalog.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/packages/ai-gateway/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/packages/ai-gateway/
   tags: [library, gateway]
 spec:
   type: library
@@ -156,7 +158,7 @@ metadata:
   title: Hermes runtime research skills
   description: Source-controlled TypeScript skills explicitly imported by Hermes. Presence of a host SKILL.md does not activate a runtime consumer.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/agent-worker/src/skills/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/agent-worker/src/skills/
   tags: [skills, hermes]
 spec:
   type: library
@@ -188,7 +190,7 @@ metadata:
   title: Isolated document parser
   description: Existing job-volume parser boundary; no network or secrets, non-root and read-only runtime. Higher-level parsing is described by the existing capability registry.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/agent-worker/parser-image/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/agent-worker/parser-image/
   tags: [parser, isolated]
 spec:
   type: service
@@ -204,7 +206,7 @@ metadata:
   title: ScanSci MCP service
   description: Existing pinned upstream academic retrieval service and repository adaptation; availability of a provider is distinct from successful retrieval.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/scansci-mcp/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/scansci-mcp/
   tags: [mcp, retrieval]
 spec:
   type: service
@@ -221,7 +223,7 @@ metadata:
   title: Science worker source
   description: Repository scientific sandbox worker implementation; not listed as a running service in the current production compose. Do not infer deployment from code presence.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/science-worker/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/science-worker/
   tags: [sandbox, source-only]
 spec:
   type: service
@@ -236,7 +238,7 @@ metadata:
   title: Sandbox controller placeholder
   description: Reserved app directory; current sandbox implementation belongs to science-worker. This entity must not be interpreted as an installed controller.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/sandbox-controller/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/sandbox-controller/
   tags: [placeholder, source-only]
 spec:
   type: service
@@ -251,7 +253,7 @@ metadata:
   title: Existing media demonstration app
   description: Separate demonstration source; a rendered demonstration is not evidence that Hermes can automatically produce the same result.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/media-demo/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/media-demo/
   tags: [demonstration]
 spec:
   type: website
@@ -285,7 +287,7 @@ metadata:
   title: OpenScience public research API
   description: The linked OpenAPI document is authoritative. This catalog entry contains discovery metadata, not a duplicated endpoint schema.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/api/src/routes/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/api/src/routes/
   links:
     - url: https://openscience.428312321.xyz/api/research-record/openapi
       title: Complete current OpenAPI document
@@ -312,7 +314,7 @@ metadata:
   name: scansci-mcp-api
   title: ScanSci MCP interface
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/apps/scansci-mcp/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/apps/scansci-mcp/
 spec:
   type: mcp
   lifecycle: production
@@ -357,7 +359,7 @@ metadata:
   description: ECS /opt/openscience and its managed release deployment. Read the actual .release-id or public /__release for current identity; repository main and candidate branches are not this runtime.
   annotations:
     openscience.org/server-path: /opt/openscience
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/infra/compose/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/infra/compose/
   labels:
     openscience.org/environment: production
   links:
@@ -398,7 +400,7 @@ metadata:
   title: Private research PostgreSQL
   description: Existing product database in data_net. The development catalog has no credentials or network membership for this database.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/packages/database/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/packages/database/
   labels:
     openscience.org/environment: production
 spec:
@@ -413,7 +415,7 @@ metadata:
   namespace: production
   title: Private product Redis
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/infra/compose/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/infra/compose/
   labels:
     openscience.org/environment: production
 spec:
@@ -428,7 +430,7 @@ metadata:
   namespace: production
   title: Private SeaweedFS object storage
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/packages/storage/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/packages/storage/
   labels:
     openscience.org/environment: production
 spec:
@@ -444,7 +446,7 @@ metadata:
   title: Parser job exchange volume
   description: Existing parser/worker exchange, unavailable to the development catalog.
   annotations:
-    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/main/infra/compose/
+    backstage.io/source-location: url:https://github.com/photonics-dhl/OpenScience/tree/codex/onchip-video-release/infra/compose/
   labels:
     openscience.org/environment: production
 spec:
