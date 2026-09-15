@@ -1,8 +1,15 @@
 # CURRENT Progress Window
+## 2026-09-15 — 审阅已有回复恢复
+- a803的Chat已完成blocked，DOM/Copy却无正文；接收端严格绑定原会话和最终消息，从同源会话接口读取已完成final。独立High GO、receiver安装exit0；原broker自动恢复job/spool结果，没有新发送。科学错误保持阻断。
+- 原repair补字段/长度诊断及精确单scene无损包装，未知字段仍拒绝，必要服务器构建/启动通过。新焦点59702从同一已审来源重新规划，不继承旧曲线base；末审正常回收但指出区域label缺类别名称，34ce已沿原planner修订。运行状态和精确版本见CURRENT。
+## 2026-09-15 — 真实配图质量回路与能力联动
+- Chat已真实回传2196与8d两张参考图生成PNG，均实际看图；前者把分界放在函数零点，后者分界纠正但漏坐标标签且曲线形状不可靠。均已拒绝，原图与两篇公开v1保留，不把方案accepted或生成成功当质量通过。
+- 自有skill科学选题/末审已补可见标签完整性和函数图交给数据renderer的要求，Codex与Hermes同步。按原文收窄分类关系的新任务03a9因结构字段不符失败，未进入Chat；修正原repair feedback的层级/预期字段定位后再继续，不新造解析器或宽松放行。
+- 付费方案checkpoint实际保存、公开任务投影隐藏；Langfuse已读回规划/审阅/生图与task关联。模型标签三层精确白名单独立更新成功，实际原图调用的只读view已返回正确Chat标签；旧Langfuse unknown不回填。High静态审查及必要服务器build/start见CURRENT，没有测试/预检/CI。
 ## 2026-09-15 — 真实配图恢复与审阅页面就绪修复
 - 单次提交25215cd1，既有五次MiniMax完成，Chat科学审阅在提交前误判6 Pro未就绪；实际同页模型控件晚于composer加载，账号/代理正常。修复既有有界等待、发送前模式复核和数字错误码保留，未改变模型/发送幂等。
 - Langfuse已收齐该任务六次调用并正确关联taskId；最初缺记录是正常120秒提交延迟/60秒轮询/分页。两处runner独立安装后同原请求仅发送一次，原文匹配并回收6 Pro blocked，发现变量/物理量混用，未放行错误方案。
-- 私有checkpoint经High及必要build/start已部署，真实修订1da6先保存checkpoint、API隐藏内部内容，6 Pro revised局部构图后成功落方案；2196正用同已审schema2+aa41实际参考PNG进行Chat生图。无测试/预检/Codex生图/公开版本变更；最终图片质量尚待观察，精确版本见CURRENT。
+- 私有checkpoint经High及必要build/start已部署，真实修订1da6先保存checkpoint、API隐藏内部内容，6 Pro revised局部构图后成功落方案；2196与后续8d均已真实返回并发现质量问题，见上方最新进展。无测试/预检/Codex生图/公开版本变更；图像已观察但未合格，精确版本和下一正常任务见CURRENT。
 
 ## 2026-09-15 — 科学终审复用已交付
 - 用户确认Langfuse已登录，账号交接完成。既有Chat讨论已采纳到现有末审，不另造分析步骤；具体模型档位未验证。
