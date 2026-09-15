@@ -47,7 +47,7 @@
 
 | 问题 / 位置 | 后果 | 处理与后续 |
 |---|---|---|
-| Chat长简报填入后打开原生生图菜单，renderer崩溃 | 1cb8在image_mode_plus失败未提交，原日志other无法定位 | 同原简报真实故障诊断复现Target crashed；先选原生生图再插入文字可保留mode/exactText，候选runner改顺序并记录page_crashed，保留原发送/参考校验，不关闭sandbox。独立交付与实际图片结果见CURRENT |
+| Chat长简报填入后打开原生生图菜单，renderer崩溃 | 1cb8在image_mode_plus失败未提交，原日志other无法定位 | 同原简报真实故障诊断复现Target crashed；先选原生生图再插入文字可保留mode/exactText，runner已改顺序并记录page_crashed，High GO且独立安装，f424沿原方案生图中，保留原发送/参考校验，不关闭sandbox。独立交付与实际图片结果见CURRENT |
 | 28b原composition写明内外同色；base艺术修订仍重跑science | 参考配色被旧指令覆盖，局部审美调整有科学漂移与重复调用风险 | 已部署显式revisionMode=art复用原base科学字段，只改composition/treatment；真实69ec字段保持、已消费baoyu构图/水彩/文字参考，自有Skill v4补角色区分/文字层级；6Pro只移除额外刻度，1cb8未提交的菜单崩溃已定位，原方案保留。当前仅显式API请求使用，普通Hermes自然语言快捷路由未自动选择；精确交付和实际图见CURRENT |
 | production-release-retention默认将非active/rollback目录列入清理，忽略独立工具仍使用历史源码 | Catalog挂载83179导致9c30部署最终阶段拒绝并回滚 | 正常发布只登记rollback且空清理意图保留历史；明确清理才使用原严格挂载/引用规则。High静态GO，精确部署结果见CURRENT |
 | cloud-sync/evaluation-source-sync把MSYS的/c/...路径传给原生Windows OpenSSH | 指定项目密钥不可读，身份选择可能偏离预期 | 共用ssh-identity-path转换，保留参数数组与host-key规则，启用IdentitiesOnly；不修改密钥/配置。正式上传效果见CURRENT |

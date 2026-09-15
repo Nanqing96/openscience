@@ -503,7 +503,9 @@ let stage = 'request';
   once('submitted.json', { phase: 'submitted', provider: 'chatgpt-web', id, promptHash: request.promptHash, source: request.source, submittedAt: new Date().toISOString() });
   await send.click();
   console.log('SUBMITTED');
-  const url = await resolveCanonicalConversation(page, Math.min(request.deadlineAt - 45000, Date.now() + 30000));
+  // A referenced image can start generating before Chat exposes its canonical URL.
+  // Wait on this submitted page; keep time for result download and never resend.
+  const url = await resolveCanonicalConversation(page, Math.min(request.deadlineAt - 105000, Date.now() + 120000));
   once('conversation.json', { url });
   if (mode === 'execute') {
     stage = 'image_result';
