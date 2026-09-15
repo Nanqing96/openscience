@@ -1,0 +1,128 @@
+# 期刊入驻与 AI 解读运行手册
+
+## 范围与入口
+
+实现依据：[期刊入驻 PRD](../specs/2026-09-15-journal-onboarding-design.md)。本次为首期代码交付，生产环境未变更。
+
+| 用户 | 页面 | 用途 |
+|---|---|---|
+| 读者 | `/journals`、`/journals/{slug}` | 已公开期刊与论文目录 |
+| 编辑部 | `/journals/apply` | 保存申请、提交身份及代表资格证明 |
+| 编辑部 | `/journals/manage` | 已加入期刊和申请状态 |
+| 刊内成员 | `/journals/manage/{journalId}` | 论文、成员、额度、服务申请 |
+| 编辑与获指派审核员 | `/journals/manage/{journalId}/articles/{articleId}` | 来源、授权、解读草稿、人工审核 |
+| 平台管理员 | `/admin/journals` | 期刊核验、运行状态、服务处理和额度开通 |
+| 读者与工具 | `/research/{publicId}/v/{versionNo}` | 固定版本解读，优先引用原文 DOI |
+
+期刊负责人、管理员、编辑、审核员分别复用工作空间角色 owner、maintainer、author、reviewer。平台管理员核验权限独立于刊内成员权限。审核员仅能访问指派给自己的论文。
+
+## 首次启用
+
+1. 按现有发布流程备份核心数据库，检查部署源版本，构建 API、Web、Agent Worker 及依赖。
+2. 使用既有迁移 CLI 应用核心迁移 37：`20260915000000_journals`。独立 Search 数据库无新增迁移。
+3. 确认存储、文件扫描、文档解析组件和现有 AI Gateway 均已按站点配置运行。新增模块不引入独立模型密钥。
+4. 先用平台管理员核验一家有真实代表授权的试点期刊。每家首次核验发放 5 篇试用额度，有效期 90 天。
+5. 核对来源许可后上传一份获准材料，验证扫描、解析、AI 草稿、人工审核、固定版本公开与撤回的完整真实流程。
+
+`JOURNALS_ENABLED=false` 暂停新期刊业务写入和新作业领取。数据库恢复/额度到期对账仍运行，既有公开读入口和通用接口的权限保护仍保留。默认启用；灰度环境可先关闭再开放。
+
+## 来源和加工规则
+
+- DOI 导入只向固定 Crossref 端点读取书目，拒绝任意 URL 抓取。每批最多 50 条，4 个并行请求；先预览，确认后再次核对来源再导入。
+- 已发表论文的原作者、DOI 与出版日期保持独立。一个 DOI 只对应一个中立 Work；刊内解读新建于期刊工作空间，不获取个人研究对象的控制权。
+- 仅书目不能生成解读。摘要来源只能产生明确标为“基于摘要”的解读，不能产生图卡。
+- 内部加工、外部 AI 处理、衍生说明生成、原文公开、衍生说明公开分别授权，未勾选即未授权。
+- PDF、DOCX、UTF-8 TXT/Markdown 单文件不超过 50 MB；默认期刊来源容量 2 GB。上传原件保留在私有材料库，扫描和解析成功后才用于生成。
+- 上传先登记私有材料并计入容量，再写入存储；成功后才更新论文来源并排入解析队列。存储失败的材料仍计入容量，过期的 staging 作业由恢复流程结算，避免重复上传绕过容量或覆盖共享原件。
+- AI 输出包含一句话摘要、六字段、带证据的主张、图卡和 FAQ。引文必须出现在来源中；数值预测不能仅改标签作为实验结果。
+- 规则校验辅助人工审核，不能证明所有科学内容正确。稿件中的指令只作为待分析文本，不产生平台操作权限。
+
+## 作业、额度与冲突
+
+作业持久化于 PostgreSQL，使用租约领取，单刊默认最多 2 个运行作业、100 个排队/运行作业。服务重启后继续处理已入队作业。
+
+```text
+生成请求 → 原子预占 1 篇额度 → 领取并复核权限 → 模型生成与来源检查
+  ├─ 有效草稿原子保存 → 消耗 1 篇 → 等待人工审核
+  └─ 失败 / 取消 / 权限失效 / 修订冲突 → 释放预占
+```
+
+技术重试最多 2 次，属于同一个作业。用户显式重试创建新请求并关联失败作业；请求键重放返回原终态。过期额度不会因取消而恢复可用。来源解析不扣 AI 篇数。
+
+编辑在生成过程中修改草稿时，生成结果不能覆盖新修改。失败结果仅供有权限的编辑私下比较；采用后仍需通过保存校验和重新审核。
+
+服务申请可记录报价、拒绝或取消。管理员通过关联服务申请的额度开通完成批准；同一申请不能以不同请求键重复开通。支付和发票仍由人工服务流程处理。
+
+## 审核、发布与纠错
+
+人工审核绑定修订号和来源/许可摘要。更改内容、来源、许可或审核指派使旧审核失效。负责人/管理员确认后，版本、发布记录、公开指针在同一事务内提交。
+
+公开快照保留原文身份、编辑部解读、证据定位和适用许可；不包含申请资料、内部许可证明、作业提示词或私有原件下载链接。Crossref 摘要不会因进入元数据而自动公开。
+
+固定 v1 不被后续草稿覆盖。更正需要编辑、复审、发布新版本。限制/撤回后，固定版本页面及 API 返回不可访问；期刊目录保留论文身份与状态。公开响应禁用缓存，外部独立保存的副本无法保证回收。
+
+原文撤回/作者授权争议应先限制受影响解读，留存核验依据后处理。首期个人对象关联与复制授权由平台人工留存具体对象版本、授权人、动作范围、附件、有效条件及原对象链接，再由编辑提交获准来源；不自动迁移个人对象。
+
+读者登录后可在固定解读页面提交纠错反馈，并查看自己的工单及处理说明。期刊负责人、管理员和编辑从工作台处理本刊反馈，注明已处理或未采纳原因；反馈及回复保持私密，不直接修改或公开论文内容。论文更正仍须走修订、复审、新版本发布流程。
+
+## API 约定
+
+API 服务原生路径无 `/api`；浏览器同源代理添加 `/api`。公开分页默认 20、最大 100，按 UUID 升序，使用返回的 `nextCursor`。
+
+| 方法与同源路径 | 返回/用途 |
+|---|---|
+| `GET /api/journals?cursor=…&limit=20` | `items`、`nextCursor` |
+| `GET /api/journals/{slugOrId}` | `journal`，含公开身份和目录计数 |
+| `GET /api/journals/{journalId}/articles` | 安全书目、内容状态、允许公开的固定版本链接 |
+| `GET /api/research/{publicId}` | 既有研究对象概览和最新公开版本 |
+| `GET /api/research/{publicId}/v/{versionNo}` | 既有版本数据，期刊版本新增可选 `research.journalPackage` |
+| `POST /api/journals/{id}/articles/preview` | 登录后 DOI 预览，逐项 `ready/duplicate/failed`，不写入 |
+| `POST /api/journals/{id}/articles/import` | 确认导入，逐项 `imported/duplicate/failed` |
+| `POST /api/journals/{id}/articles/{articleId}/source-file` | multipart：`revision`、`requestKey`、`file` |
+| `POST /api/admin/journals/service-requests/{id}/review` | `status`、`expectedStatus`、`note`，记录人工服务处理 |
+| `POST /api/journals/{id}/articles/{articleId}/feedback` | `versionNo`、`content`、`requestKey`，提交私密纠错 |
+| `GET /api/journals/{id}/feedback?limit=20&cursor=…` | 编辑查看本刊，其他已验证用户仅查看自己提交的工单 |
+| `POST /api/journals/{id}/feedback/{feedbackId}/respond` | `expectedStatus`、`status`、`response`，处理并留存说明 |
+
+其他刊内写入继续使用会话、CSRF、防重放键和修订号。400 表示输入不完整，403 表示无操作权限，404 不暴露其他期刊的私有对象，409 表示状态/修订/幂等冲突。限流沿用站点公共规则。
+
+`journalPackage` 只在可公开的期刊固定版本出现；受限/撤回的固定版本接口返回 404。示意结构如下，非真实论文数据：
+
+```json
+{
+  "metadata": {"title": "原论文题名", "doi": "10.1234/example", "authors": ["Original Author"]},
+  "identity": "journal-authored-interpretation-of-published-work",
+  "draft": {"summary": "明确范围的解读", "core": {}, "claims": [], "figures": [], "faq": [], "scope": "abstract", "language": "zh"},
+  "source": {"kind": "abstract", "label": "摘要来源", "url": "https://doi.org/10.1234/example"},
+  "review": {"method": "editorial-human-review", "revision": 4},
+  "license": "CC-BY-4.0",
+  "versionNo": 1,
+  "url": "/research/OSR-EXAMPLE/v/1"
+}
+```
+
+公开 API 读取次数只反映平台调用，不能等同 AI 引用。访客统计未配置时返回 `null`，不显示为零。外部 AI 引用监测、Topic Hub、知识图谱和行业认证属于后续阶段。
+
+公开站点地图入口为 `/journals/sitemap.xml`，按期刊列出 `/journals/{slug}/sitemap.xml`。每刊地图包含公开主页及允许访问的固定版本，从公开 API 分页读取；不包含草稿、内部材料或反馈，受限/撤回版本不再列入。地图禁用缓存，超过单份 50,000 条协议边界时返回暂不可用，需再拆分后扩容。
+
+## 验证与回退
+
+真实数据库测试仅接受显式的 loopback `JOURNAL_TEST_DATABASE_URL` 与 `journal_test` 测试库，不读取站点凭据。迁移演练脚本创建独立临时数据库，检查前进、回退与再次应用后个人研究对象保留。
+
+```text
+pnpm --filter @openscience/api... build
+pnpm --filter @openscience/domain exec vitest run test/journal-content.test.ts test/journal-onboarding.test.ts test/journal-database.test.ts
+pnpm --filter @openscience/api exec vitest run test/journal-boundary.test.ts test/journals-database.test.ts test/journal-feedback-database.test.ts
+pnpm --filter @openscience/agent-worker exec vitest run test/journal-worker.test.ts
+pnpm --filter @openscience/web build
+pnpm --filter @openscience/web exec vitest run test/journal-api-contract.test.ts test/journal-ui-integration.test.tsx
+node scripts/journals/verify-migration.mjs
+pnpm docs:lint
+pnpm audit:docs-sync
+```
+
+浏览器验收另需设置 `JOURNAL_BROWSER_TEST=1` 和上述测试库变量，再运行 API 包的 `test/journal-browser.test.ts`。先以 `API_ORIGIN=http://127.0.0.1:3001` 构建 Web；验收占用本机 3001 端口启动隔离 API，Web 使用随机端口。截图输出到已忽略的 `apps/web/test/visual/out/journals/`。
+
+生产回退优先关闭功能并回退应用版本，保留新增表。迁移 37 的 `rollback.sql` 会删除期刊表，包含期刊业务数据；仅用于空环境/隔离演练或已备份并明确批准的数据回退。不能在已运营期刊上直接执行。
+
+本地测试不替代生产扫描/解析 sidecar、真实模型、对外访问和性能验收。当前证据与尚需部署验证的项目见 [CURRENT handoff](../handoff/2026-09-15-journal-onboarding-handoff.md)。
