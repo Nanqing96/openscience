@@ -1,5 +1,6 @@
 # Hermes / Workbench CURRENT Handoff
 ## 目标与约束
+- 2026-09-15用户“执行”：真实私有配图任务25215cd1-e37a-4155-922d-3c06ae9aaec5创建01:28:52 UTC，API202仅提交一次；五次MiniMax成功，01:29:39科学审阅提交前失败，无submitted/conversation。实读Chat已登录6 Pro；composer先出现，模型控件约5秒后hydration，原runner立即判错。当前修复既有30秒等待与发送前模式复核，保留不重发；尚待交付及续用原candidate。回执tmp/research-illustration-20260915-start.json，原request仍在服务器jobs/review/<task>/request.json。
 - 用户2026-09-15确认Langfuse已登录，要求继续并说明后续任务。先收尾既有科学审阅结果复用，再沿正常研究任务恢复配图质量优化；不新增治理平台/模型阶段，新增风格、Figma、视频、第三篇和批量仍暂缓。
 - 禁止测试、预检、CI、本机构建；本机仅静态读写/Git/传输。执行了必要服务器构建/启动及现有工具只读查询；没有新模型、生图、论文确认或公开发布。
 - Chat为主要生图手段，Codex CLI保留备用。科学认识来自上游已审解析/分析，不能用未审semanticStage或参考图作为科学证据。
@@ -20,7 +21,7 @@
 ## 工具实际使用与持久维护
 - Backstage此前实际返回agent-worker owner及Gateway/parser/skills依赖；它是维护目录，不是运行或质量事实。
 - Serena在新生产快照实际定位materializeReviewedClaimSuggestions的唯一调用：extractor.ts:2566，reviewAndMaterializeCanonicalProposal共同物化路径；日志tmp/reviewed-claims-serena-references.log。
-- Langfuse于2026-09-15 01:23 UTC经原受限查询入口读回两条历史image_provider_failed；日志tmp/reviewed-claims-langfuse-errors.log。新任务taskId审计接线已上线，尚无正常新调用证明关联效果；旧unknown不猜测回填，不为填表制造调用。
+- Langfuse于2026-09-15 01:34:25 UTC经原受限查询入口读回该真实任务全部6次调用，requestCorrelation均为25215cd1：五次MiniMax成功、一次scientific_review失败。采集有120秒提交延迟、60秒轮询及分页，无需重启/重放；旧unknown不猜测回填。任务关联已实证，不代表科学质量。
 - 用户已确认Langfuse登录。账号按明确要求改密，同事务密码比对成功、旧会话失效、私有凭据文件0600原子同步；文档不存密码。容器Prisma使用已安装pnpm生成客户端路径，根入口缺生成client。
 - 登录入口http://localhost:3130/auth/sign-in；沿用ssh-run.sh --development-tunnel。容器重建/IP变化后重开隧道；后台采集/查询用独立服务身份，不依赖网页登录。SMTP/SSO/定时备份/自动保留期未配置。
 - Vercel Skills曾实际list得到31技能、find返回候选；安装、runtime注入、实际产物provenance和质量分别记录。开发工具不自动赋权给科研用户Hermes。

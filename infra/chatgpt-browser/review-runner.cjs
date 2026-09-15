@@ -149,8 +149,16 @@ async function normalChatMode(input) {
   return await form.count() === 1 && !await form.getByText('Create image', { exact: true }).isVisible().catch(() => false);
 }
 async function waitForComposer(page, deadlineAt) {
-  while (Date.now() < deadlineAt) { const found = await bounded(composer(page), 2000).catch(() => null); if (found) return found; await new Promise(resolve => setTimeout(resolve, 500)); }
-  return null;
+  let reason = 'CHAT_COMPOSER_NOT_FOUND';
+  while (Date.now() < deadlineAt) {
+    const found = await bounded(composer(page), 2000).catch(() => null);
+    if (!found) reason = 'CHAT_COMPOSER_NOT_FOUND';
+    else if (!await bounded(model6ProActive(found), 2000).catch(() => false)) reason = 'MODEL_6_PRO_NOT_READY';
+    else if (!await bounded(normalChatMode(found), 2000).catch(() => false)) reason = 'NORMAL_CHAT_MODE_NOT_READY';
+    else return found;
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+  throw Error(reason);
 }
 async function resolveCanonicalConversation(page, deadlineAt) {
   while (Date.now() < deadlineAt) {
@@ -278,6 +286,8 @@ let activePage;
   const baseline = await page.locator('[data-message-author-role="assistant"]').count();
   await input.fill(prompt);
   await uploadAttachments(input, request);
+  if (!await bounded(model6ProActive(input))) throw Error('MODEL_6_PRO_NOT_READY');
+  if (!await bounded(normalChatMode(input))) throw Error('NORMAL_CHAT_MODE_NOT_READY');
   const send = page.getByRole('button', { name: 'Send prompt', exact: true });
   if (!await send.isEnabled().catch(() => false)) throw Error('SEND_NOT_READY');
   once('submitted.json', { phase: 'submitted', id, promptHash: request.promptHash, assistantCount: baseline,
@@ -292,7 +302,7 @@ let activePage;
   if (!fs.existsSync(path.join(dir, 'submitted.json')) && activePage) {
     await bounded(activePage.close({ runBeforeUnload: false }), 3000).catch(() => {});
   }
-  const failure = { state: fs.existsSync(path.join(dir, 'submitted.json')) ? 'ambiguous_no_resend' : 'not_submitted', error: /^[A-Z_]+$/.test(error.message) ? error.message : error.name };
+  const failure = { state: fs.existsSync(path.join(dir, 'submitted.json')) ? 'ambiguous_no_resend' : 'not_submitted', error: /^[A-Z0-9_]+$/.test(error.message) ? error.message : error.name };
   try { once('operator-error.json', failure); } catch {}
   console.log(JSON.stringify(failure));
   process.exit(1);
