@@ -6,6 +6,7 @@ import { loadInstalledMediaSkills, mergeDesignSkillUsage } from '../skills/insta
 import { compileIllustrationImagePrompt } from './scene-image';
 
 type ScientificScene = { title: string; narration: string; illustration: Extract<IllustrationBrief, { schemaVersion: 2 }>; sourceClaimIds: string[] };
+const SCIENCE_SCENE_KEYS = ['title', 'narration', 'message', 'domain', 'subjects', 'labels', 'constraints', 'encoding'];
 const object = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('object_required');
   return value as Record<string, unknown>;
@@ -66,10 +67,16 @@ Return exactly {title,scenes:[{title,narration,message,domain,subjects,labels,co
     { role: 'user' as const, content: sourceInput }];
   const claimIds = claims.map(claim => claim.id);
   function materializeScience(value: unknown): { title: string; scenes: ScientificScene[] } {
-    const root = object(value); keys(root, ['title', 'scenes'], 'science_root');
+    const input = object(value);
+    // A complete single scene is the same content as a one-entry storyboard.
+    // Normalize only that exact key set; never discard unknown fields or repair science.
+    const inputKeys = Object.keys(input);
+    const root = inputKeys.length === SCIENCE_SCENE_KEYS.length && SCIENCE_SCENE_KEYS.every(key => inputKeys.includes(key))
+      ? { title: input.title, scenes: [input] } : input;
+    keys(root, ['title', 'scenes'], 'science_root');
     if (!Array.isArray(root.scenes) || root.scenes.length < 1 || root.scenes.length > 6) throw new Error('scene_count');
     return { title: text(root.title, 120), scenes: root.scenes.map(raw => {
-      const scene = object(raw); keys(scene, ['title', 'narration', 'message', 'domain', 'subjects', 'labels', 'constraints', 'encoding'], 'science_scene');
+      const scene = object(raw); keys(scene, SCIENCE_SCENE_KEYS, 'science_scene');
       if (!Array.isArray(scene.subjects) || scene.subjects.length < 1 || scene.subjects.length > 2) throw new Error('subject_count');
       if (!Array.isArray(scene.labels) || scene.labels.length > 6) throw new Error('label_count');
       if (!Array.isArray(scene.constraints) || scene.constraints.length > 2) throw new Error('constraint_count');
