@@ -1,25 +1,16 @@
 # CURRENT Progress Window
 
-## 2026-09-15 — 当前结果与未完成工作
-- 本轮按用户要求落实艺术Skill：已定位28b旧构图明确内外同色，显式art修订复用科学字段、自有Skill v4已同步Codex/Hermes并上线，High GO、服务器build/start完成。真实69ec只运行艺术规划且baoyu资料已消费、科学字段完全保持，末审只移除额外刻度。1cb8在提交前触发Chat菜单renderer崩溃，已定位并独立修复选择模式/插字顺序；High GO并安装，原方案不重跑，f424继续69ec+aa41实际参考生图中，精确结果见CURRENT。
-- 此前真实修订7d47cd45于04:18 UTC科学blocked：补上坐标/区域/波数说明仍漏k⊥模长定义；75eac此前也blocked。两次均无图像资产，接收器正常，不再归因于登录/代理。
-- 局部修订实际保住全部非label科学/艺术字段，仅一次既有科学模型调用，没有重跑art。它解决了全量重规划漂移，尚未解决完整落实反馈；已停止人工提示词/新任务循环，High定向审查已确认自由文本无逐项对应、只能回旧原稿两处缺口；已在原末审/patch合同补issues，并允许有界继承最新失败草稿；High GO、服务器build/start及Serena同步exit0。真实4f已继承7d并补模长定义，其他字段不变，6Pro accepted；28b直接编译该方案+aa41实际参考生成1672×941 PNG，已经看图。
-- 精确branch/release/rollback、任务ID及证据唯一记录于[CURRENT](handoff/2026-09-10-hermes-web-image-handoff.md)。28b坐标/分区/变量说明已可见，但内外同偏蓝，分区与参考风格仍需改善；保留draft、未公开发布，不把上线/生成成功当审美合格。下一步只处理艺术表现，不重启整篇科学分析。
+## 2026-09-15 — 实际艺术能力与新图
+- 已部署艺术专用修订：通过既有baseAssetId+revisionMode=art直接保留科学字段，只运行已安装设计Skill的艺术规划和末审；旧请求不变。自有Skill v4已同步Codex/Hermes，baoyu原包复用。
+- 真实69ec方案实际消费baoyu构图/水彩/文字资料，科学字段与4f完全相同；末审只去掉艺术模型额外刻度。真实f424已取回并入库为draft，已实际看图：内蓝外赭金、坐标和类别清楚、文字有层级；四角纸纹偏重，审美仍待用户判断，未发布。
+- 新图与证据、branch/HEAD/应用release/独立provider/rollback唯一记录于[CURRENT](handoff/2026-09-10-hermes-web-image-handoff.md)。图片tmp/research-illustration-f424.png；前图28b及用户喜欢的aa41均保留。
+- 1cb8长简报后打开生图菜单触发renderer崩溃，尚未提交。已把现有runner改为先选图像模式再插字，保留原沙箱/模式/文本/参考检查；f424完整请求已真正提交一次。
+- f424会话URL出现晚于原30秒窗口，已在原目标/全文/附件绑定后接回原图。新等待max120秒并保留结果恢复时间。原task executionAttempt2仅导入已完成provider结果，没有第二次生图；发送/恢复脚本不可重跑。
+- 应用必要服务器build/start与独立provider安装完成，三段代码变更均High静态GO；未测试/预检/CI/本机构建，不以部署/生成成功代替科学与审美质量。
 
-## 已交付并有真实证据
-- Backstage查owner/依赖、Serena查实际调用方、Langfuse查任务关联均已使用；用户已登录Langfuse。服务身份独立于网页登录，密码不写入文档。
-- Worker既有任务上下文补Gateway空requestId；原Langfuse view/connector消费。25215六次、1da6规划/审阅、2196/8d生图及75e/7d调用已有任务关联；固定Chat模型标签三层过滤断点已修，旧unknown不猜测回填。
-- 同一科学末审v5附加可选逐条结论，经原P定位/SourceMap进入Hermes原确认UI，不新增模型阶段。用户改写、blocked或无效建议不自动确认；旧v4与六字段回退保留。正常新论文确认交互/科学效果待观察。
-- IllustrationBrief v2分离科学encoding/艺术composition；科学规则共用既有critical-thinking。审阅仅局部调整艺术字段，v1可读；真实1da6 revised与a38 accepted已经观察，但两幅实际图片仍不合格。
-- 私有storyboardCheckpoint在规划后/审阅前保存，原重试和API投影分别保留/隐藏；同输入才复用，原权限和来源重验保留。新revisionTaskId只允许原failed checkpoint标签澄清，真实75e/7d已观察字段保持；后续已补结构化issues与有界最新稿继承，真实4faccepted。旧7d本次用完整legacy反馈，现代blocked issues消费仍待正常任务观察，不能夸大覆盖。
-- 自有配图skill v3同步Codex与Hermes：科学来源先于画面、可见标签完整性、类别名称/含义与数据绘图边界。Skill实际注入和provenance已见，不能以安装替代效果。
-- 原结构化repair增加固定字段/层级/长度诊断，完整八字段单scene可无损包装，未知字段仍拒绝。没有另造宽松解析器。
-- Chat就绪/原文锚定已修；a803已完成final但DOM/Copy为空，经严格原会话/用户/assistant/完成父链绑定的同源读取恢复，原broker产出blocked，无新发送或科学放行。
-- 正常发布保留历史挂载目录/镜像，只登记rollback；Windows正式传输复用规范密钥路径与IdentitiesOnly。独立High静态审阅与必要服务器构建/启动完成，无测试/预检/CI/本机构建。
-
-## 实际质量与保护边界
-- 2196实际Chat参考图生图把阈值画到首次过零点；8d分界纠正却遗漏坐标/阈值且函数曲线不可靠。两张均实际看图并拒绝，原图保留，没有公开发布。
-- 原二维方案59702缺类别标签；34ce全量再规划补标签又丢原坐标。新增局部澄清后不再丢坐标，但75e/7d出现定义遗漏，需要修反馈传递，不再重复造规划阶段。
-- 原公开Quantization v1、deep-sub-cycle v1、喜欢的aa41参考、私有真实论文/40证据/笔记均保留。Chat为主，Codex CLI仅备用。
-- BGE索引存在但hybrid query实际调用效果未观察；新上游建议效果、SMTP/SSO/备份/保留期等未完成项详见CURRENT，不能宣称全产品无债。
-- 文档已收拢到唯一CURRENT/能力台账，旧详细过程保留在Git历史。有变化回合末与关键节点同步，不是后台关闭回调或绝对防漂移保证。当前不扩展工具市场、新风格/Figma/视频/第三篇/批量。
+## 未完成与保护
+- 当前art修订由显式API请求使用，普通Hermes自然语言快捷路由未自动选择；后续应按用户任务完善此入口，不把服务端能力冒称完整对话体验。
+- 下一步依据实际图片反馈改善艺术，复用已审科学内容；新增风格/Figma/视频/第三篇/批量暂停。公开Quantization v1、deep-sub-cycle v1、真实论文/40证据/笔记/原图均保持。
+- 既有标签局部修订/私有checkpoint/结构化审阅issues已部署；新blocked issues消费、新正常论文上游claimSuggestions确认效果及BGE hybrid query正常调用效果仍未观察，详见CURRENT和能力台账。
+- Backstage/Serena/Langfuse联动已有真实证据，版本与效果分别记录；Langfuse用户已登录，无需重复登录/密码。SMTP/SSO/备份/保留期未完成。
+- 无关dirty设计spec保留，根main仅导航。唯一CURRENT和按变化同步的Skill降低漂移，不保证未来绝对零债务，也不是后台结束回调。
