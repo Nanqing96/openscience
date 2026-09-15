@@ -47,6 +47,7 @@
 
 | 问题 / 位置 | 后果 | 处理与后续 |
 |---|---|---|
+| 28b原composition写明内外同色；base艺术修订仍重跑science | 参考配色被旧指令覆盖，局部审美调整有科学漂移与重复调用风险 | 候选以显式revisionMode=art复用原base科学字段，只改composition/treatment；同模型注入原baoyu设计参考，自有Skill v4补角色区分/文字层级。当前仅显式API请求使用，普通Hermes自然语言快捷路由未自动选择；精确交付和实际图见CURRENT |
 | production-release-retention默认将非active/rollback目录列入清理，忽略独立工具仍使用历史源码 | Catalog挂载83179导致9c30部署最终阶段拒绝并回滚 | 正常发布只登记rollback且空清理意图保留历史；明确清理才使用原严格挂载/引用规则。High静态GO，精确部署结果见CURRENT |
 | cloud-sync/evaluation-source-sync把MSYS的/c/...路径传给原生Windows OpenSSH | 指定项目密钥不可读，身份选择可能偏离预期 | 共用ssh-identity-path转换，保留参数数组与host-key规则，启用IdentitiesOnly；不修改密钥/配置。正式上传效果见CURRENT |
 | Worker 创建的 Gateway audit sink 未带已有执行上下文，Langfuse requestCorrelation 为空 | 调用失败无法从管理工具准确回到原任务及其技能/资产结果 | index.ts共用现有audit sink，每次record读取已有AsyncLocalStorage taskId，只补空requestId；原view/connector直接消费。已上线，25215六次调用及1da6/2196成功调用均真实关联task；旧记录不猜测回填 |

@@ -11,6 +11,8 @@ export interface StoryboardRequest {
     /** Omitted legacy requests are animation storyboards. */
     output: 'image' | 'video';
     baseAssetId?: string;
+    /** Restyle a sourced image plan without regenerating its scientific fields. */
+    revisionMode?: 'art';
     /** Reuse an owned scientifically blocked image plan for a bounded revision. */
     revisionTaskId?: string;
 }
@@ -50,13 +52,14 @@ function text(value: unknown, max: number, reason: string): string {
 }
 export function parseStoryboardRequest(value: unknown): StoryboardRequest {
     const v = object(value, 'request_shape');
-    keys(v, ['locale', 'style', 'instruction'], ['baseAssetId', 'revisionTaskId', 'output'], 'request_keys');
+    keys(v, ['locale', 'style', 'instruction'], ['baseAssetId', 'revisionTaskId', 'revisionMode', 'output'], 'request_keys');
     const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (typeof v.locale !== 'string' || !['zh', 'en'].includes(v.locale) || typeof v.style !== 'string' || !['watercolor', 'technical', 'ink'].includes(v.style) || typeof v.instruction !== 'string' || !v.instruction.trim() || v.instruction.length > 1000
         || ('baseAssetId' in v && (typeof v.baseAssetId !== 'string' || !uuid.test(v.baseAssetId)))
         || ('revisionTaskId' in v && (typeof v.revisionTaskId !== 'string' || !uuid.test(v.revisionTaskId) || v.output !== 'image' || 'baseAssetId' in v))
+        || ('revisionMode' in v && (v.revisionMode !== 'art' || v.output !== 'image' || !v.baseAssetId || 'revisionTaskId' in v))
         || ('output' in v && v.output !== 'image' && v.output !== 'video')) return invalid('request_values');
-    return { locale: v.locale as StoryboardRequest['locale'], style: v.style as StoryboardRequest['style'], instruction: v.instruction.trim(), output: (v.output ?? 'video') as StoryboardRequest['output'], ...(v.baseAssetId ? { baseAssetId: v.baseAssetId as string } : {}), ...(v.revisionTaskId ? { revisionTaskId: v.revisionTaskId as string } : {}) };
+    return { locale: v.locale as StoryboardRequest['locale'], style: v.style as StoryboardRequest['style'], instruction: v.instruction.trim(), output: (v.output ?? 'video') as StoryboardRequest['output'], ...(v.baseAssetId ? { baseAssetId: v.baseAssetId as string } : {}), ...(v.revisionTaskId ? { revisionTaskId: v.revisionTaskId as string } : {}), ...(v.revisionMode ? { revisionMode: v.revisionMode as 'art' } : {}) };
 }
 export function parseStoryboardDocument(value: unknown, selected: readonly string[], output: StoryboardRequest['output'] = 'video'): StoryboardDocument {
     const v = object(value, 'document_shape');

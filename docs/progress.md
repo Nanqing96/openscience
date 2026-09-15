@@ -1,6 +1,7 @@
 # CURRENT Progress Window
 
 ## 2026-09-15 — 当前结果与未完成工作
+- 本轮按用户要求落实艺术Skill：已定位28b旧构图明确内外同色，候选补显式art修订复用科学字段、自有Skill v4同步Codex/Hermes源。正在定向High复核及准备服务器交付；预定4f base→一次艺术规划/末审→aa41参考真实Chat图片，精确结果见CURRENT。
 - 此前真实修订7d47cd45于04:18 UTC科学blocked：补上坐标/区域/波数说明仍漏k⊥模长定义；75eac此前也blocked。两次均无图像资产，接收器正常，不再归因于登录/代理。
 - 局部修订实际保住全部非label科学/艺术字段，仅一次既有科学模型调用，没有重跑art。它解决了全量重规划漂移，尚未解决完整落实反馈；已停止人工提示词/新任务循环，High定向审查已确认自由文本无逐项对应、只能回旧原稿两处缺口；已在原末审/patch合同补issues，并允许有界继承最新失败草稿；High GO、服务器build/start及Serena同步exit0。真实4f已继承7d并补模长定义，其他字段不变，6Pro accepted；28b直接编译该方案+aa41实际参考生成1672×941 PNG，已经看图。
 - 精确branch/release/rollback、任务ID及证据唯一记录于[CURRENT](handoff/2026-09-10-hermes-web-image-handoff.md)。28b坐标/分区/变量说明已可见，但内外同偏蓝，分区与参考风格仍需改善；保留draft、未公开发布，不把上线/生成成功当审美合格。下一步只处理艺术表现，不重启整篇科学分析。

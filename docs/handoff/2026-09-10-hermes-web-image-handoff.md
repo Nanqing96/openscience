@@ -1,6 +1,7 @@
 # Hermes / Workbench CURRENT Handoff
 
 ## 当前结论与下一动作（2026-09-15）
+- 当前用户要求实际用已安装设计Skill改善28b。线上旧composition明确要求内外同色，导致参考蓝金失效；普通base修订仍重跑science。候选新增既有请求revisionMode=art（baseAssetId、image、同locale、v2/current支持来源），直接复用全部科学字段，只运行既有art规划和末审；旧请求不变，无新入口/模型/表/依赖。自有Skill v4明确配色角色、标签层级、替换旧冲突及艺术复用，已同步本机；候选未部署，独立High复核进行中。实际下一步：交付后以4f为base生成艺术方案，用aa41实际PNG产一张私有候选，不发布。
 - 用户已确认Langfuse登录并授权执行：先完成既有工具/Skill联动、消除重复实现，再推进真实私有配图。基础联动已上线且有真实调用证据；通用科学/审美质量尚未完成，不能以部署或task succeeded代替。
 - 此前任务7d47cd45-1b07-4795-a0bb-e5ba3e70f53a于04:18:18 UTC科学blocked：新增了坐标分量、单色波数和区域名称，仍漏“k⊥是横向波矢模长”。75eac9d3-3ab3-468c-bc40-53d6f52bafa2此前也blocked；两份均无新资产/图片。原审阅正常返回，不是登录/代理/receiver故障。
 - 两次实际checkpoint比较均证实：除labels及由它派生的visualAction，科学/艺术字段与原59702完全相同；新调用仅共享科学skill v2及自有skill v3，没有重跑艺术规划。证据tmp/illustration-label-meaning-observed.log。

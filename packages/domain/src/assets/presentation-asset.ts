@@ -374,6 +374,9 @@ export async function requireStoryboardBase(prisma: Pick<Prisma.TransactionClien
     const view = asset && presentationStoryboardView(asset, ids);
     if (!asset || asset.deletedAt || asset.researchObjectId !== payload.researchObjectId || asset.versionId !== payload.versionId || !['draft', 'approved'].includes(asset.status) || !view || JSON.stringify(ids) !== JSON.stringify(payload.sourceClaimIds))
         throw new PresentationAssetError('VALIDATION_ERROR', 'Base storyboard is invalid for these sources');
+    if (payload.storyboard?.revisionMode === 'art' && (view.output !== 'image' || view.locale !== payload.storyboard.locale
+        || view.document.scenes.some(scene => scene.illustration?.schemaVersion !== 2)))
+        throw new PresentationAssetError('VALIDATION_ERROR', 'Art revision requires a structured image plan in the same language');
     return { view, identity: JSON.stringify({ contentHash: asset.contentHash, provenance: asset.provenance, ids }) };
 }
 

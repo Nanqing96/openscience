@@ -2,7 +2,7 @@
 name: openscience-research-illustration
 description: Plan and refine evidence-grounded research illustrations for OpenScience through Hermes and Chat image generation, using structured briefs, source-scoped visual references and reusable art directions. Use for paper illustrations, scientific concept images and research covers; quantitative plots require a data renderer.
 metadata:
-  version: "3"
+  version: "4"
 ---
 
 # OpenScience research illustration
@@ -53,6 +53,10 @@ Keep independent scientific domains distinct. Coordinate dimensionality, units a
 Choose composition from the relationship, not the style name. A process may use a sequence; classification may use a domain partition; a cover may use one expressive subject. Do not turn every paper into a process diagram, a decorated circle or a grid of summary cards. A small label budget is a reason to simplify the explanation, not to shrink text or drop an essential condition.
 
 For a revision, distinguish a local correction from a rejected overall design. Retain accepted aspects and unaffected science. Change the hierarchy and composition when the user rejected them; changing a background or recoloring a motif is insufficient. Preserve useful reference qualities without copying unrelated scientific content. Watercolor is one supported direction, not a default for every paper.
+
+For an art-only revision of an existing structured image plan, use the existing storyboard generation request with `baseAssetId` and `revisionMode: "art"`. It reuses scientific fields directly and runs the installed art guidance plus the existing final scientific review. Locale and scientific content stay unchanged; a request to alter either needs the ordinary planning path. Replace rejected choices in composition/treatment rather than preserving them as old instructions alongside a conflicting reference.
+
+Assign palette and emphasis to the already established visual roles. Categories that readers must distinguish need visible separation; supporting axes and leaders should remain quieter than the subject. Put primary label phrases at the first reading level and their existing definitions at a smaller, still readable second level. Describe these choices in composition/treatment so the renderer receives them; a style name or reference attachment alone does not make them happen.
 
 If scientific review only found missing explanations in existing labels, reuse the saved candidate through the scoped label-clarification path. Preserve label indices, symbols, axes, domains and artwork; do not regenerate the whole scientific intent to add a category name. This path cannot repair a missing axis, incorrect equation or changed source. Such problems require a new scientific plan. Every clarified candidate still needs the existing scientific review before rendering.
 
