@@ -19,7 +19,7 @@
 | `AGENTS.md` / `.agents/skills/architecture-guard/SKILL.md` / `.agents/skills/docs-sync/SKILL.md` / `docs/decisions/ADR-002-agent-tooling-portability.md` | 复用前定位产品意图、实际调用与已有结果；能力索引按需读取、唯一版本锚点，禁止安装/格式检查冒充运行效果 |
 | `README.md` / `.agents/skills/{brainstorming,finishing-a-development-branch,repo-map,requesting-code-review,subagent-driven-development,test-driven-development,test-gate,using-git-worktrees,using-superpowers,verification-before-completion,writing-plans,writing-skills}/` | 从根目录带入已有精简流程与对应引用，保留独有能力；统一当前入口和已授权范围，避免旧工作树恢复重复流程 |
 | `apps/agent-worker/src/skills/installed-media-skills.ts` / `apps/agent-worker/src/presentation/{illustration-planner,handler}.ts` | 去重已上线：共用mergeDesignSkillUsage、保留单一来源入口及提交时重验；High静态GO和服务器构建/启动证据见CURRENT |
-| `packages/domain/src/assets/illustration-brief.ts` / `apps/agent-worker/src/presentation/{illustration-planner,illustration-review}.ts` / `apps/agent-worker/src/skills/installed-media-skills.ts` / `.agents/skills/openscience-research-illustration/SKILL.md` | v2分开科学编码/排布、末审仅艺术局部修正、v1原样读取、共享critical-thinking均已上线；未重跑模型。上游细粒度确认缺口见CURRENT/能力台账 |
+| `packages/domain/src/assets/illustration-brief.ts` / `apps/agent-worker/src/presentation/{illustration-planner,illustration-review,handler}.ts` / `apps/agent-worker/src/skills/installed-media-skills.ts` / `.agents/skills/openscience-research-illustration/SKILL.md` | v2科学编码/艺术分离及私有storyboardCheckpoint已部署；真实审阅已阻断错误方案，修订及质量结果见CURRENT/能力台账。Domain原retry保留checkpoint、task投影隐藏内部记录 |
 | `apps/agent-worker/src/skills/media-direction.ts` / `apps/agent-worker/src/presentation/scene-image.ts` | dd4c935a/v4已部署；区分科学批准与审美认可、定向修改保持/否定构图重排。新学术cdce/封面1a1d均被用户否定，仍只认可淡彩aa41；实际结果/局限见CURRENT |
 | `apps/web/app/dashboard/dashboard.module.css` | 6504c004已部署实看：收回Hermes遗留跨三行布局，首行等高、后续整行及紧凑导入；桌面/手机无横溢出 |
 | `infra/private-cleanup/{runner.mjs,install.sh}` / `infra/codex-image-runner/runner.mjs` / `apps/web/app/trash/page.tsx` | 已交付f8：Node符号链接精确身份、正常排空退出、安装等锁、回收站自动刷新；原4项已实际清除。独立Codex仅090文件补丁、base1ad运行环境保留 |
@@ -647,7 +647,7 @@
 
 - `infra/scripts/browser-tunnel.ps1`：Windows隐藏SSH隧道断线重连；固定localhost6081，复用ssh-run.sh，2026-09-09本机页面恢复HTTP200。
 
-- `infra/chatgpt-browser/runner.cjs` / `review-runner.cjs` / `page-lifecycle.cjs`：DEPLOYED image runner11494323/science runner501da7a3/helperd369ccc2；精确任务输入/原图回收/只下载恢复/连接前自有target清理，共享生命周期模块随install.sh安装。实际5260回收与边界见CURRENT handoff。
+- `infra/chatgpt-browser/runner.cjs` / `review-runner.cjs` / `page-lifecycle.cjs`：精确任务输入/原图回收/只下载恢复/自有target清理；2026-09-15修复6 Pro控件hydration等待及Markdown原文锚定，真实25215仅发送一次并回收审阅。旧runner114/science501/helperd369及5260收据为历史，当前独立bundle与应用分别见CURRENT handoff。
 
 | `apps/web/components/research/ArtifactViewer.tsx` / `scripts/archive-legacy-showcase.mjs` | 附件预览与可恢复旧演示归档；关联完整旅程计划 | 2026-09-09已部署c2d11326，34条归档；真实流程状态见CURRENT handoff |
 
@@ -666,4 +666,4 @@
 
 | .agents/skills/baoyu-article-illustrator/、baoyu-cover-image/、baoyu-infographic/；apps/agent-worker/src/skills/installed-media-skills.ts | 三个原版MIT设计技能及Hermes只读原文章节加载；消费写入既有资产provenance | 2026-09-14已部署ea43696d；上游commit1567581c；真实方案141f42d3消费三包，但方案质量不合格已rejected，见CURRENT |
 
-| .agents/skills/openscience-research-illustration/；packages/domain/src/assets/illustration-brief.ts；apps/agent-worker/src/presentation/{illustration-planner,illustration-review,storyboard,scene-image,handler}.ts；packages/ai-gateway/src/{image,codex-image-protocol,codex-image,gateway}.ts；infra/chatgpt-browser/{broker.mjs,runner.cjs} | 自有科学分析驱动配图skill、带原文basis的brief与Chat真实参考图传递 | 两阶段实际质量失败；新审阅应用构建失败，已暂停；修正/版本/真实任务见CURRENT handoff |
+| .agents/skills/openscience-research-illustration/；packages/domain/src/assets/illustration-brief.ts；apps/agent-worker/src/presentation/{illustration-planner,illustration-review,storyboard,scene-image,handler}.ts；packages/ai-gateway/src/{image,codex-image-protocol,codex-image,gateway}.ts；infra/chatgpt-browser/{broker.mjs,runner.cjs} | 自有科学分析驱动配图skill、带原文basis的brief与Chat真实参考图传递 | 已部署；旧构建阻断已解决，真实科学审阅阻断错误方案，私有修订正在推进。精确版本/产物质量见CURRENT handoff，不以安装代替效果 |

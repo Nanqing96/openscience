@@ -11,7 +11,7 @@
 | Backstage目录API | `openscience-development-catalog-catalog-1`；标准实体实际返回Hermes owner/deps，匿名401；SQLite独立state，只读Token身份，无Docker socket/生产DB |
 | Serena只读MCP | `openscience-development-serena-serena-1`；实际三工具列表、Gateway符号及extractor调用返回；快照按CURRENT区分候选与生产，缓存独立，不加载仓库脚本/Secret/测试/依赖目录 |
 | Langfuse | `openscience-development-langfuse-*`六个独立服务，官方v4.35.0；独立PG/Redis/ClickHouse/MinIO，登录页200，实际API读回已有调用；无provider keys、外部AI任务或论文正文 |
-| Gateway元数据 | `openscience-development-gateway-audit`；专用只读`xgs_telemetry.gateway_calls`视图/角色，无原表SELECT，50条接收回执，抽读12条；checkpoint和凭据持久保存 |
+| Gateway元数据 | `openscience-development-gateway-audit`；专用只读`xgs_telemetry.gateway_calls`视图/角色，无原表SELECT；真实配图25215cd1六次调用已在Langfuse全部按taskId关联。120秒提交延迟、60秒轮询及分页不是丢日志；采集checkpoint和凭据持久保存 |
 | 模块依赖 / 技能CLI | 复用现有dependency-cruiser18.1.0，真实19模块/4跨包边；Vercel Skills1.5.26 list/find已实际使用，不安装搜索结果 |
 | 访问 | `ssh-run.sh --development-tunnel`在SSH中解析固定容器内部IP，本机127.0.0.1:3130/3131/3132；不增加服务器listener或外网network。容器重建后重开隧道。Docker24纯internal网络的ports声明不会生成映射，不能据compose配置声称可访问 |
 | Langfuse账号 | 与OpenScience独立；2026-09-15按用户明确要求完成单账号改密，同事务密码比对成功并使旧会话失效，私有凭据文件同步0600。用户已确认网页登录成功；交接说明见`infra/development-platform/langfuse/README.md`。未配置SMTP，不能依赖忘记密码链接 |
