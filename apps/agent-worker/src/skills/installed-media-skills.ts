@@ -89,7 +89,7 @@ export function loadInstalledMediaSkills(style: string, instruction: string, sta
   }
   const explicitStyles = select(illustrationStyles, 2);
   const selectedStyles = explicitStyles.length ? explicitStyles : [
-    /水彩|淡彩/.test(requested) ? 'watercolor' : /封面|杂志|编辑插画/.test(requested) ? 'editorial'
+    /封面|杂志|编辑插画/.test(requested) ? 'editorial'
       : style === 'watercolor' ? 'watercolor' : style === 'ink' ? 'ink-notes' : 'scientific',
   ];
   for (const selected of selectedStyles) include('baoyu-article-illustrator', `references/styles/${selected}.md`);

@@ -19,13 +19,14 @@
 - ac166暴露明确封面要求被艺术规划忽略；末审虽已收到userRequest，仅检查科学误导。已部署自有Skill v5/原planner/同一次末审补明确艺术要求符合性，继续只修composition/treatment，科学字段不变，不新增模型阶段或宣称审美通过。此前v4图库与本批两张图均保留。PNG在tmp/research-illustration-{atlas-c3a497,editorial-ac166}.png。
 - Taskmaster查实仍在八月已完成的hermes-research-intelligence，未登记本批目标；现复用同一tasks.json增加multistyle-research-illustration三项稳定验收，1/2进行中、3按用户既有认可完成。资产/反馈/版本只在本表，状态是唯一同步位。旧tag保留历史；工具projectRoot必须为交付树，根main只作导航。独立High同意此最小联动。
 - 06188212应用已部署，rollback6430；Catalog/telemetry同bundle06188212、Serena同源码快照（旧缓存镜像不变），安装exit0。真实Catalog已返回当前需求链接；按625119fa查询Langfuse返回2条精确关联（艺术规划+6Pro审阅），无模型造数。
-- 真实页面Hermes收到艺术修订请求，guide99e4f974-985b-4f12-808a-7fa39531ce32的3次结构回复均schema拒绝，只留guide:nested_fields。任务scope/原稿资格已实读无误；未创建新图。不能猜具体错误字段，正在补既有字段诊断/原回复修复反馈，不增加重试次数或输出正文日志。
+- 真实页面Hermes收到艺术修订请求，guide99e4f974-985b-4f12-808a-7fa39531ce32的3次结构回复均schema拒绝，只留guide:nested_fields。任务scope/原稿资格已实读无误；未创建新图。不能猜具体错误字段，已部署既有字段诊断/原回复修复反馈，High GO/服务器构建启动exit0，不增加重试次数或输出正文日志。旧guide不支持原任务retry；页面正常提交同一已保存请求为059f85ae-0f76-43e8-a70b-ebcd3d2d6019，当前真实续作中。
+- 059f85ae首轮结构成功、页面出现制作确认，但引导员改写出的instruction擅加Bessel曲线/零点交点/偶极子/英语标签，并把深墨色误作ink；已拦住，没有确认或创建方案。具体重复建设断点是guide抢做了艺术planner的工作。候选收紧艺术路由为原请求直传（超过既有1000字符则无动作澄清、不截断），总结只提议、无附加正文改动，粗渲染family保持原稿。实际设计仍交已装Skill/艺术planner；删除中文水彩词出现即加载水彩参考的回退，以免“不要水彩”被当肯定。旧059已在页面取消待确认安排；High审阅中，不能把结构成功说成语义正确。
 
 ## 版本与工作区
-- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码061882123d14be00b868c1971c9d56de21d83b6e，后续提交HEAD以Git为准。根dirty main只作导航，不作为部署源。
-- 应用production061882123d14be00b868c1971c9d56de21d83b6e；rollback6430ca03ffc5367b233d108dcd43250c827dd53f。既有deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0，必要服务器build/start完成。日志tmp/goal-art-route-deploy.log。发布树art-direction-release-41ae8902 detached06188212。
+- 交付树 E:/Miscellaneous/XGS/.worktrees/onchip-video-release，branch codex/onchip-video-release；代码d1f61d015bb63f022a97153740bfe87a15b51cec，后续提交HEAD以Git为准。根dirty main只作导航，不作为部署源。
+- 应用productiond1f61d015bb63f022a97153740bfe87a15b51cec；rollback061882123d14be00b868c1971c9d56de21d83b6e。既有deploy --no-tests --skip-migrate --reuse-unchanged-capability-images exit0，必要服务器build/start完成。日志tmp/goal-guide-repair-deploy.log（exit0）。发布树art-direction-release-41ae8902 detachedd1f61d01。
 - Chat provider独立bundle2e434fdee3d99b7798bf66a24c23b7fd869743e4；回退e57153f30281dce93a3cd968be63059911259b22（菜单顺序已修，canonical仍30秒）；再前e74c9396dae51b294917dc52ed84893668029806。两次installer exit0，复用未变6430 Gateway dist和原renderer，无浏览器重启/登录切换/沙箱放宽。日志tmp/illustration-{menu,canonical}-provider-{transfer,install}.log。
-- Serena source快照06188212（应用源码；不冒称含独立provider运行状态），缓存image23fcfab77fa1/tag04b5f91df4b4e86c210155cee83cd741f1521ca3；installer exit0，tmp/illustration-art-reuse-serena.log。Catalog/telemetry bundle061882123d14be00b868c1971c9d56de21d83b6e（rollback分别83179c45/abea68ef）；Skills CLI bundle83179c454b75688176060fabf9e611072d46813c不变；Langfuse official4.35.0。
+- Serena source快照d1f61d01（应用源码；不冒称含独立provider运行状态），缓存image23fcfab77fa1/tag04b5f91df4b4e86c210155cee83cd741f1521ca3；installer exit0，tmp/illustration-art-reuse-serena.log。Catalog/telemetry bundle061882123d14be00b868c1971c9d56de21d83b6e（rollback分别83179c45/abea68ef）；Skills CLI bundle83179c454b75688176060fabf9e611072d46813c不变；Langfuse official4.35.0。
 - Renderer保持sha256:1c47a579ceb608f244878b41888eee50bda1135ff325cb7b49de3a275ee2013d。无新依赖/表/迁移；未测试/CI/本机构建。本轮审阅代理误执行一次只读git diff --check，仅报行尾提示，已停止后续预检。3段代码变更均独立High静态GO；日志/构建/实际图分别证明各自范围。
 - 无关dirty docs/specs/2026-09-05-integrated-research-product-design.md不得提交/覆盖；其他历史文件、任务、图、工作树均保留。
 
