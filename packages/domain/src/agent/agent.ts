@@ -23,7 +23,7 @@ import { ResearchIntelligenceValidationError, validateSourceLocator } from '../r
 import { parseDocumentSourceMapReference, type DocumentSourceMapReference } from '../research-intelligence/source-map-ref';
 import { parseWorkspaceGuidePayload } from './workspace-guide-contract';
 import { isOwnedPrismaIdempotencyConflict, throwOwnedPrismaIdempotencyConflict } from '../prisma-idempotency-conflict';
-import { assertSearchIndexSourceLive, SearchIndexSourceError, type SourceMapSearchIndexPayload } from './search-index-source';
+import { assertSearchIndexSourceLive, parseSourceMapSearchIndexPayload, SearchIndexSourceError, type SourceMapSearchIndexPayload } from './search-index-source';
 
 export const AGENT_TASK_QUEUE = 'agent:queue';
 export const AI_CREDIT_RESOURCE = 'ai_credit'; // §2.4-7 配额骨架（P1A-7）
@@ -145,6 +145,13 @@ function retryAuthorityInclude(userId: string) {
   } as const;
 }
 
+function isDegradedSourceSearchIndex(task: Pick<AgentTask, 'kind' | 'status' | 'result' | 'payload'>): boolean {
+  if (task.kind !== 'search.index' || task.status !== 'succeeded'
+    || !isJsonRecord(task.result) || task.result.status !== 'needs_review'
+    || task.result.errorCode !== 'embedding_unavailable') return false;
+  try { return parseSourceMapSearchIndexPayload(task.payload) !== undefined; } catch { return false; }
+}
+
 function evaluateAgentTaskRetryEligibility(
   task: AgentTaskRetrySnapshot,
   userId: string,
@@ -161,6 +168,9 @@ function evaluateAgentTaskRetryEligibility(
     }
   } else if (task.kind === 'source.retrieve') {
     return { authorityValid: false, canRetry: false };
+  }
+  if (task.retryCount === 0 && isDegradedSourceSearchIndex(task)) {
+    return { authorityValid: true, canRetry: Boolean(researchObject) };
   }
   if (task.status !== 'failed' || task.retryCount !== 0 || task.error?.startsWith('[blocked]')) {
     return { authorityValid: true, canRetry: false };
@@ -807,7 +817,7 @@ export async function getAgentTask(
     researchObjectId: task.session.researchObjectId };
 }
 
-/** One explicit, idempotent-cost retry of a failed task. The original credit reservation is reused. */
+/** One explicit retry reuses the original reservation; source-derived search may recover missing dense vectors. */
 export async function retryAgentTask(
   deps: AgentDeps,
   input: { userId: string; taskId: string },
@@ -828,10 +838,23 @@ export async function retryAgentTask(
           if (task.retryCount >= 1) throw new AgentError('ILLEGAL_TRANSITION', 'Task was already retried');
           throw new AgentError('ILLEGAL_TRANSITION', 'Task is not retryable');
         }
+        const degradedSearch = isDegradedSourceSearchIndex(task);
+        if (degradedSearch) {
+          const source = await assertSearchIndexSourceLive(tx, task);
+          if (!source) throw new SearchIndexSourceError();
+          // Reuse the confirmation producer's authority and exact idempotency binding.
+          // Its existing row must be this owner; a changed source is never a retry.
+          const owner = await persistSourceMapSearchIndexInTransaction(deps, tx, {
+            sourceTaskId: source.payload.sourceTaskId, versionId: source.payload.versionId, userId: input.userId,
+          }, ctx);
+          if (owner.id !== task.id) throw new SearchIndexSourceError();
+        }
         const workspaceId = task.session.researchObject?.workspaceId ?? null;
         const changed = await tx.agentTask.updateMany({
           where: {
-            id: task.id, sessionId: task.sessionId, status: 'failed', kind: task.kind, retryCount: 0, error: task.error,
+            id: task.id, sessionId: task.sessionId, status: task.status, kind: task.kind, retryCount: 0, error: task.error,
+            executionAttempt: task.executionAttempt,
+            ...(degradedSearch ? { result: { equals: task.result as Prisma.InputJsonValue } } : {}),
           },
           data: {
             status: 'pending', progress: 0,
@@ -848,7 +871,8 @@ export async function retryAgentTask(
         if (changed.count !== 1) throw new AgentError('ILLEGAL_TRANSITION', 'Task retry is no longer available');
         await recordAudit(deps, tx, {
           actorId: input.userId, action: 'agent.task.retry', workspaceId,
-          targetType: 'agent_task', targetId: task.id, metadata: { retryAttempt: 1, creditPolicy: 'reuse-original-reservation' },
+          targetType: 'agent_task', targetId: task.id, metadata: { retryAttempt: 1,
+            creditPolicy: degradedSearch ? 'not-applicable-deterministic' : 'reuse-original-reservation' },
         }, ctx);
         return tx.agentTask.findUnique({ where: { id: task.id } });
       }, { isolationLevel: 'Serializable' });

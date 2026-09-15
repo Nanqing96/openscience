@@ -337,14 +337,28 @@ function compareExecutionFence(
   return incoming.attempt - current.attempt;
 }
 
-function isNewerGeneration(
-  incoming: { sourceVersionNo: number; sourceCreatedAt: Date; id: string },
-  current: { sourceVersionNo: number; sourceCreatedAt: Date; id: string },
-): boolean {
+interface IndexGenerationOrder {
+  sourceVersionNo: number;
+  sourceCreatedAt: Date;
+  id: string;
+  fenceOwnerTaskId: string | null;
+  fenceOwnerCreatedAt: Date | null;
+  fenceOwnerAttempt: number | null;
+}
+
+function isNewerGeneration(incoming: IndexGenerationOrder, current: IndexGenerationOrder): boolean {
   const versionDifference = incoming.sourceVersionNo - current.sourceVersionNo;
   if (versionDifference !== 0) return versionDifference > 0;
   const timeDifference = incoming.sourceCreatedAt.getTime() - current.sourceCreatedAt.getTime();
-  return timeDifference > 0 || (timeDifference === 0 && incoming.id > current.id);
+  if (timeDifference !== 0) return timeDifference > 0;
+  // Storage generation IDs are independent UUIDs. Order retries by their existing
+  // owner execution fence, never by a newly generated storage ID.
+  if (incoming.fenceOwnerTaskId && incoming.fenceOwnerCreatedAt && incoming.fenceOwnerAttempt !== null
+    && current.fenceOwnerTaskId && current.fenceOwnerCreatedAt && current.fenceOwnerAttempt !== null) {
+    return compareExecutionFence({ taskId: incoming.fenceOwnerTaskId, createdAt: incoming.fenceOwnerCreatedAt, attempt: incoming.fenceOwnerAttempt },
+      { taskId: current.fenceOwnerTaskId, createdAt: current.fenceOwnerCreatedAt, attempt: current.fenceOwnerAttempt }) > 0;
+  }
+  return incoming.id > current.id;
 }
 
 function decodeStoredVector(row: DenseRow): Float32Array | undefined {
@@ -496,7 +510,6 @@ export class SearchStorage {
           sourceGenerationSha256: input.sourceGenerationSha256,
         } },
         create: {
-          id: input.taskId,
           workspaceId: input.tenantId,
           researchObjectId: input.researchObjectId,
           artifactId: input.artifactId,
@@ -523,7 +536,7 @@ export class SearchStorage {
         || task.modelVersionId !== input.modelIdentity.modelVersionId
         || task.sourceGenerationSha256 !== input.sourceGenerationSha256) throw new Error('index task identity mismatch');
       if (task.status === 'succeeded') return { action: 'skip', taskId: task.id, status: 'succeeded' };
-      const initialLease = task.id === input.taskId && task.attemptCount === 1
+      const initialLease = task.attemptCount === 1
         && task.leaseToken === input.leaseToken && task.fenceOwnerTaskId === input.taskId
         && task.fenceOwnerCreatedAt?.getTime() === input.sourceCreatedAt.getTime()
         && task.fenceOwnerAttempt === input.executionAttempt;

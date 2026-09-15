@@ -2,7 +2,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { assertSearchIndexSourceLive, loadDocumentSourceMapReference, parseDocumentSourceMap, type AgentDeps, type DocumentSourceMap } from '@openscience/domain';
 import type { StorageAdapter } from '@openscience/storage';
 import {
-  chunkDocument,
+  chunkDocumentForEmbedding,
   SEARCH_CHUNK_SCHEMA_VERSION,
   type DenseModelIdentity,
   type EmbeddingClient,
@@ -300,7 +300,7 @@ function sourceGenerationSha256(job: SearchIndexJob): string {
 
 export function createSearchIndexer(dependencies: {
   storage: SearchIndexStorage;
-  embedder: Pick<EmbeddingClient, 'embed'>;
+  embedder: Pick<EmbeddingClient, 'embed' | 'tokenCounts'>;
   modelIdentity: DenseModelIdentity;
 }): SearchIndexer {
   const modelIdentity = { ...dependencies.modelIdentity };
@@ -308,7 +308,10 @@ export function createSearchIndexer(dependencies: {
     async index(job: SearchIndexJob, withWriteAuthority = <T>(operation: () => Promise<T>) => operation()): Promise<SearchIndexResult> {
       validateJob(job);
       const generationSha256 = sourceGenerationSha256(job);
-      const chunks = chunkDocument({ sourceMap: job.sourceMap, claimIdsByBlockId: job.claimIdsByBlockId })
+      const chunks = (await chunkDocumentForEmbedding(
+        { sourceMap: job.sourceMap, claimIdsByBlockId: job.claimIdsByBlockId },
+        texts => dependencies.embedder.tokenCounts({ purpose: 'chunk', texts }),
+      ))
         .map((chunk) => ({
           ...chunk,
           id: scopeChunkId(chunk.id, job, modelIdentity.modelVersionId, generationSha256),

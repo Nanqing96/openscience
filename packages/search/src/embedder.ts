@@ -188,6 +188,22 @@ function decodeResponse(rawBody: Buffer, expectedCount: number): EmbeddingResult
   };
 }
 
+function workerErrorCode(rawBody: Buffer): string | undefined {
+  let value: unknown;
+  try { value = JSON.parse(rawBody.toString('utf8')) as unknown; } catch { return undefined; }
+  const allowed = ['request_invalid', 'request_too_large', 'batch_invalid', 'text_limit_exceeded',
+    'token_limit_exceeded', 'tokenization_invalid', 'vector_invalid', 'worker_busy', 'worker_unavailable'];
+  return isPlainObject(value) && Object.keys(value).sort().join('\0') === 'error\0schemaVersion'
+    && value.schemaVersion === EMBEDDING_SCHEMA_VERSION && typeof value.error === 'string'
+    && allowed.includes(value.error) ? value.error : undefined;
+}
+
+function requireSuccessfulResponse(rawBody: Buffer, status: number): void {
+  if (status === 200) return;
+  const code = workerErrorCode(rawBody);
+  fail(code === undefined ? 'embedding_response_unavailable' : `embedding_worker_${code}`);
+}
+
 export class EmbeddingClient {
   private readonly baseUrl: string;
   private readonly fetchImpl: typeof fetch;
@@ -208,6 +224,35 @@ export class EmbeddingClient {
   }
 
   async embed(input: { purpose: EmbeddingPurpose; texts: string[] }): Promise<EmbeddingResult> {
+    return this.request('/v1/embeddings', input, (rawBody, status) => {
+      requireSuccessfulResponse(rawBody, status);
+      return decodeResponse(rawBody, input.texts.length);
+    });
+  }
+
+  /** The existing tokenizer endpoint performs no encoding; only its exact length rejection permits splitting. */
+  async tokenCounts(input: { purpose: EmbeddingPurpose; texts: string[] }): Promise<number[] | undefined> {
+    return this.request('/v1/tokenize', input, (rawBody, status) => {
+      if (status === 422 && workerErrorCode(rawBody) === 'token_limit_exceeded') return undefined;
+      requireSuccessfulResponse(rawBody, status);
+      let value: unknown;
+      try { value = JSON.parse(rawBody.toString('utf8')) as unknown; } catch { return fail('embedding_response_invalid'); }
+      const limit = input.purpose === 'query' ? 512 : 1024;
+      if (!isPlainObject(value) || Object.keys(value).sort().join('\0') !== 'schemaVersion\0tokenCounts'
+        || value.schemaVersion !== EMBEDDING_SCHEMA_VERSION || !Array.isArray(value.tokenCounts)
+        || value.tokenCounts.length !== input.texts.length
+        || value.tokenCounts.some(count => !Number.isSafeInteger(count) || count < 1 || count > limit)) {
+        return fail('embedding_response_invalid');
+      }
+      return value.tokenCounts as number[];
+    });
+  }
+
+  private async request<T>(
+    path: '/v1/embeddings' | '/v1/tokenize',
+    input: { purpose: EmbeddingPurpose; texts: string[] },
+    decode: (rawBody: Buffer, status: number) => T,
+  ): Promise<T> {
     validateInput(input.purpose, input.texts);
     const body = JSON.stringify({
       schemaVersion: EMBEDDING_SCHEMA_VERSION,
@@ -224,7 +269,7 @@ export class EmbeddingClient {
       const abortController = new AbortController();
       const timeout = setTimeout(() => abortController.abort(), this.requestTimeoutMs);
       try {
-        response = await this.fetchImpl(`${this.baseUrl}/v1/embeddings`, {
+        response = await this.fetchImpl(`${this.baseUrl}${path}`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body,
@@ -247,10 +292,10 @@ export class EmbeddingClient {
     }
     try {
       const rawBody = await readBoundedBody(response);
-      if (response.status !== 200 || response.headers.get('content-type')?.split(';', 1)[0]?.trim() !== 'application/json') {
+      if (response.headers.get('content-type')?.split(';', 1)[0]?.trim() !== 'application/json') {
         fail('embedding_response_unavailable');
       }
-      return decodeResponse(rawBody, input.texts.length);
+      return decode(rawBody, response.status);
     } catch (error) {
       const code = error instanceof EmbeddingClientError ? error.code : 'embedding_response_unavailable';
       this.logger?.(`embedding_request_failed:${code}`);

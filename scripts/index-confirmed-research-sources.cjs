@@ -7,6 +7,7 @@ const domain = read('@openscience/domain');
 const core = createPrismaClient();
 const scope = ['9067a2d5-42ad-4c06-b234-753728b71064', 'c896802c-35dd-4b59-8db1-5f374f83a6d8'];
 const apply = process.argv.includes('--apply');
+const retryIncomplete = apply && process.argv.includes('--retry-incomplete');
 let redis;
 (async () => {
   const tasks = await core.ingestionTask.findMany({
@@ -67,6 +68,15 @@ let redis;
       userId: plan.userId, sourceTaskId: plan.sourceTaskId, versionId: plan.versionId,
     });
     console.log(JSON.stringify({ researchObjectId: plan.researchObjectId, artifactId: plan.artifactId, ...result }));
+    if (retryIncomplete) {
+      const task = await core.agentTask.findUnique({ where: { id: result.taskId },
+        select: { status: true, retryCount: true, result: true } });
+      if (task?.status === 'succeeded' && task.retryCount === 0
+        && task.result?.status === 'needs_review' && task.result?.errorCode === 'embedding_unavailable') {
+        const retried = await domain.retryAgentTask(deps, { userId: plan.userId, taskId: result.taskId });
+        console.log(JSON.stringify({ researchObjectId: plan.researchObjectId, taskId: result.taskId, status: retried.status, retried: true }));
+      }
+    }
   }
 })().catch(() => { console.error('confirmed_source_index_operation_failed'); process.exitCode = 1; })
   .finally(async () => { await core.$disconnect(); if (redis) await redis.quit(); });

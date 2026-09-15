@@ -13,7 +13,7 @@
 | 共享科学推理规则 | `skills/scientific-critical-thinking.ts` → `extractor.ts` 的reduce/bridge及科学审校 | K-Dense方法的项目runtime v2，确有调用；并非安装整个K-Dense包。`skills/installed-media-skills.ts` science/review直接引用同一常量并记录id/version，已上线；真实配图1da6/a38的请求与provenance已消费共享规则，效果与缺口见CURRENT |
 | 原文科学审阅 | `extractor.ts:2056` 的 `modelScientificReviewCanonicalProposal` 用共享科学Skill调用 `gateway.completeStructuredWithMetadata`，沿MiniMax主路由；`:2562` 仅在显式 `context.mode=web` 时改走 `webScientificReviewCanonicalProposal` → `gateway.reviewScientific` | 普通论文的MiniMax来源审校已经存在，不能因配图审核阻塞再造一套。显式网页复核才依赖Chat；v5建议通过materializeReviewedClaimSuggestions映射原Evidence/确认UI，旧v4保留原身份。代码接线不证明整稿科学正确，历史失真和未观察项保留 |
 | 来源约束写作 | `apps/agent-worker/src/workspace-guide.ts` → `scientific-writing-source.ts`、`skills/scientific-writing.ts` | 写作有原始来源恢复和引用回填；本轮未重观其效果。它写稿，不负责验证坐标/色块的物理意义 |
-| 语义检索 | Worker建索引；`packages/search/src/runtime-config.ts`共享配置；`apps/api/src/search-runtime.ts`实例化既有hybrid服务，`research-object-search.ts`及POST `/research-objects/search`供ResearchList消费 | 原查询孤岛已补接代码；工作区成员预授权、来源存活过滤及结果再鉴权，只返回摘要；BGE查询3秒一次、故障显式退化。部署与真实查询见CURRENT。相似度召回不证明科学蕴含，不向已具完整来源的配图强塞检索 |
+| 语义检索 | 首次`confirmIngestionTask`在同事务调用原agent队列producer，`agent/search-index-source.ts`绑定原确认来源；Worker消费保存的SourceMap。`packages/search/src/runtime-config.ts`共享配置，API原hybrid服务经POST `/research-objects/search`供ResearchList消费 | 已补查询和业务producer两个断点；两真实论文18/9片段入库，UI Weyl已召回Quantization。批量dense当前embedding_unavailable仍在处理，不能以hybrid标签或AgentTask成功宣称向量完整；精确结果见CURRENT。授权/来源存活/结果再鉴权及既有公开保留适用，相似度不证明科学蕴含 |
 | 画面规划 / 设计skill | `presentation/storyboard.ts` → `illustration-planner.ts` → `skills/installed-media-skills.ts` | 自有v5与Baoyu参考已有真实消费；76918e55艺术修订只改变composition/treatment，与原稿科学字段全等，沿用原证据，不重跑全文分析。早期错误曲线候选已拒绝。具体风格交付差额见CURRENT，安装/Schema成功不等于科学或审美合格 |
 | 候选画面审阅 | `presentation/handler.ts` → `illustration-review.ts` → `gateway.reviewScientific`；illustration-plan走既有MiniMax结构化池，显式论文web复核保留原Chat provider | 配图不再固定6Pro；共享科学Skill、原规则/字段保护和blocked反馈继续复用，新旧provider/model收据兼容。每次实际provider尝试前复验任务/来源/原稿，失权立即终止；短事务后已发出的请求不可收回，旧结果落库仍复验。部署/新模型实际效果见CURRENT，旧769的6Pro记录不改写 |
 | Chat图像生成 / 参考图 | `presentation/scene-image.ts` → `gateway.generateImage` → `infra/chatgpt-browser/` | 服务器Chat直接执行已审方案；原参考图bytes和本批无参考图新风格均有真实成图。学术图c3a497已看图、仍待用户认可，初次封面ac166未合格，修订结果只见CURRENT。保留喜欢的aa41、旧图和公开v1；Codex CLI仅备用且不自动切换 |
@@ -25,7 +25,7 @@
 ### 复用与效果查询
 
 - **已经自动联动**：Worker任务执行、SourceMap/Claim/Evidence及RO/version绑定、方案保存/艺术修订复用、Gateway/provider队列、结果回收和资产记录；Gateway审计经既有view/connector自动进入Langfuse并携带taskId。已保存任务/真实产物见CURRENT，链路接线与每一步效果分别判断。
-- **同读上下文，完成判定仍由开发者/用户负责**：`management:context`从本交付树同读Git、Taskmaster currentTag/任务和CURRENT指针；Backstage引用同一任务源，Serena每次成功MCP返回携带实际快照revision，CLI亦携带。现有Skill已消费这一入口，不另存状态或自动改任务done；它不是关闭应用回调。deployment与真实管理读取见CURRENT，不能据安装承诺绝对防漂移。
+- **同读上下文，完成判定仍由开发者/用户负责**：`management:context`从本交付树同读Git、Taskmaster currentTag/任务和CURRENT指针；Backstage已实际读回同一任务源。Serena实际定位新增producer成功，MCP内容及CLI均返回同一源码revision。现有Skill消费这一入口，不另存状态或自动改任务done；它不是关闭应用回调。精确版本/读取见CURRENT，不能据安装承诺绝对防漂移。
 - 最新实证：76918e55实际provenance含共享科学Skill v2、自有v5及Baoyu，Langfuse对应MiniMax规划和Hermes经Gateway调用6Pro末审；Skill与模型不是替代关系。浏览器已定位512MiB共享内存瞬时耗尽并切换1GiB；真实六页加载峰值882MiB、资源错误0，草稿正文恢复与格式差异见CURRENT。不从安装/调用成功推断科学与审美全面合格。
 - 开发代理：按产品目的选行 → 查实现符号及调用方 → 查同任务的现有输入/输出与审阅 → 决定直接复用、补接断点或替换。任务说明写清具体缺口即可，不另造审批表、哈希、门禁或第二套任务库。
 - 效果证据沿用 `AgentTask.result`、资产 `provenance.designSkills`/`illustrationReview`、Gateway调用日志及现有批准/拒绝记录。`designSkills` 沿用既有JSON槽位，也记录共享科学skill，查询按id区分，不能全部解释成视觉风格。生产读取只限授权任务/工作区，不将全文或秘密搬到管理台账。观察不到用量就写未知；不能从任务成功率推断科学正确率。
