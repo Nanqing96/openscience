@@ -220,12 +220,55 @@ async function assistantResponseText(page, assistantId, domText) {
   if (visible) return visible;
   return copiedMessageText(page.locator(`[data-message-author-role="assistant"][data-message-id="${assistantId}"]`), page);
 }
+async function storedFinalText(page, conversation, anchor, assistantId, expectedPrompt) {
+  // Same authenticated conversation, exact visible turn and original user text.
+  // Read only its completed user-visible final message; never return reasoning or credentials.
+  return page.evaluate(async ({ conversation, userId, assistantId, expectedPrompt }) => {
+    if (location.href !== conversation) return '';
+    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 10000);
+    try {
+      const options = { signal: controller.signal, credentials: 'same-origin', redirect: 'error' };
+      const auth = await fetch('/api/auth/session', options);
+      if (!auth.ok) return '';
+      const session = await auth.json();
+      if (typeof session.accessToken !== 'string' || !session.accessToken) return '';
+      const response = await fetch(`/backend-api/conversation/${conversation.split('/').at(-1)}`, {
+        ...options, headers: { authorization: `Bearer ${session.accessToken}` },
+      });
+      if (!response.ok) return '';
+      const raw = await response.text();
+      if (raw.length > 2 * 1024 * 1024) return '';
+      const data = JSON.parse(raw), nodes = data.mapping;
+      const user = nodes?.[userId]?.message, finalNode = nodes?.[assistantId], final = finalNode?.message;
+      const plain = message => message?.content?.content_type === 'text' && Array.isArray(message.content.parts)
+        && message.content.parts.every(part => typeof part === 'string') ? message.content.parts.join('\n') : null;
+      const normalize = text => String(text ?? '').replace(/\u00a0/g, ' ').trim();
+      if (data.current_node !== assistantId || user?.id !== userId || user?.author?.role !== 'user'
+        || plain(user) === null || normalize(plain(user)) !== expectedPrompt
+        || final?.id !== assistantId || final?.author?.role !== 'assistant' || final.channel !== 'final'
+        || final.recipient !== 'all' || final.status !== 'finished_successfully' || final.end_turn !== true
+        || final.metadata?.is_visually_hidden_from_conversation || plain(final) === null) return '';
+      let parent = finalNode.parent;
+      const seen = new Set([assistantId]);
+      for (let count = 0; parent !== userId && count < 64; count++) {
+        if (!parent || seen.has(parent)) return '';
+        seen.add(parent);
+        const node = nodes[parent];
+        if (!node || !['assistant', 'tool'].includes(node.message?.author?.role)) return '';
+        parent = node.parent;
+      }
+      if (parent !== userId) return '';
+      return plain(final);
+    } catch { return ''; } finally { clearTimeout(timer); }
+  }, { conversation, userId: anchor.userMessageId, assistantId, expectedPrompt }).catch(() => '');
+}
 async function waitForReview(page, request, deadlineAt, recovered = false) {
   const conversation = canonicalUrl(read('conversation.json').url);
   const anchor = read('anchor.json');
   if (!UUID.test(anchor.userMessageId || '') || !SHA256.test(anchor.userMessageHash || '') || !Number.isSafeInteger(anchor.submittedAt)) throw Error('INVALID_RESPONSE_ANCHOR');
   const expectedPrompt = normalizeUserText(reviewPrompt(request));
   let stable = '', stableCount = 0;
+  let stored = '', storedId = '', lastStoredRead = 0;
   while (Date.now() < deadlineAt) {
     if (page.isClosed() || canonicalUrl(page.url()) !== conversation) throw Error('CONVERSATION_CHANGED');
     const failure = await visibleFailureCode(page); if (failure) throw Error(failure);
@@ -238,7 +281,16 @@ async function waitForReview(page, request, deadlineAt, recovered = false) {
     if (anchored && UUID.test(anchored.assistantId)
       && crypto.createHash('sha256').update(expectedPrompt).digest('hex') === anchor.userMessageHash) {
       const stopVisible = await page.getByRole('button', { name: /Stop|停止/ }).isVisible().catch(() => false);
-      const text = stopVisible ? '' : (await assistantResponseText(page, anchored.assistantId, anchored.assistantText)).trim();
+      let text = stopVisible ? '' : (await assistantResponseText(page, anchored.assistantId, anchored.assistantText)).trim();
+      if (!stopVisible && !text) {
+        if (storedId !== anchored.assistantId) { stored = ''; storedId = anchored.assistantId; }
+        if (!stored && Date.now() - lastStoredRead >= 30000) {
+          lastStoredRead = Date.now();
+          stored = (await storedFinalText(page, conversation, anchor, anchored.assistantId, expectedPrompt)).trim();
+          if (stored) console.log('SCIENTIFIC_REVIEW_CONVERSATION_API_READ');
+        }
+        text = stored;
+      }
       if (text.length >= 20 && !stopVisible) {
         if (text === stable) stableCount += 1; else { stable = text; stableCount = 0; }
         if (stableCount >= 2) {
