@@ -11,7 +11,7 @@
 | 上传、全文取得、解析 | `apps/api/src/routes/ingestion.ts` → `apps/agent-worker/src/ingestion-parser.ts`；全文发现走 `apps/agent-worker/src/retrieval/handler.ts`，解析选择走 `apps/agent-worker/src/parsers/cascade-orchestrator.ts` | 既有SourceMap/页码与原始文件是下游来源；解析可读不代表公式正确。复用ScanSci、Docling、Tesseract，资源见服务器清单 |
 | 文献语义理解 | `apps/agent-worker/src/extractor.ts` 的 `semanticReductionGuard`/综合链；引用 `skills/paper-analysis.ts`、`scientific-critical-thinking.ts`；经Gateway | 已有semanticStage、条件/算例/操作/来源关系；后续应沿用经审核结果，不能将先前有错候选当成权威。历史d5c6整稿未通过，当前不重跑 |
 | 共享科学推理规则 | `skills/scientific-critical-thinking.ts` → `extractor.ts` 的reduce/bridge及科学审校 | K-Dense方法的项目runtime v2，确有调用；并非安装整个K-Dense包。`skills/installed-media-skills.ts` science/review直接引用同一常量并记录id/version，已上线；新模型结果尚未观察 |
-| 原文科学审阅 | `extractor.ts` 的 `scientificReviewPrompt` → `packages/ai-gateway/src/gateway.ts` 的 `reviewScientific` → `infra/chatgpt-browser/review-broker.mjs`/`review-runner.cjs` | 候选v5沿同一末审附加逐条建议，materializeReviewedClaimSuggestions将P定位映射现有Evidence索引；Domain共享契约进入原确认UI，无新审阅轮次。旧v4续取保留原身份；普通未终审首稿无建议。精确上线状态见CURRENT，科学效果未观察 |
+| 原文科学审阅 | `extractor.ts` 的 `scientificReviewPrompt` → `packages/ai-gateway/src/gateway.ts` 的 `reviewScientific` → `infra/chatgpt-browser/review-broker.mjs`/`review-runner.cjs` | 已上线v5沿同一末审附加逐条建议，materializeReviewedClaimSuggestions将P定位映射现有Evidence索引；Domain共享契约进入原确认UI，无新审阅轮次。旧v4续取保留原身份；普通未终审首稿无建议。精确上线状态见CURRENT，科学效果未观察 |
 | 来源约束写作 | `apps/agent-worker/src/workspace-guide.ts` → `scientific-writing-source.ts`、`skills/scientific-writing.ts` | 写作有原始来源恢复和引用回填；本轮未重观其效果。它写稿，不负责验证坐标/色块的物理意义 |
 | 语义检索 | `apps/agent-worker/src/index.ts` 已接searchIndexer建索引；`packages/search/src/service.ts` 定义 `createHybridSearchService` 查询实现 | BGE容器本次只读观察运行。定向扫描未见应用调用该hybrid service，实际查询效果本轮未观察；配图没有调用它。相似度召回不证明科学蕴含，不能为“用上模型”强行串入 |
 | 画面规划 / 设计skill | `presentation/storyboard.ts` → `illustration-planner.ts` → `skills/installed-media-skills.ts` | 自有skill与3套原版Baoyu实际消费记录见d31e7ccc的designSkills；长Claim/整批证据二次分析仍产生错误曲线，已rejected。安装/Schema成功均不等于科学或审美合格 |
@@ -34,16 +34,16 @@
 1. **构建阻断**：`illustration-review.ts`未收窄decision写入Prisma JSON导致的编译失败已修；本轮必要服务器构建通过并上线。
 2. **共享skill断接**：配图science/review已接同一critical-thinking runtime常量，替换重叠原则并上线；真实模型消费/效果仍待正常任务观察。
 3. **过重审阅**：已上线既有场景composition/treatment局部修正；科学字段、来源、场景顺序不能由末审重写，科学错误回上游。v2分开encoding与composition；v1继续原样读取/编译，修订明确要求新建方案，不能静默重画。未观察新版模型结果。
-4. **上游结果粒度**：候选在既有末审v5同轮输出可选逐条建议；P必须来自对应已审字段，映射最终Evidence索引时拒绝关系冲突或范围覆盖不足。原确认入口预填statement/kind/parent/conditions/limitations与来源关系；编辑后需重确认引用关联。无效可选建议保留六字段回退，不额外请求模型，旧v4与未终审首稿保持。尚无每条condition独立证据表；下游继续保留所选Claim完整上下文，不能仅按画面basis丢掉限定。部署及实际效果以CURRENT为准。
+4. **上游结果粒度**：已上线版本在既有末审v5同轮输出可选逐条建议；P必须来自对应已审字段，映射最终Evidence索引时拒绝关系冲突或范围覆盖不足。原确认入口预填statement/kind/parent/conditions/limitations与来源关系；编辑后需重确认引用关联。无效可选建议保留六字段回退，不额外请求模型，旧v4与未终审首稿保持。尚无每条condition独立证据表；下游继续保留所选Claim完整上下文，不能仅按画面basis丢掉限定。部署及实际效果以CURRENT为准。
 5. **BGE的边界**：检索适合在有明确问题时召回来源，不能替代语义审阅；不因安装了模型就增加无必要的调用。保留已兼容v1/v2的Chat接收端，不整体回退或另装供应商。
 
 ### 当前技术债与处理
 
 范围：交付树的规则治理、去重、配图表示/审阅边界和工具联动断点；精确版本见CURRENT。以下是定向诊断，不是全仓无债证明或量化健康评分；执行了必要应用构建/启动和工具实际查询，未运行扫描、测试或模型。
 
-本轮实际联动：Backstage 返回 agent-worker 的 Gateway/parser/skills 依赖；Serena 在生产源码快照定位确认 bridge 的 Hermes/API 两条调用，再用候选源码核对；Langfuse 于2026-09-14 15:15 UTC读回两条已有生图失败，其 requestCorrelation 均为 unknown。沿审计生产者定位到 Worker 已有任务上下文未传给 Gateway sink，补接到既有 requestId/view/connector，不新建观察系统。静态调用/传递断点与运行失败是不同证据，不能据两条失败断言科学内容出错原因。
+本轮实际联动：Backstage 返回 agent-worker 的 Gateway/parser/skills 依赖；Serena 在生产源码快照定位确认 bridge 的 Hermes/API 两条调用，再用候选源码核对；Langfuse 于2026-09-15 01:23 UTC仍读回两条历史生图失败，其 requestCorrelation 均为 unknown。沿审计生产者定位到 Worker 已有任务上下文未传给 Gateway sink，补接到既有 requestId/view/connector，不新建观察系统。静态调用/传递断点与运行失败是不同证据，不能据两条失败断言科学内容出错原因。
 
-任务接线经独立High静态审查并上线：逐调用读取上下文而非初始化捕获，已有requestId优先，tx和异常传播保持。旧unknown不回填，后续在正常授权任务执行后观察新关联，不为填数据重跑模型。该修复不等于完整跨任务trace，也不解决上游科学结果粒度缺口。
+任务接线经独立High静态审查并上线：逐调用读取上下文而非初始化捕获，已有requestId优先，tx和异常传播保持。旧unknown不回填，后续在正常授权任务执行后观察新关联，不为填数据重跑模型。该修复不等于完整跨任务trace；上游逐条建议现已接入既有末审与确认，实际科学效果仍待正常任务观察。
 
 | 问题 / 位置 | 后果 | 处理与后续 |
 |---|---|---|
@@ -56,7 +56,7 @@
 | illustration-planner.ts / handler.ts 分别合并 Skill usage | 首次版本元数据与资源合并规则容易分叉 | 已共用 skills/installed-media-skills.ts 的 mergeDesignSkillUsage；保留顺序和首次元数据，复制输入 |
 | illustration-review.ts 全稿重写，且 composition 接受任意文本；planner 依赖中文分隔符 | 审阅可能改掉科学焦点，丢分隔后下次改图又重走科学分析 | 已上线v2独立encoding字段；corrections仅允许既有场景艺术字段，其余沿用candidate；旧v1可读可直接编译，修订显式说明需新方案；新模型结果尚未观察 |
 | 拆分Claim仍按整字段挂全部supports，且字段只能挂一条Claim | 已有拆分入口不能保留独立来源/限定，配图被迫读长文本 | 已上线当前snapshot索引保存逐Claim关系；两API共用schema，web复用Domain类型及服务器批次上限；planner/review收到父关系。High主路径GO；正常用户确认效果尚未观察，见CURRENT |
-| 已审细粒度候选未进入确认入口 | 用户需手工拆长摘要，下游重新解释完整摘要 | 候选v5同轮附加逐条建议，经SourceMap到Evidence范围映射和共享parser进入原确认UI；上游未审/blocked/改写字段不暴露建议，失效父项后代递归移除。High静态GO；已补聚合输出量提示和统一12条容量，必要部署/实际结果见CURRENT |
+| 已审细粒度候选未进入确认入口 | 用户需手工拆长摘要，下游重新解释完整摘要 | 已上线v5同轮附加逐条建议，经SourceMap到Evidence范围映射和共享parser进入原确认UI；上游未审/blocked/改写字段不暴露建议，失效父项后代递归移除。High静态GO；已补聚合输出量提示和统一12条容量，必要部署/实际结果见CURRENT |
 | 只在交接时更新文档，意外中断可能丢状态 | 后续回合不清楚已改/未改或沿用旧待办 | 既有docs-sync补充有变化回合final前同步、关键节点先保存、下轮Git恢复；普通问答不重写，不宣称后台关闭回调或绝对防漂移 |
 
 代码去重及v2/局部末审均经独立High静态复核，并完成必要服务器构建/部署；来源/权限/并发重验保持，v1兼容。未观察新版科学/审美结果，完整所选Claim上下文仍可能触及既有输入上限。治理和这些重构不能把原有科学质量欠缺变成“已完成”。
