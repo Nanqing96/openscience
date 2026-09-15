@@ -24,6 +24,7 @@
 
 ### 复用与效果查询
 
+- 最新实证：76918e55实际provenance含共享科学Skill v2、自有v5及Baoyu，Langfuse对应MiniMax规划和Hermes经Gateway调用6Pro末审；Skill与模型不是替代关系。浏览器已定位512MiB共享内存瞬时耗尽并切换1GiB；真实六页加载峰值882MiB、资源错误0，草稿正文恢复与格式差异见CURRENT。不从安装/调用成功推断科学与审美全面合格。
 - 开发代理：按产品目的选行 → 查实现符号及调用方 → 查同任务的现有输入/输出与审阅 → 决定直接复用、补接断点或替换。任务说明写清具体缺口即可，不另造审批表、哈希、门禁或第二套任务库。
 - 效果证据沿用 `AgentTask.result`、资产 `provenance.designSkills`/`illustrationReview`、Gateway调用日志及现有批准/拒绝记录。`designSkills` 沿用既有JSON槽位，也记录共享科学skill，查询按id区分，不能全部解释成视觉风格。生产读取只限授权任务/工作区，不将全文或秘密搬到管理台账。观察不到用量就写未知；不能从任务成功率推断科学正确率。
 - 确认“用过skill”需看到执行注入点及当前产物记录；本机安装、Hermes安装、请求实际消费、结果质量是四个不同事实。修订后只更新受影响行；没变化的能力复用旧证据，不重跑整条流程。
@@ -48,8 +49,8 @@
 | 问题 / 位置 | 后果 | 处理与后续 |
 |---|---|---|
 | runner原执行与recover-late共用waitAndDownload，无条件再写recovery.json | 已消费一次刷新标记时EEXIST提前结束延迟恢复，原诊断只有Error | 7cd真实故障及Git8aa21251/3ee10d6e查实；修复已High GO并独立部署，严格读取同canonical/shape/time原标记，跳过重复写入/刷新，保留原观察/gallery、固定系统错误代码及阶段。保持同一请求、时限和标记；本次仍未取得PNG，详见CURRENT |
-| Chrome页面大量ERR_INSUFFICIENT_RESOURCES；旧/images恢复入口变为Library | 原对话只见用户请求，Library页面空壳，无法确认原图；旧fallback无法靠精确chat链接找到图 | 新页同样失败，memory/pids/fd无碰限、bridge无chatgpt.com拒绝；不扩大资源/域白名单，不猜登录失效或已无图。用户选择先保存草稿，暂停重启/重发。Library需可证明原会话绑定后才能复用，不按最新图片猜测；精确结果/恢复窗口见CURRENT |
-| page-lifecycle只按终态结果和target归属回收，不读取后来输入的草稿 | 用户在完成的旧job页输入新草稿后可能被自动关页 | 本次只读High发现，当前两Chat草稿无job归属，原页全部保留；禁止以该回收或杀NetworkService代替本次安全恢复。后续恢复前先处理草稿；长期回收仍缺后续输入保护，未称已修复 |
+| Chrome页面大量ERR_INSUFFICIENT_RESOURCES；旧/images恢复入口变为Library | 原对话只见用户请求，Library页面空壳，无法确认原图；旧fallback无法靠精确chat链接找到图 | 峰值取证证明/dev/shm512MiB瞬时耗尽，原静态内存/pids/fd余量判断不足；1GiB已部署，六页首次加载峰值882MiB/资源错误0，登录保留。Library仍需可证明原会话绑定，不按最新图片猜测；原7cd恢复已过期。此项只关闭已查实的容量故障，未关闭结果绑定缺口 |
+| page-lifecycle只按终态结果和target归属回收，不读取后来输入的草稿 | 用户在完成的旧job页输入新草稿后可能被自动关页 | 本次High定位并复审最小修复：只自动回收归属匹配、未提交且失败/过期的about:blank，Chat首页与canonical会话均保留，正常runner自身收尾不变。单文件patch已安装并比对字节，精确版本/回滚见CURRENT；未执行关页演练，异常残留尚需人工确认后清理 |
 | Backstage应用/需求导航指向旧main；Langfuse CLI只读最新10条跨任务调用 | 沿管理入口读取不到当前需求，目标任务的规划/审阅调用易被较新调用挤出 | 已部署并实读交付分支导航，仍不当作production快照；原query.mjs增加--task UUID精确metadata过滤，时间/条数/白名单边界保持。625119fa、76918e55规划/审阅及99e4失败guide均已按原task定位，不增加观测写入或模型调用 |
 | Taskmaster currentTag仍指向八月已完成的任务组 | 当前多风格目标未进入已有任务管理工具，历史完成状态可被误当作当前完成 | 复用现有Taskmaster加入本批三项稳定验收，只有用户认可才done；CURRENT独占资产/反馈/版本，启动按任务ID对齐，旧tag保留历史。没有新任务数据库或额外状态生成模型 |
 | guide在艺术规划前再次扩写科学/构图内容 | 真实059f85ae虽然结构成功，却擅加曲线/偶极子/英语标签并将深墨色误作水墨 | 错误安排未确认且已取消；修复部署后7002真实页面返回及“确认制作”提交均与原要求全等，固定原稿family，无附加正文改动。真正设计由既有艺术planner/科学内容保留/末审承担，已创建76918e55；超过既有长度限制无动作澄清，不截断，也不新增语义分类器 |

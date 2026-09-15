@@ -1,6 +1,8 @@
 # 服务器能力与复用清单
 
-> Chat执行器已有先选模式再插字、同请求恢复及一次性刷新标记修复；首批atlas/editorial实际成功入库，但修订封面7cd仍uncertain，浏览器资源错误与新Library入口尚未收口。用户选择先保存草稿、保留页面，不得重启或重发。精确应用、独立provider与Serena版本及恢复窗口见CURRENT handoff。
+> 最新2026-09-15：/dev/shm真实页面加载瞬间用满512MiB，已定位Mojo管道失败；1GiB已运行，同六页首次加载峰值882MiB、资源错误0。原页面、登录、草稿正文恢复，Chat段落格式不同，私有原文备份保留；精确运行/回滚容器仅见CURRENT。操作前盘点38个发布目录15G、44个未运行容器、镜像可回收标记11.4GB，磁盘可用61G；未执行删除，新容量容器与旧回退容器另计。
+
+> Chat执行器已有先选模式再插字、同请求恢复及一次性刷新标记修复；首批atlas/editorial实际成功入库，但修订封面7cd仍uncertain且下载恢复已过期。共享内存与终态误关后来草稿本轮已修复，新Library结果绑定仍未收口；不得盲重发或宣称全面稳定。精确应用、独立provider/单文件patch与Serena版本见CURRENT handoff。
 
 当前版本与暂停状态统一见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)；产品目的、调用关系、真实效果查[能力索引](hermes-capability-registry.md#当前能力索引目的调用效果)。本轮新工具实际交付见紧接的表；更早日期段是历史操作收据，不作为当前release或下一步指令。健康不代表内容质量。
 

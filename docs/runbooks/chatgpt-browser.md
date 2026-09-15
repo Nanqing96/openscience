@@ -1,10 +1,10 @@
 # Server ChatGPT browser — operator login research
 
-- 当前版本、原任务恢复窗口与用户决定仅见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)。2026-09-15：7cd恢复标记重复写入已修复部署；新页持续ERR_INSUFFICIENT_RESOURCES，资源未碰硬限，浏览器有未保存输入。用户明确选择先保存草稿、保留页面；不要整容器重启、杀NetworkService、重置标记或重发。旧/images页已引导Library，未确认对应原会话图片前不能猜取缩略图。
+- 当前版本、原任务期限与用户决定仅见[CURRENT handoff](../handoff/2026-09-10-hermes-web-image-handoff.md)。2026-09-15峰值取证：/dev/shm用满512MiB，与Mojo管道失败及173次ERR同步；事后余量不能排除峰值。1GiB现已运行，同六页首次加载峰值882MiB、资源错误0，4GiB总内存/沙箱保持。用户“你来判断”后私有备份、三锁下复用现有镜像/挂载/provider切换；六URL/登录/草稿正文已恢复，Chat段落格式不同，原文备份保留。旧容器停止供回退；回退容器不等于原DOM还在，备份才是恢复依据。不热remount、不杀NetworkService、不重置过期标记或重发。Library仍须精确绑定原结果。
 - HISTORICAL 2026-09-13：base bundle d1630135 / rollback92cc416e；当时image broker运行patches/b78fb94d568840f4ef686eee76645ec86ed62acf/bundle，image/review runner501da7a3，page-lifecycle d369ccc2。各patch/before与deployment.json保留回滚；浏览器镜像8aa21251，07:55:11Z自行重启保留登录，应用08ed不变。真实5260只提交一次、原图回收/规范化/产品succeeded100%/draft；这些是历史证据，不得作为现行版本。
 - 历史人工恢复的活动判断复用review-runner.cjs既有可见Stop/停止按钮，再读取composer和未保存表单；不得以整页“生成中/generating”等历史文字阻止恢复。旧generatingPages=1即此误判。此次14页均无Stop/composer/dirty，取得三锁且队列空、确认profile/jobs持久化后才重启；证据/jobs/hermes-browser-{actual-state,pre-restart-actual,restart-container}-20260913b.json。
 - 已固化：正常键盘输入→Control+End→picture_v2工具，严格正文/模式校验；原Save弹窗不可用时，仅从唯一主图实际同源/estuary/content取PNG，禁止redirect、限30MiB后走原隔离normalize。download只在原deadline+1h内取已有结果；late marker不重复触发浏览器，但已保存结果可reconcile，保留错误/uncertain与原始marker。
-- 页面生命周期：page-lifecycle.cjs在创建/认领时记录instance+target+job；连接前只处理相同provider中归属严格匹配的其他任务页。完成结果需id/provider/hash/source/conversation/state对应，或无submitted且明确失败/过期；未完成提交、未过期prepare和未知旧页保留。固定localhost CDP、每请求2s、清理轮次有界；Chrome close需等待target消失后才写closed审计。
+- 页面生命周期：page-lifecycle.cjs在创建/认领时记录instance+target+job；连接前仅回收相同provider中归属严格匹配、未submitted且失败/过期的about:blank。Chat首页和已提交会话可能有后来人工草稿，即使已有结果也不能按任务账本自动关闭。正常runner自身收尾保持；未知/异常会话留给明确处理。固定localhost CDP、每请求2s、轮次有界，close需等target消失再写closed审计；当前模块patch及回滚副本见CURRENT。
 - 部署按image→science→shared三锁，先装page-lifecycle再装runner；回滚恢复各patch/before中的脚本，b78还需恢复service并daemon-reload。仅处理本任务页面，不因attach失败批量reload/关页/重启，不重放原已提交请求。旧页无归属记录时只做精确诊断；不能按conversation URL直接自动关闭用户页。
 
 - 最新2026-09-11：第二账号已正常登录，实际账户设置与用户指定账号匹配（Pro）；noVNC实际可视可操作。旧“等用户密码”状态已完成，不要再次要求登录。6Pro截图规划会话6aa3a4a4-f7a0-83ea-a0be-fc2f7eba4581已回复。
