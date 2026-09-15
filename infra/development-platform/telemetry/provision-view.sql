@@ -21,7 +21,8 @@ SELECT id, created_at,
   jsonb_build_object(
     'operation', CASE WHEN metadata->>'operation' IN ('text','ocr','image','scientific_review') THEN metadata->>'operation' END,
     'provider', CASE WHEN metadata->>'provider' ~ '^[A-Za-z][A-Za-z0-9_.-]{0,79}$' THEN metadata->>'provider' END,
-    'model', CASE WHEN metadata->>'model' ~ '^[A-Za-z][A-Za-z0-9_.-]{0,127}$' THEN metadata->>'model' END,
+    'model', CASE WHEN metadata->>'model' ~ '^[A-Za-z][A-Za-z0-9_.-]{0,127}$'
+      OR metadata->>'model' IN ('chatgpt-web/6-pro', 'chatgpt-web/6-pro-image-generation-tool') THEN metadata->>'model' END,
     'outcome', CASE WHEN metadata->>'outcome' IN ('succeeded','failed') THEN metadata->>'outcome' END,
     'inputTokens', CASE WHEN jsonb_typeof(metadata->'inputTokens') = 'number' THEN metadata->'inputTokens' END,
     'outputTokens', CASE WHEN jsonb_typeof(metadata->'outputTokens') = 'number' THEN metadata->'outputTokens' END,

@@ -87,15 +87,43 @@ def main():
     password = urlparse(values['GATEWAY_AUDIT_DATABASE_URL']).password
     if not password or len(password) != 64 or any(c not in '0123456789abcdef' for c in password):
         raise ValueError('Unexpected generated credential format')
+    provisioned = config / 'provisioned'
+    if provisioned.exists() or provisioned.is_symlink():
+        private_path(provisioned)
+        previous_release = provisioned.read_text().strip()
+        if len(previous_release) != 40 or any(c not in '0123456789abcdef' for c in previous_release):
+            raise ValueError('Unexpected provisioning marker; operator reconciliation required')
     existing = database("SELECT count(*) FROM pg_roles WHERE rolname='xgs_gateway_telemetry';")
     if existing == '0':
+        if provisioned.exists():
+            raise ValueError('Provisioned role missing; operator reconciliation required')
         database((source / 'provision-view.sql').read_text())
-    elif not (config / 'provisioned').exists():
+    elif not provisioned.exists():
         raise ValueError('Existing role needs operator reconciliation; no grants changed')
+    else:
+        known_view = database("SELECT EXISTS (SELECT 1 FROM pg_class c "
+                              "JOIN pg_namespace n ON n.oid=c.relnamespace "
+                              "WHERE n.nspname='xgs_telemetry' AND c.relname='gateway_calls' AND c.relkind='v' "
+                              "AND has_table_privilege('xgs_gateway_telemetry', c.oid, 'SELECT') "
+                              "AND NOT EXISTS (SELECT 1 FROM aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) "
+                              "a WHERE a.grantee=0));")
+        if known_view != 't':
+            raise ValueError('Existing telemetry view needs operator reconciliation; no view changed')
+        # Refresh only our known view, using the same definition as first install.
+        # CREATE OR REPLACE preserves its owner/grants; role provisioning stays one-time.
+        provision = (source / 'provision-view.sql').read_text()
+        start = provision.index('CREATE VIEW xgs_telemetry.gateway_calls ')
+        end = provision.index('REVOKE ALL ON xgs_telemetry.gateway_calls FROM PUBLIC;', start)
+        view = provision[start:end].replace('CREATE VIEW ', 'CREATE OR REPLACE VIEW ', 1)
+        database("BEGIN; SET LOCAL lock_timeout='2s'; SET LOCAL statement_timeout='10s'; "
+                 + view + 'COMMIT;')
     database("BEGIN; SET LOCAL statement_timeout='5s'; "
              f"ALTER ROLE xgs_gateway_telemetry LOGIN PASSWORD '{password}'; "
              'GRANT CONNECT ON DATABASE openscience TO xgs_gateway_telemetry; COMMIT;')
-    (config / 'provisioned').write_text(args.release + '\n')
+    marker = config / f'.provisioned-{secrets.token_hex(8)}'
+    with marker.open('x') as output:
+        output.write(args.release + '\n')
+    marker.replace(provisioned)
     for network in ['openscience-development-telemetry-db', 'openscience-development-telemetry-ingest']:
         found = subprocess.run(['docker', 'network', 'inspect', '--format', '{{.Internal}}', network],
                                text=True, capture_output=True)

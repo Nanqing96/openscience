@@ -36,10 +36,10 @@ state 必须跨容器重建保留，不能复制给不同项目或删除后“�
 
 ## 服务器安装接线（由主任务集中执行）
 
-以下是复用部署步骤。先启动Langfuse并完成其初始化，再启动connector；安装与应用发布分开，只构建此独立目录，不运行root workspace测试/CI或应用deploy.sh。服务器入口为`python3 install.py --confirm --release <完整基础设施提交>`，已有凭据/state保留；仅更新镜像时复用已provisioned的view/网络，不需要再次授予DB权限。
+以下是复用部署步骤。先启动Langfuse并完成其初始化，再启动connector；安装与应用发布分开，只构建此独立目录，不运行root workspace测试/CI或应用deploy.sh。服务器入口为`python3 install.py --confirm --release <完整基础设施提交>`，已有凭据/state/网络保留；已provisioned安装只从同份SQL刷新本系统视图定义，保留owner/grants，不重建角色。
 
 1. 经项目SSH入口物化完整提交到`/opt/openscience-releases/<infra-release>/infra/development-platform/telemetry/`。复用已有`node:22-bookworm`，仅补缓存缺少的`postgres@3.4.7`及pnpm9.15.0；独立锁文件已由服务器安装生成并提交，postgres无传递依赖。
-2. 管理员在既有生产 PostgreSQL 容器内执行 `provision-view.sql`，只建立专用 schema/view/NOLOGIN role，不做应用迁移或写审计数据。此脚本遇到同名对象会停止，重复安装保留已审核 view。角色 `xgs_gateway_telemetry` 不加入任何角色，之后由服务器凭据 provisioning 赋予当前数据库 CONNECT、随机密码和 LOGIN。凭据只能在服务器进程内构造并注入，不能把真实值放命令行、终端输出或仓库；不要从本机读取 `.env`。不授予原表、其他 schema 或 `pg_read_all_data`。
+2. 首次安装由installer在既有 PostgreSQL 容器内执行 `provision-view.sql`，只建立专用 schema/view/NOLOGIN role，不写审计数据。全脚本遇到同名对象仍会停止；重复安装只有存在本系统provisioned记录才在短事务内刷新CREATE OR REPLACE VIEW片段，不重复角色/schema/grants。角色 `xgs_gateway_telemetry` 不加入任何角色，凭据在服务器内部注入，不在终端或仓库输出；不授予原表、其他 schema 或 `pg_read_all_data`。
 3. 由主任务创建两个 **internal** Docker network：`openscience-development-telemetry-db`（只接既有 production PostgreSQL 和 connector；数据库 alias `development-gateway-audit-db`）和 `openscience-development-telemetry-ingest`（只接 Langfuse web 和 connector；web alias `development-langfuse-web`）。不接生产 app/data 网络，不重建生产 PostgreSQL，不挂 Docker socket；保留 Langfuse web 原网络及 localhost:3130 映射。生产数据库容器在未来应用重建后需由同一部署管理恢复该专用网络连接，否则 connector 停止读取而不影响应用。
 4. 主任务在服务器创建 `/etc/openscience-development/telemetry/runtime.env`，root:root `0600`，仅包含 `GATEWAY_AUDIT_DATABASE_URL`（专用角色、host `development-gateway-audit-db`、5432、database `openscience`，URL 编码密码）、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`。API keys 来自此管理目的专用 Langfuse 项目；不连接公共 Cloud，不配置模型 provider/evaluator。Docker Compose env_file 注入这些值；connector 仅消费环境变量，既不读配置文件也不打印值。
 5. 服务器创建 `/opt/openscience-development/telemetry/state`，owner `1000:1000`，mode `0700`。父目录 root 私有；checkpoint 创建 mode `0600`。容器 rootfs 只读、非 root、256 MiB、0.25 CPU、32 PIDs、无端口和公网网络。
@@ -47,6 +47,8 @@ state 必须跨容器重建保留，不能复制给不同项目或删除后“�
 7. 正常产品观察限真实已授权审计：Langfuse 私有 UI 查看少量 generation、metadata、来源未知值以及 connector 固定分类日志。发送成功只证明接入接受，不能证明论文科学质量、模型正确性或全业务覆盖。不得为了填充界面触发新模型调用。
 
 停止/回滚：停止独立 connector 容器，保留 state 与凭据，应用继续运行。切回上一基础设施 image 再启动时复用同一 state/项目。若要撤销 DB 授权，可在管理员容器会话 `ALTER ROLE xgs_gateway_telemetry NOLOGIN` 与 `REVOKE SELECT ON xgs_telemetry.gateway_calls FROM xgs_gateway_telemetry`；不要 DROP 对象/删文件/清数据。没有应用 rollback、DB 数据迁移或论文发布操作。
+
+已知Chat模型标签的SQL视图、connector、query三层白名单保持一致，仅允许源码固定的`chatgpt-web/6-pro`和`chatgpt-web/6-pro-image-generation-tool`。旧unknown不猜测回填；这是配置/界面标识，不声称外部Chat披露了内部模型ID。若回退视图白名单，以上一版SQL中的完整CREATE VIEW片段改为CREATE OR REPLACE VIEW执行，保留security_barrier/owner/grants，不重跑角色provisioning；旧镜像本身仍会过滤这些标签。
 
 ## 官方依据
 
@@ -61,4 +63,4 @@ state 必须跨容器重建保留，不能复制给不同项目或删除后“�
 - [Token/费用及模型自动推断](https://langfuse.com/docs/observability/features/token-and-cost-tracking)
 - [Postgres.js 官方实现](https://github.com/porsager/postgres)、[所用版本 registry 元数据](https://registry.npmjs.org/postgres/3.4.7)
 
-主任务须将此目录登记 project_index、server-capabilities、Hermes 台账及 CURRENT handoff，并统一 High 静态 review 后决定服务器执行；此 worker 不改其他目录。尚未证明实际可用，不称部署/测试通过。
+本目录已登记能力台账。真实规划、审阅及图片调用已按taskId关联读回；当前安装版本、实际结果及未确认边界见CURRENT handoff，不以调用成功代替图片质量。
