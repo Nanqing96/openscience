@@ -10,7 +10,7 @@ Chat生图操作：`infra/chatgpt-browser/runner.cjs`在空编辑器先选择原
 
 浏览器容量：`infra/chatgpt-browser/install.sh`定义共享内存与容器边界；512MiB瞬时耗尽的真实取证、安全重建及草稿保护状态见CURRENT，不以事后静态余量判断峰值。
 
-发布与传输入口：`infra/scripts/production-release-retention.mjs`默认保留历史与开发工具挂载；显式清理另行授权。`scripts/ssh-identity-path.mjs`供`cloud-sync.mjs`及`evaluation-source-sync.mjs`共用Windows原生OpenSSH路径转换。当前交付结果见CURRENT。
+发布与传输入口：`infra/scripts/production-release-retention.mjs`绑定发布事务并保护开发工具挂载，不作独立清理入口；用户已授权清除经确认无用途的服务器内容，实际范围与收据见CURRENT。`scripts/ssh-identity-path.mjs`供`cloud-sync.mjs`及`evaluation-source-sync.mjs`共用Windows原生OpenSSH路径转换。模型路由与自动/人工联动边界见现有能力台账。
 
 > 2026-09-14 文档治理：旧handoff/实施计划保留历史证据，设计区分有效需求与编写时状态；未提交的集成设计稿保留原改动。当前债务及处理只维护在[能力台账](docs/runbooks/hermes-capability-registry.md#当前技术债与处理)，不另建任务库。AGENTS/流程Skill变更须进入交付分支，旧main只留导航。
 

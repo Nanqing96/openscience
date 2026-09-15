@@ -11,11 +11,11 @@
 | 上传、全文取得、解析 | `apps/api/src/routes/ingestion.ts` → `apps/agent-worker/src/ingestion-parser.ts`；全文发现走 `apps/agent-worker/src/retrieval/handler.ts`，解析选择走 `apps/agent-worker/src/parsers/cascade-orchestrator.ts` | 既有SourceMap/页码与原始文件是下游来源；解析可读不代表公式正确。复用ScanSci、Docling、Tesseract，资源见服务器清单 |
 | 文献语义理解 | `apps/agent-worker/src/extractor.ts` 的 `semanticReductionGuard`/综合链；引用 `skills/paper-analysis.ts`、`scientific-critical-thinking.ts`；经Gateway | 已有semanticStage、条件/算例/操作/来源关系；后续应沿用经审核结果，不能将先前有错候选当成权威。历史d5c6整稿未通过，当前不重跑 |
 | 共享科学推理规则 | `skills/scientific-critical-thinking.ts` → `extractor.ts` 的reduce/bridge及科学审校 | K-Dense方法的项目runtime v2，确有调用；并非安装整个K-Dense包。`skills/installed-media-skills.ts` science/review直接引用同一常量并记录id/version，已上线；真实配图1da6/a38的请求与provenance已消费共享规则，效果与缺口见CURRENT |
-| 原文科学审阅 | `extractor.ts` 的 `scientificReviewPrompt` → `packages/ai-gateway/src/gateway.ts` 的 `reviewScientific` → `infra/chatgpt-browser/review-broker.mjs`/`review-runner.cjs` | 已上线v5沿同一末审附加逐条建议，materializeReviewedClaimSuggestions将P定位映射现有Evidence索引；Domain共享契约进入原确认UI，无新审阅轮次。旧v4续取保留原身份；普通未终审首稿无建议。精确上线状态见CURRENT，科学效果未观察 |
+| 原文科学审阅 | `extractor.ts:2056` 的 `modelScientificReviewCanonicalProposal` 用共享科学Skill调用 `gateway.completeStructuredWithMetadata`，沿MiniMax主路由；`:2562` 仅在显式 `context.mode=web` 时改走 `webScientificReviewCanonicalProposal` → `gateway.reviewScientific` | 普通论文的MiniMax来源审校已经存在，不能因配图审核阻塞再造一套。显式网页复核才依赖Chat；v5建议通过materializeReviewedClaimSuggestions映射原Evidence/确认UI，旧v4保留原身份。代码接线不证明整稿科学正确，历史失真和未观察项保留 |
 | 来源约束写作 | `apps/agent-worker/src/workspace-guide.ts` → `scientific-writing-source.ts`、`skills/scientific-writing.ts` | 写作有原始来源恢复和引用回填；本轮未重观其效果。它写稿，不负责验证坐标/色块的物理意义 |
 | 语义检索 | `apps/agent-worker/src/index.ts` 已接searchIndexer建索引；`packages/search/src/service.ts` 定义 `createHybridSearchService` 查询实现 | BGE容器本次只读观察运行。定向扫描未见应用调用该hybrid service，实际查询效果本轮未观察；配图没有调用它。相似度召回不证明科学蕴含，不能为“用上模型”强行串入 |
 | 画面规划 / 设计skill | `presentation/storyboard.ts` → `illustration-planner.ts` → `skills/installed-media-skills.ts` | 自有v5与Baoyu参考已有真实消费；76918e55艺术修订只改变composition/treatment，与原稿科学字段全等，沿用原证据，不重跑全文分析。早期错误曲线候选已拒绝。具体风格交付差额见CURRENT，安装/Schema成功不等于科学或审美合格 |
-| 候选画面审阅 | `presentation/handler.ts` → `illustration-review.ts` → 已有 `reviewScientific` | 既有6Pro末审同时核对科学约束和明确艺术要求，不加新阶段。76918e55实际revised修正深墨背景/线条对比歧义，科学字段保持；按同任务ID已在Langfuse读回MiniMax艺术规划和6Pro审阅两次调用。最终PNG和用户审美认可仍是不同证据，见CURRENT |
+| 候选画面审阅 | `presentation/handler.ts` → `illustration-review.ts` → `gateway.reviewScientific`；`index.ts:889` 单独创建Chat审核provider，`packages/ai-gateway/src/science-review.ts:122` 固定模型名 | 当前配图末审固定Chat6Pro，无MiniMax回退，不能描述成“MiniMax换Skill就变为6Pro”。76918e55确有MiniMax艺术规划和6Pro审阅，科学字段保持；这条独立路由增加浏览器依赖，不能解释为Hermes没有科学审阅能力。本轮只核清结构，未改变模型路由；最终PNG与审美接受仍分别记录 |
 | Chat图像生成 / 参考图 | `presentation/scene-image.ts` → `gateway.generateImage` → `infra/chatgpt-browser/` | 服务器Chat直接执行已审方案；原参考图bytes和本批无参考图新风格均有真实成图。学术图c3a497已看图、仍待用户认可，初次封面ac166未合格，修订结果只见CURRENT。保留喜欢的aa41、旧图和公开v1；Codex CLI仅备用且不自动切换 |
 | Hermes对话与执行授权 | `apps/api/src/routes/agent.ts`、`research-runs.ts` → `packages/domain/src/agent/research-run.ts`、worker `index.ts` | 对话承接修改、核对、执行；当前能力参数/权限以这些入口为准。开发用MCP与skill目录不自动成为Hermes工具 |
 | 私有编辑 / 回收站 | `apps/api/src/routes/research-objects.ts`、`trash.ts` → Domain；`infra/private-cleanup/` | 草稿编辑与公开发行分开；公开资料保留。最近清除证据见历史f8e44815，本轮未删除任何数据 |
@@ -24,6 +24,8 @@
 
 ### 复用与效果查询
 
+- **已经自动联动**：Worker任务执行、SourceMap/Claim/Evidence及RO/version绑定、方案保存/艺术修订复用、Gateway/provider队列、结果回收和资产记录；Gateway审计经既有view/connector自动进入Langfuse并携带taskId。已保存任务/真实产物见CURRENT，链路接线与每一步效果分别判断。
+- **需要开发者实际执行**：Taskmaster目标/验收与CURRENT对齐，Backstage职责依赖查询，Serena源码定位，现有dependency-cruiser分析，docs-sync状态同步。这些工具不调度科研Worker，不自动判断用户目标或审美，不因安装了管理软件就宣称端到端治理完成。不要为“用上BGE”给已有来源完整的配图强加检索；当前hybrid查询未见应用消费者，仍是明确缺口。
 - 最新实证：76918e55实际provenance含共享科学Skill v2、自有v5及Baoyu，Langfuse对应MiniMax规划和Hermes经Gateway调用6Pro末审；Skill与模型不是替代关系。浏览器已定位512MiB共享内存瞬时耗尽并切换1GiB；真实六页加载峰值882MiB、资源错误0，草稿正文恢复与格式差异见CURRENT。不从安装/调用成功推断科学与审美全面合格。
 - 开发代理：按产品目的选行 → 查实现符号及调用方 → 查同任务的现有输入/输出与审阅 → 决定直接复用、补接断点或替换。任务说明写清具体缺口即可，不另造审批表、哈希、门禁或第二套任务库。
 - 效果证据沿用 `AgentTask.result`、资产 `provenance.designSkills`/`illustrationReview`、Gateway调用日志及现有批准/拒绝记录。`designSkills` 沿用既有JSON槽位，也记录共享科学skill，查询按id区分，不能全部解释成视觉风格。生产读取只限授权任务/工作区，不将全文或秘密搬到管理台账。观察不到用量就写未知；不能从任务成功率推断科学正确率。
