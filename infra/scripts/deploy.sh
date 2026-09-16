@@ -5,7 +5,15 @@ set -eEuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# Native Windows Node/Git require a drive path even when the Bash runtime does
+# not perform MSYS argument conversion. Linux runners retain their POSIX paths.
+if command -v cygpath >/dev/null 2>&1; then
+  PROJECT_ROOT="$(cygpath -m "$PROJECT_ROOT")"
+fi
 CONFIG_ROOT="${XGS_CONFIG_ROOT:-$PROJECT_ROOT}"
+if command -v cygpath >/dev/null 2>&1; then
+  CONFIG_ROOT="$(cygpath -m "$CONFIG_ROOT")"
+fi
 ENV_FILE="$CONFIG_ROOT/.env"
 
 CONFIRM=0
