@@ -247,6 +247,31 @@ export async function requestJournalApplicationRevision(deps: WorkspaceDeps, adm
   });
 }
 
+export async function reopenJournalApplication(
+  deps: WorkspaceDeps,
+  adminId: string,
+  input: { applicationId: string; expectedRevision: number; reason: string },
+): Promise<JournalApplicationView> {
+  return serializable(deps, async (tx) => {
+    await requirePlatformAdmin(tx, adminId);
+    const reason = required(input.reason, '更正原因', 2_000);
+    const row = await tx.journalApplication.findUnique({ where: { id: input.applicationId } });
+    if (!row) throw new JournalError('APPLICATION_NOT_FOUND', '申请不存在');
+    if (row.status !== 'rejected' || row.journalId) throw new JournalError('INVALID_STATE', '只有已拒绝且未入驻的申请可以更正为退回修改');
+    if (row.revision !== input.expectedRevision) throw new JournalError('REVISION_CONFLICT', '申请已更新，请刷新后重试');
+    // Keep the applicant's original review instructions and all submitted metadata.
+    const updated = await tx.journalApplication.update({ where: { id: row.id }, data: {
+      status: 'needs_information', reviewedBy: adminId, reviewedAt: currentTime(deps), revision: { increment: 1 },
+    } });
+    await recordJournalEvent(tx, {
+      actorId: adminId, action: 'journal.application.reopened', targetType: 'journal_application', targetId: row.id, reason,
+      before: { status: row.status, revision: row.revision, reviewReason: row.reviewReason, reviewedBy: row.reviewedBy, reviewedAt: row.reviewedAt?.toISOString() ?? null },
+      after: { status: updated.status, revision: updated.revision },
+    });
+    return applicationView(updated);
+  });
+}
+
 function slugValue(value: string): string {
   const slug = value.trim().toLowerCase();
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 80) throw new JournalError('VALIDATION_ERROR', 'slug 只能包含小写字母、数字和连字符');

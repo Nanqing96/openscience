@@ -2085,7 +2085,7 @@
       "representationEvidence": "可代表期刊的依据（英文说明）"
     },
     "englishNotice": "请用英文填写期刊与申请人资料。英文刊名必填，中文刊名选填；人名使用罗马字母拼写。平台会在核验时核对官方英文名称。",
-    "reviewProcess": "入驻申请由 OpenScience 平台管理员人工核验。管理员可通过、要求补充材料或拒绝申请；这项核验针对期刊身份及申请人的代表资格。",
+    "reviewProcess": "入驻申请由 OpenScience 平台管理员人工核验。管理员可通过入驻、退回修改或拒绝入驻；这项核验针对期刊身份及申请人的代表资格。",
     "login": "登录后提交申请或查看审核状态",
     "loading": "正在加载我的申请…",
     "loadFailed": "无法加载申请，请刷新重试。",
@@ -2095,14 +2095,20 @@
     "currentStatus": "当前状态：{status}",
     "awaitingReview": "申请已进入平台管理员的待核验列表，处理后可在此查看结果。",
     "reviewReason": "平台审核说明：{reason}",
-    "revise": "请按审核说明修改资料，然后重新提交。",
+    "revise": "请按审核说明继续修改原申请。保存修改后仍为待修改；点击“重新提交”后才进入审核，申请编号保持不变。",
+    "continueEditing": "继续修改",
+    "saveChanges": "保存修改",
+    "resubmit": "重新提交",
+    "changesSaved": "修改已保存，当前仍为待修改。资料完整后，请点击“重新提交”。",
+    "saving": "正在保存并处理申请，请稍候…",
+    "rejectedHelp": "本轮申请已拒绝，资料保留但不可直接修改。如审核意见仅要求补充或修正资料，请联系平台管理员更正为“退回修改”。",
     "openJournal": "进入期刊工作台",
     "status": {
       "draft": "草稿",
       "submitted": "待平台审核",
-      "needs_information": "需补充材料",
+      "needs_information": "待修改",
       "approved": "已通过",
-      "rejected": "未通过"
+      "rejected": "已拒绝入驻"
     },
     "requiredError": "{field}为必填项。",
     "englishError": "{field}须用英文填写；人名请使用罗马字母拼写。",
@@ -2138,9 +2144,9 @@
     "receiptHeading": {
       "draft": "申请草稿",
       "submitted": "申请提交成功",
-      "needs_information": "请补充申请材料",
+      "needs_information": "申请已退回，请继续修改",
       "approved": "申请已通过核验",
-      "rejected": "申请未通过核验"
+      "rejected": "本轮申请已拒绝入驻"
     },
     "receiptNotice": "请保存本页地址和申请编号。此回执仅供申请人登录后查看，可在“我的申请”重新打开。",
     "statusLabel": "当前状态",
@@ -2165,19 +2171,26 @@
     "loadFailed": "暂时无法加载审核数据，请重试。",
     "applications": "入驻申请",
     "reasonLabel": "审核原因",
-    "reasonPlaceholder": "要求补件或拒绝时，请填写申请人可见的原因。",
-    "reasonRequired": "尚未提交审核：要求补件或拒绝时，请先填写审核原因。",
+    "reasonPlaceholder": "退回修改或拒绝入驻时，请填写申请人可见的原因。",
+    "reasonRequired": "尚未提交审核：退回修改或拒绝入驻时，请先填写审核原因。",
     "previousReason": "上次审核原因：{reason}",
     "englishNotice": "这条申请还需要补充英文资料",
-    "englishRequired": "尚未通过审核：请先补齐或改为英文——{fields}。可先要求补件，让申请人修改后重新提交。",
-    "correctionHelp": "可以先要求补件，让申请人在“我的申请”修改后重新提交。",
+    "englishRequired": "尚未通过审核：请先补齐或改为英文——{fields}。请选择“退回修改”，让申请人修改后重新提交。",
+    "correctionHelp": "资料不完整或需要改为英文时，请选择“退回修改”；申请人可在“我的申请”继续修改并重新提交。",
     "correctionReason": "请将以下资料补齐或改为英文后重新提交：{fields}。人名使用罗马字母拼写，机构名称请采用官方英文名称。",
-    "fillReason": "将上述问题填入补件原因",
+    "fillReason": "将上述问题填入退回原因",
     "processing": "正在提交…",
     "reviewCompleted": "审核操作成功，当前状态：{status}。",
     "reviewFailed": "未能确认审核完成：{detail}。请刷新状态确认后再重试。",
     "refreshStatus": "刷新申请状态",
     "refreshFailed": "列表暂时未能刷新。已确认的审核结果已保留，请稍后刷新页面。",
-    "decision": { "approved": "通过", "needs_information": "要求补件", "rejected": "拒绝" }
+    "rejectWarning": "拒绝入驻将结束本轮申请，申请人无法直接编辑或重新提交。如果只是资料不全、需要改为英文，请取消并选择“退回修改”。确认按已填写原因拒绝入驻？",
+    "confirmReject": "确认拒绝入驻",
+    "cancelReject": "取消，返回审核",
+    "reopen": "更正为退回修改",
+    "reopenHelp": "如果之前误选了拒绝，可填写更正原因并退回修改。申请人将可编辑原申请；原编号、资料、审核意见与历史记录全部保留。",
+    "reopenReasonLabel": "更正原因（必填）",
+    "reopenReasonRequired": "尚未更正：请填写为何将拒绝入驻更正为退回修改。",
+    "decision": { "approved": "通过入驻", "needs_information": "退回修改", "rejected": "拒绝入驻" }
   }
 }

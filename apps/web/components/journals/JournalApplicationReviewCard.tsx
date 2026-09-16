@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import { journalDisplayName, suggestJournalSlug, journalEnglishMetadataIssues, JOURNAL_APPLICATION_REQUIRED_FIELDS } from '@openscience/domain/journal-form-contract';
-import { reviewJournalApplication, type JournalApplication } from '@/lib/journal-api';
+import { reviewJournalApplication, reopenJournalApplication, type JournalApplication } from '@/lib/journal-api';
 
 type Decision = 'approved' | 'rejected' | 'needs_information';
 type Feedback = { kind: 'error' | 'success'; message: string };
@@ -17,7 +17,8 @@ export function JournalApplicationReviewCard({ application, onReviewed, onRefres
   const adminT = useTranslations('journalAdmin');
   const [slug, setSlug] = React.useState(() => suggestJournalSlug(application.nameEn));
   const [reason, setReason] = React.useState('');
-  const [pending, setPending] = React.useState<Decision | null>(null);
+  const [pending, setPending] = React.useState<Decision | 'reopen' | null>(null);
+  const [confirmReject, setConfirmReject] = React.useState(false);
   const [feedback, setFeedback] = React.useState<Feedback | null>(null);
   const inFlight = React.useRef(false);
   const feedbackRef = React.useRef<HTMLDivElement>(null);
@@ -25,6 +26,9 @@ export function JournalApplicationReviewCard({ application, onReviewed, onRefres
   const fieldIssues = journalEnglishMetadataIssues(application, JOURNAL_APPLICATION_REQUIRED_FIELDS);
   const issueFields = fieldIssues.map(({ field }) => t('fields.' + field)).join(', ');
   const submitted = application.status === 'submitted';
+  const rejected = application.status === 'rejected';
+
+  React.useEffect(() => { setConfirmReject(false); }, [application.status, application.revision]);
 
   React.useEffect(() => {
     if (!feedback) return;
@@ -32,25 +36,29 @@ export function JournalApplicationReviewCard({ application, onReviewed, onRefres
     feedbackRef.current?.scrollIntoView({ block: 'nearest' });
   }, [feedback]);
 
-  async function decide(decision: Decision) {
-    if (inFlight.current || !submitted) return;
+  async function decide(decision: Decision | 'reopen', rejectionConfirmed = false) {
+    if (inFlight.current || (decision === 'reopen' ? !rejected : !submitted)) return;
     if (decision === 'approved' && fieldIssues.length) {
       setFeedback({ kind: 'error', message: adminT('englishRequired', { fields: issueFields }) });
       return;
     }
     if (decision !== 'approved' && !reason.trim()) {
-      setFeedback({ kind: 'error', message: adminT('reasonRequired') });
+      setFeedback({ kind: 'error', message: adminT(decision === 'reopen' ? 'reopenReasonRequired' : 'reasonRequired') });
       return;
     }
     if (decision === 'approved' && (slug.length < 3 || slug.length > 80 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))) {
       setFeedback({ kind: 'error', message: t('slugError') });
       return;
     }
+    if (decision === 'rejected' && !rejectionConfirmed) { setConfirmReject(true); setFeedback(null); return; }
     inFlight.current = true; setPending(decision); setFeedback(null);
     try {
-      const result = await reviewJournalApplication(application.id, {
+      const result = decision === 'reopen'
+        ? await reopenJournalApplication(application.id, { expectedRevision: application.revision, reason: reason.trim() })
+        : await reviewJournalApplication(application.id, {
         decision, ...(reason.trim() ? { reason: reason.trim() } : {}), ...(decision === 'approved' ? { slug } : {}),
       });
+      setConfirmReject(false);
       setFeedback({ kind: 'success', message: adminT('reviewCompleted', { status: t('status.' + result.application.status) }) });
       await onReviewed(result.application);
     } catch (error) {
@@ -83,12 +91,26 @@ export function JournalApplicationReviewCard({ application, onReviewed, onRefres
         <textarea ref={reasonRef} aria-label={`${journalDisplayName(application)} ${adminT('reasonLabel')}`} disabled={pending !== null} className="w-full border border-os-rule-paper bg-transparent p-3" maxLength={2000} rows={3} placeholder={adminT('reasonPlaceholder')} value={reason} onChange={(event) => setReason(event.target.value)} />
       </label>
     </> : null}
+    {rejected ? <div className="mt-4 border-l-2 border-os-rule-paper pl-4 text-sm">
+      <p>{adminT('reopenHelp')}</p>
+      <label className="grid gap-2">{adminT('reopenReasonLabel')}
+        <textarea disabled={pending !== null} className="w-full border border-os-rule-paper bg-transparent p-3" maxLength={2000} rows={3} value={reason} onChange={(event) => setReason(event.target.value)} />
+      </label>
+    </div> : null}
     {feedback ? <div ref={feedbackRef} tabIndex={-1} role={feedback.kind === 'error' ? 'alert' : 'status'} className="mt-4 border border-os-rule-paper p-4 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus-ring">
       <p className="m-0">{feedback.message}</p>
       {feedback.kind === 'error' ? <button type="button" disabled={pending !== null} className={`${buttonClass} mt-3`} onClick={() => void onRefresh()}>{adminT('refreshStatus')}</button> : null}
     </div> : null}
-    {submitted ? <div className="mt-3 flex flex-wrap gap-2">
+    {submitted && confirmReject ? <div role="group" aria-label={adminT('confirmReject')} className="mt-4 border border-os-vermilion-ink p-4 text-sm">
+      <p>{adminT('rejectWarning')}</p>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className={buttonClass} disabled={pending !== null} onClick={() => void decide('rejected', true)}>{pending === 'rejected' ? adminT('processing') : adminT('confirmReject')}</button>
+        <button type="button" className={buttonClass} disabled={pending !== null} onClick={() => setConfirmReject(false)}>{adminT('cancelReject')}</button>
+      </div>
+    </div> : null}
+    {submitted && !confirmReject ? <div className="mt-3 flex flex-wrap gap-2">
       {(['approved', 'needs_information', 'rejected'] as const).map((decision) => <button type="button" key={decision} className={buttonClass} disabled={pending !== null} onClick={() => void decide(decision)}>{pending === decision ? adminT('processing') : adminT('decision.' + decision)}</button>)}
     </div> : null}
+    {rejected ? <button type="button" className={`${buttonClass} mt-3`} disabled={pending !== null} onClick={() => void decide('reopen')}>{pending === 'reopen' ? adminT('processing') : adminT('reopen')}</button> : null}
   </article>;
 }

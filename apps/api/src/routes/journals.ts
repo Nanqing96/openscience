@@ -10,7 +10,7 @@ import {
   normalizeJournalDoi, publishJournalArticle, removeJournalMember, restrictJournalArticle,
   uploadJournalSource, JOURNAL_FILE_LIMIT,
   assignJournalReviewer,
-  transferJournalOwnership,
+  transferJournalOwnership, reopenJournalApplication,
   respondJournalFeedback, reviewJournalArticle, reviewJournalServiceRequest, saveJournalApplication, setJournalOperationalState, submitJournalApplication,
   submitJournalJob, txReleases, updateJournalArticle, updateJournalHomepage, verifyJournalApplication,
   type JournalMetadata,
@@ -186,6 +186,10 @@ export function registerJournalRoutes(app: FastifyInstance, deps: Deps): void {
   app.post('/journals/:id/service-requests', member(async (req, uid) => ({ request: await createJournalServiceRequest(deps, uid, ids.parse(req.params).id, z.object({ annualVolume: z.number().int().positive().max(1_000_000), language: z.string().max(100), figureScale: z.string().max(100), services: z.array(z.string().max(100)).min(1).max(20), notes: z.string().max(5000).optional(), requestKey }).strict().parse(req.body)) })));
   app.get('/journals/:id/stats', member(async (req, uid) => { const { id } = ids.parse(req.params); await journalScope(deps.prisma, id, uid, ['owner', 'maintainer', 'author']); return journalStats(deps, id); }));
   app.get('/admin/journals/applications', admin(async (_req, uid) => ({ items: await listAdminApplications(deps, uid) })));
+  app.post('/admin/journals/applications/:id/reopen', admin(async (req, uid) => ({ application: await reopenJournalApplication(deps, uid, {
+    applicationId: ids.parse(req.params).id,
+    ...z.object({ expectedRevision: revision, reason: z.string().trim().min(1).max(2000) }).strict().parse(req.body),
+  }) })));
   app.post('/admin/journals/applications/:id/review', admin(async (req, uid) => { const result = await verifyJournalApplication(deps, uid, { applicationId: ids.parse(req.params).id, ...z.object({ decision: z.enum(['approved', 'rejected', 'needs_information']), reason: z.string().max(5000).optional(), slug: z.string().min(3).max(80).optional() }).strict().parse(req.body) }); return { application: result.application, journal: result.journal ? await journalSummary(deps, result.journal) : null }; }));
   app.get('/admin/journals', admin(async () => ({ items: await Promise.all((await deps.prisma.journal.findMany({ orderBy: { createdAt: 'desc' }, take: 1000 })).map((j) => journalSummary(deps, j))) })));
   app.get('/admin/journals/service-requests', admin(async () => ({ items: await deps.prisma.journalServiceRequest.findMany({ orderBy: { createdAt: 'desc' }, take: 1000 }) })));

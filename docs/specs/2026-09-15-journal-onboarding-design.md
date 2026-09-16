@@ -216,7 +216,12 @@ flowchart LR
 
 ### JRN-04：期刊状态
 
-申请状态：`draft → submitted → needs_information / approved / rejected`。补件后可再次提交。
+申请状态：`draft → submitted → needs_information / approved / rejected`。
+
+- 管理员操作明确为“通过入驻 / 退回修改 / 拒绝入驻”。资料不全或需要英文修正使用退回修改，状态显示“待修改”。
+- 申请人在“我的申请”或回执点击“继续修改”，编辑同一申请；“保存修改”保持待修改，“重新提交”才回到待平台审核。编号、资料与历史审核事件保留，不自动还原草稿，也不要求撤回或重建申请。
+- 拒绝入驻必须填写原因并二次确认，结束本轮申请且锁定申请人编辑。
+- 管理员误拒后可填写更正原因，使用“更正为退回修改”。仅允许 `rejected → needs_information`，核对当前修订号；原审核意见保留，更正前状态/审核者/时间/原因及修订号与更正事件同事务记录。不能直接把拒绝改为通过。
 
 开通后状态：`setup → active → paused / closed`。
 

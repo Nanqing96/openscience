@@ -2059,12 +2059,18 @@
     "currentStatus": "Status: {status}",
     "awaitingReview": "Your application is in the platform administrator review queue. Return here to view the outcome.",
     "reviewReason": "Review note: {reason}",
-    "revise": "Update your information according to the review note and submit again.",
+    "revise": "Revise the original application using the review note. Saving keeps it awaiting changes; select Resubmit to send it for review. The application ID stays the same.",
+    "continueEditing": "Continue editing",
+    "saveChanges": "Save changes",
+    "resubmit": "Resubmit",
+    "changesSaved": "Changes saved. The application still awaits changes. Select Resubmit when ready for review.",
+    "saving": "Saving and processing your application…",
+    "rejectedHelp": "This application round was declined. Your information is retained but cannot be edited directly. If only corrections or additional information are needed, ask a platform administrator to return it for revision.",
     "openJournal": "Open journal workspace",
     "status": {
       "draft": "Draft",
       "submitted": "Awaiting platform review",
-      "needs_information": "More information required",
+      "needs_information": "Awaiting changes",
       "approved": "Approved",
       "rejected": "Declined"
     },
@@ -2102,7 +2108,7 @@
     "receiptHeading": {
       "draft": "Application draft",
       "submitted": "Application submitted",
-      "needs_information": "More information required",
+      "needs_information": "Application returned for revision",
       "approved": "Application approved",
       "rejected": "Application declined"
     },
@@ -2142,6 +2148,13 @@
     "reviewFailed": "Review completion could not be confirmed: {detail}. Refresh the application status before retrying.",
     "refreshStatus": "Refresh application status",
     "refreshFailed": "The list could not be refreshed. Confirmed review results have been retained. Refresh the page later.",
-    "decision": { "approved": "Approve", "needs_information": "Request changes", "rejected": "Reject" }
+    "rejectWarning": "Declining ends this application round. The applicant cannot edit or resubmit it directly. If information is incomplete or needs English corrections, cancel and choose Return for revision. Decline with the reason entered above?",
+    "confirmReject": "Confirm decline",
+    "cancelReject": "Cancel and return to review",
+    "reopen": "Correct to return for revision",
+    "reopenHelp": "If the application was declined by mistake, provide a correction reason and return it for revision. The applicant can edit the original application. Its ID, information, original review note and history are retained.",
+    "reopenReasonLabel": "Correction reason (required)",
+    "reopenReasonRequired": "No correction was submitted. Explain why the declined application should be returned for revision.",
+    "decision": { "approved": "Approve onboarding", "needs_information": "Return for revision", "rejected": "Decline onboarding" }
   }
 }

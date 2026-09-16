@@ -40,8 +40,10 @@ export function JournalApplicationReceipt({ applicationId }: { applicationId: st
     <p className="leading-7 text-os-muted-paper">{t('reviewProcess')}</p>
     {application.status === 'submitted' ? <p>{t('awaitingReview')}</p> : null}
     {application.reviewReason ? <p className="whitespace-pre-wrap">{t('reviewReason', { reason: application.reviewReason })}</p> : null}
+    {application.status === 'needs_information' ? <p>{t('revise')}</p> : null}
+    {application.status === 'rejected' ? <p>{t('rejectedHelp')}</p> : null}
     <p className="text-sm text-os-muted-paper">{t('receiptNotice')}</p>
     {error ? <p role="alert">{error}</p> : null}
-    <div className="mt-6 flex flex-wrap gap-3"><Link className="min-h-11 border border-os-rule-paper px-4 py-3" href={'/journals/apply?applicationId=' + application.id}>{t(application.status === 'needs_information' || application.status === 'draft' ? 'editApplication' : 'myApplications')}</Link><button disabled={loading} className="min-h-11 border border-os-rule-paper px-4" onClick={() => void load()}>{t('refresh')}</button>{application.status === 'approved' && application.journalId ? <Link className="min-h-11 border border-os-rule-paper px-4 py-3" href={'/journals/manage/' + application.journalId}>{t('openJournal')}</Link> : null}</div>
+    <div className="mt-6 flex flex-wrap gap-3"><Link className={`min-h-11 border border-os-rule-paper px-4 py-3 ${application.status === 'needs_information' ? 'bg-accent-primary-strong font-semibold text-os-black-0' : ''}`} href={'/journals/apply?applicationId=' + application.id}>{t(application.status === 'needs_information' ? 'continueEditing' : application.status === 'draft' ? 'editApplication' : 'myApplications')}</Link><button disabled={loading} className="min-h-11 border border-os-rule-paper px-4" onClick={() => void load()}>{t('refresh')}</button>{application.status === 'approved' && application.journalId ? <Link className="min-h-11 border border-os-rule-paper px-4 py-3" href={'/journals/manage/' + application.journalId}>{t('openJournal')}</Link> : null}</div>
   </section>;
 }
