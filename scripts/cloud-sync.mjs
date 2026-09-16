@@ -15,6 +15,11 @@ if (!releaseSha || !/^[0-9a-f]{40}$/.test(releaseSha)) {
 const releaseRoot = `/opt/openscience-releases/${releaseSha}`;
 const cfg = JSON.parse(readFileSync(path.join(configRoot, '.cloud-sync-env'), 'utf8'));
 const key = resolveSshIdentityPath(cfg.key);
+// Git's SSH may reinterpret apostrophes in Windows profile paths. Keep the
+// Windows identity path with the native OpenSSH executable.
+const sshExecutable = process.platform === 'win32'
+  ? path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'OpenSSH', 'ssh.exe')
+  : 'ssh';
 
 const archive = spawn(
   'git',
@@ -22,7 +27,7 @@ const archive = spawn(
   { cwd: sourceRoot },
 );
 const remote = buildReleaseMaterializeCommand(releaseRoot, releaseSha);
-const ssh = spawn('ssh', ['-o', 'BatchMode=yes', '-o', 'IdentitiesOnly=yes', '-o', 'ConnectTimeout=20', '-i', key, '-p', String(cfg.port), `${cfg.user}@${cfg.host}`, remote], { cwd: process.cwd() });
+const ssh = spawn(sshExecutable, ['-o', 'BatchMode=yes', '-o', 'IdentitiesOnly=yes', '-o', 'ConnectTimeout=20', '-i', key, '-p', String(cfg.port), `${cfg.user}@${cfg.host}`, remote], { cwd: process.cwd() });
 
 archive.stdout.pipe(ssh.stdin);
 // If SSH rejects the connection, preserve its diagnostic instead of allowing

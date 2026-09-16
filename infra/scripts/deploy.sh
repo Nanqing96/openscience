@@ -81,6 +81,10 @@ SSH_HOST="$(pick SERVER_HOST SSH_HOST 公网ip)" || { echo "错误：.env 缺少
 SSH_USER="$(pick SERVER_USER SSH_USER 用户名)" || { echo "错误：.env 缺少用户名" >&2; exit 66; }
 SSH_PORT="$(pick SERVER_PORT SSH_PORT SSH端口 || true)"; SSH_PORT="${SSH_PORT:-22}"
 SSH_KEY="$(native_tool_path "$HOME/.ssh/id_ed25519_xgs")"
+SSH_EXECUTABLE=ssh
+if [[ "${OS:-}" = Windows_NT ]]; then
+  SSH_EXECUTABLE="${SYSTEMROOT:-${SystemRoot:-C:/Windows}}/System32/OpenSSH/ssh.exe"
+fi
 SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=2 -i "$SSH_KEY" -p "$SSH_PORT")
 
 log() { printf '%s\n' "$*"; }
@@ -115,6 +119,6 @@ git -C "$PROJECT_ROOT" show "$RELEASE_SHA:infra/scripts/production-deploy-transa
   | grep -F 'install -m 0644 $RELEASE_ROOT/infra/nginx/openscience.conf $NGINX_CONF' >/dev/null \
   || { echo "错误：候选 transaction runner 缺少 nginx 收敛合同" >&2; exit 66; }
 REMOTE_TRANSACTION_RUNNER="/opt/openscience-releases/$RELEASE_SHA/infra/scripts/production-deploy-transaction.sh"
-ssh "${SSH_OPTS[@]}" "${SSH_USER}@${SSH_HOST}" \
+"$SSH_EXECUTABLE" "${SSH_OPTS[@]}" "${SSH_USER}@${SSH_HOST}" \
   "exec /bin/bash '$REMOTE_TRANSACTION_RUNNER' '$RELEASE_SHA' '$ROLLBACK_SHA' '$SKIP_MIGRATE' '$NO_TESTS' '$REUSE_UNCHANGED_CAPABILITY_IMAGES' </dev/null" \
   </dev/null
