@@ -13,6 +13,7 @@
 | `docs/runbooks/journal-onboarding.md` | 启用、公开入口、运营与回退 |
 | `packages/domain/src/journal/` / `apps/api/src/routes/journals.ts` / `apps/api/src/journal-boundary.ts` | 期刊事务、API 与通用入口隔离，兼容生产回收站及独立公开编号 |
 | `apps/agent-worker/src/journal-worker.ts` / `apps/web/components/journals/` / `apps/web/app/journals/` | 持久化加工与期刊界面，复用现有 Gateway/Parser |
+| `packages/domain/src/journal/form-contract.ts` / `apps/web/components/journals/JournalApplicationReceipt.tsx` / `apps/web/app/journals/apply/[applicationId]/page.tsx` | 前后台共享英文元数据与服务规则；本人可见申请编号、提交回执和审核状态 |
 | `infra/journal-models.fragment` / `infra/migrations/20260915000000_journals/` | 期刊模型与增量迁移；不回退既有生产迁移 |
 | `scripts/journals/verify-migration.mjs` / `.github/workflows/journals.yml` | 原分支隔离数据库演练/CI；按当前 no-tests 部署约束不执行 |
 
