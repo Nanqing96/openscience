@@ -1,7 +1,7 @@
 # OpenScience (XGS) 项目文件索引
 
 > 维护规则：创建/修改/移动文件后必须更新本索引。创建新文件前先查本表防重复。
-> **CURRENT 期刊开发入口（2026-09-15）：** `docs/handoff/2026-09-15-journal-onboarding-handoff.md`。本任务在 Nanqing96/openscience 的 `codex/journal-onboarding` 分支开发；基础提交 `49ff4fcd8d78e33ec0d8f55ba2179f6b5511248b`。本轮未读取或改变生产 release/rollback；下方既有生产条目是历史记录，不能作为本次部署证据。
+> **CURRENT 期刊交付入口（2026-09-16）：** `docs/handoff/2026-09-15-journal-onboarding-handoff.md`。开发分支 `codex/journal-onboarding`，验收代码 `e7e387b7738be3ca395f29dcd61c6894acb273b7`，交付 [PR #1](https://github.com/Nanqing96/openscience/pull/1)。本轮未读取或改变生产 release/rollback；下方既有生产条目是历史记录，不能作为本次部署证据。
 
 ## 期刊入驻与 AI 解读（2026-09-15）
 

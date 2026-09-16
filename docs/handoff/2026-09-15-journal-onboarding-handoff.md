@@ -4,7 +4,8 @@
 
 - 用户要求：依据期刊 PRD 开发，并将最终代码上传 Nanqing96/openscience；本轮不部署生产。
 - Branch：`codex/journal-onboarding`；基线 HEAD：`49ff4fcd8d78e33ec0d8f55ba2179f6b5511248b`。
-- Code HEAD：待完成最终本地验收后绑定提交；交付提交以此分支 Git 元数据为准。
+- Code / browser acceptance HEAD：`e7e387b7738be3ca395f29dcd61c6894acb273b7`；最终交付另含本验收文档提交，以分支 Git 元数据为准。
+- GitHub：[期刊开发 PR #1](https://github.com/Nanqing96/openscience/pull/1)；本轮已上传开发分支，不自动合并或部署。
 - Base branch：`release/academic-identity-ror-20260902`，不等同其他仓库或当前生产。
 - Production release / rollback：本轮未读取、未修改、未验收；禁止用旧文档日期替代实际生产状态。
 
@@ -26,7 +27,9 @@
 - 完整默认回归：Domain 547、API 109 通过；默认跳过的专用数据库用例另行实际运行。
 - 定向测试：Domain 20/20、API 16/16（含期刊及既有公开研究接口）、Worker 4/4、Web 5/5；真实 PostgreSQL 覆盖并发额度、上传容量、幂等、撤权、固定快照、私密纠错和公开数据隔离。
 - `scripts/journals/verify-migration.mjs`：完整迁移 37、回退保留个人 RO/旧表、重应用 12 个表及 8 个 CHECK；独有临时库已清理。
-- Web 正式构建及类型检查通过；文档 247 份 lint、docs-sync 8 项及结构检查通过。桌面/手机浏览器最终证据待本轮验收完成后更新。
+- Web 正式构建及类型检查通过；文档 247 份 lint、docs-sync 8 项及结构检查通过。GitHub CI 构建顺序修复后已通过，最新分支状态以 PR Checks 为准。
+- 2026-09-16 08:51–08:52（Asia/Shanghai）真实 Chromium 场景通过：6 个页面 × 桌面 1440 / 手机 375，无横向溢出；私密反馈提交/回复/登录门禁、服务申请、生成队列轮询下保留编辑、保存后提交审核、限制公开后地图移除及固定页 404 全部通过。
+- 浏览器使用真实会话与 CSRF、正式作业预占/取消；隔离 API 端口 43141（本机 3001 拒绝绑定）。仅豁免既有匿名阅读偏好接口预期 401，其余浏览器错误仍作为失败。13 张成功截图位于忽略目录 `apps/web/test/visual/out/journals/`。
 
 ## Constraints / open risks
 
@@ -38,6 +41,6 @@
 
 ## Next action / read-first
 
-1. 完成 GitHub 分支上传并记录 PR；部署由后续明确的部署任务负责。
+1. 代码及验收记录已上传 PR #1；部署由后续明确的部署任务负责。
 2. 首批 3–5 家真实期刊进行人工身份/版权核验及试点效果评测。
 3. 先读 [运行手册](../runbooks/journal-onboarding.md)，再读 [PRD](../specs/2026-09-15-journal-onboarding-design.md) 对应模块；旧生产 handoff 仅供历史背景。
