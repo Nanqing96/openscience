@@ -18,7 +18,7 @@
 
 ## 首次启用
 
-1. 按现有发布流程备份核心数据库，检查部署源版本，构建 API、Web、Agent Worker 及依赖。
+1. 按现有发布流程备份核心数据库，检查部署源版本；先生成核心与 Search 数据库客户端，再并行构建 API、Web、Agent Worker 及依赖。
 2. 使用既有迁移 CLI 应用核心迁移 37：`20260915000000_journals`。独立 Search 数据库无新增迁移。
 3. 确认存储、文件扫描、文档解析组件和现有 AI Gateway 均已按站点配置运行。新增模块不引入独立模型密钥。
 4. 先用平台管理员核验一家有真实代表授权的试点期刊。每家首次核验发放 5 篇试用额度，有效期 90 天。
@@ -110,6 +110,8 @@ API 服务原生路径无 `/api`；浏览器同源代理添加 `/api`。公开�
 真实数据库测试仅接受显式的 loopback `JOURNAL_TEST_DATABASE_URL` 与 `journal_test` 测试库，不读取站点凭据。迁移演练脚本创建独立临时数据库，检查前进、回退与再次应用后个人研究对象保留。
 
 ```text
+pnpm exec prisma generate --schema infra/schema.prisma
+pnpm --filter @openscience/search generate
 pnpm --filter @openscience/api... build
 pnpm --filter @openscience/domain exec vitest run test/journal-content.test.ts test/journal-onboarding.test.ts test/journal-database.test.ts
 pnpm --filter @openscience/api exec vitest run test/journal-boundary.test.ts test/journals-database.test.ts test/journal-feedback-database.test.ts
@@ -121,7 +123,7 @@ pnpm docs:lint
 pnpm audit:docs-sync
 ```
 
-浏览器验收另需设置 `JOURNAL_BROWSER_TEST=1` 和上述测试库变量，再运行 API 包的 `test/journal-browser.test.ts`。先以 `API_ORIGIN=http://127.0.0.1:3001` 构建 Web；验收占用本机 3001 端口启动隔离 API，Web 使用随机端口。截图输出到已忽略的 `apps/web/test/visual/out/journals/`。
+浏览器验收另需设置 `JOURNAL_BROWSER_TEST=1` 和上述测试库变量，再运行 API 包的 `test/journal-browser.test.ts`。先以 `API_ORIGIN=http://127.0.0.1:3001` 构建 Web；验收默认占用本机 3001 端口启动隔离 API，Web 使用随机端口。若系统保留了该端口，可设置 `JOURNAL_BROWSER_API_PORT`（例如 43141），并先用相同端口的 `API_ORIGIN` 重新构建 Web。截图输出到已忽略的 `apps/web/test/visual/out/journals/`；实际浏览器请求启用真实会话/CSRF，后台作业通过正式入队和取消流程预占、释放额度。
 
 生产回退优先关闭功能并回退应用版本，保留新增表。迁移 37 的 `rollback.sql` 会删除期刊表，包含期刊业务数据；仅用于空环境/隔离演练或已备份并明确批准的数据回退。不能在已运营期刊上直接执行。
 

@@ -6,12 +6,14 @@ import { resolve } from 'node:path';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { PrismaClient } from '@prisma/client';
 import { createSession } from '@openscience/auth';
+import { cancelJournalJob, submitJournalJob } from '@openscience/domain';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app';
 import { createFakeMailer, createFakeRedis } from './helpers/fakes';
 
 const enabled = process.env.JOURNAL_BROWSER_TEST === '1';
 const databaseUrl = process.env.JOURNAL_TEST_DATABASE_URL;
+const apiPort = Number(process.env.JOURNAL_BROWSER_API_PORT ?? 3001);
 const suite = enabled && databaseUrl ? describe.sequential : describe.skip;
 const require = createRequire(import.meta.url);
 const { chromium } = require('../../web/node_modules/playwright') as typeof import('../../web/node_modules/playwright');
@@ -19,7 +21,7 @@ const outputDir = resolve('../web/test/visual/out/journals');
 
 const sourceSentence = 'Synthetic simulations predict a 14.7 TW peak; no complete-system experiment has yet been reported.';
 const source = { kind: 'fulltext', text: sourceSentence, url: 'https://journal.example.invalid/synthetic-source', label: 'Synthetic source paragraph' } as const;
-const rights = { internalProcessing: true, derivativeGeneration: true, publicSource: false, publicDerivative: true, externalProcessing: false, license: 'CC-BY-4.0', evidence: 'Synthetic local browser fixture authorization' };
+const rights = { internalProcessing: true, derivativeGeneration: true, publicSource: false, publicDerivative: true, externalProcessing: true, license: 'CC-BY-4.0', evidence: 'Synthetic local browser fixture authorization; no model worker runs in this test' };
 const draft = {
   summary: 'This local synthetic paper reports a simulation result of 14.7 TW and clearly separates it from experimental evidence.',
   core: { problem: 'Preserve evidence scope.', insight: 'Simulation and experiment differ.', method: 'Numerical simulation.', results: 'Predicted 14.7 TW.', limitations: 'No complete-system experiment.', reproducibility: 'Synthetic fixture inputs.' },
@@ -73,6 +75,7 @@ suite('journal real-browser acceptance against isolated PostgreSQL', () => {
   let releaseUrl: string;
 
   beforeAll(async () => {
+    if (!Number.isInteger(apiPort) || apiPort < 1024 || apiPort > 65535) throw new Error('Invalid loopback browser API port');
     const parsed = new URL(databaseUrl!);
     if (!['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname) || parsed.pathname !== '/journal_test') throw new Error('Browser acceptance requires the explicit loopback journal_test database');
     prisma = new PrismaClient({ datasources: { db: { url: databaseUrl } } });
@@ -111,7 +114,10 @@ suite('journal real-browser acceptance against isolated PostgreSQL', () => {
     const published = await app.inject({ method: 'POST', url: `/journals/${journalId}/articles/${articleId}/publish`, cookies: { openscience_session: ownerToken }, payload: { revision, requestKey: randomUUID(), humanConfirmed: true } });
     expect(published.statusCode, published.body).toBe(200);
     releaseUrl = published.json().release.url as string;
-    const apiAddress = await app.listen({ host: '127.0.0.1', port: 3001 });
+    // Fixtures use direct injection; actual browser writes exercise the real CSRF token/cookie flow.
+    await app.close();
+    app = await buildApp({ prisma, redis, mailer: createFakeMailer(), cookieSecret: 'isolated-journal-browser-test', secureCookies: false, security: { csrf: true }, journalsEnabled: true, publicIdPrefix: 'BRW' });
+    const apiAddress = await app.listen({ host: '127.0.0.1', port: apiPort });
     const webPort = await freePort();
     baseUrl = `http://127.0.0.1:${webPort}`;
     const nextCli = resolve('../web/node_modules/next/dist/bin/next');
@@ -149,7 +155,13 @@ suite('journal real-browser acceptance against isolated PostgreSQL', () => {
         for (const surface of surfaces) {
           const page = await surface.context.newPage();
           page.on('pageerror', (error) => browserErrors.push(`${surface.name}: ${error.message}`));
-          page.on('console', (message) => { if (message.type() === 'error') browserErrors.push(`${surface.name}: ${message.text()}`); });
+          page.on('console', (message) => {
+            if (message.type() !== 'error') return;
+            // Existing public reader probes account-only preferences and intentionally falls back for guests.
+            const expectedGuestPreference = surface.name === 'release' && message.text().includes('401')
+              && message.location().url === `${baseUrl}/api/reading-preferences`;
+            if (!expectedGuestPreference) browserErrors.push(`${surface.name}: ${message.text()} @ ${message.location().url}`);
+          });
           await page.setViewportSize({ width: viewport.width, height: viewport.height });
           const response = await page.goto(`${baseUrl}${surface.path}`, { waitUntil: 'networkidle' });
           expect(response?.status(), `${surface.name} ${viewport.name}`).toBe(200);
@@ -186,7 +198,10 @@ suite('journal real-browser acceptance against isolated PostgreSQL', () => {
       await feedbackPage.goto(`${baseUrl}${releaseUrl}`, { waitUntil: 'networkidle' });
       const feedbackSection = feedbackPage.getByRole('region', { name: '反馈解读错误' });
       await feedbackSection.getByLabel(/对解读 v\d+ 的反馈/).fill(feedbackText);
+      const feedbackResponse = feedbackPage.waitForResponse((response) => response.request().method() === 'POST' && response.url().endsWith('/feedback'));
       await feedbackSection.getByRole('button', { name: '提交纠错反馈' }).click();
+      const submittedFeedback = await feedbackResponse;
+      expect(submittedFeedback.status(), await submittedFeedback.text()).toBe(200);
       await feedbackSection.getByRole('status').filter({ hasText: '反馈已提交给编辑部' }).waitFor({ state: 'visible' });
 
       const editorialPage = await ownerContext.newPage();
@@ -219,23 +234,24 @@ suite('journal real-browser acceptance against isolated PostgreSQL', () => {
       await actionPage.getByRole('status').filter({ hasText: '服务申请已提交' }).waitFor({ state: 'visible' });
 
       const currentArticle = await prisma.journalArticle.findUniqueOrThrow({ where: { id: articleId } });
-      const pollJob = await prisma.journalJob.create({ data: {
-        journalId, articleId, requestedBy: ownerId, requestKey: `browser-poll-${randomUUID()}`,
-        state: 'pending', revision: currentArticle.revision, sourceDigest: `synthetic-${randomUUID()}`, language: 'zh',
-      } });
+      const pollDeps = { prisma, mailer: createFakeMailer() };
+      const pollJob = await submitJournalJob(pollDeps, ownerId, journalId, articleId, {
+        requestKey: `browser-poll-${randomUUID()}`, revision: currentArticle.revision, language: 'zh',
+      });
       try {
         const editPage = await ownerContext.newPage();
         await editPage.goto(`${baseUrl}/journals/manage/${journalId}/articles/${articleId}`, { waitUntil: 'networkidle' });
+        await editPage.getByRole('textbox', { name: '来源文本', exact: true }).waitFor({ state: 'visible', timeout: 10000 }).catch(async (error) => { await editPage.screenshot({ path: resolve(outputDir, 'article-edit-failure.png'), fullPage: true }); throw new Error(String(error) + '\nPAGE: ' + (await editPage.locator('body').innerText()).slice(0, 1800)); });
         const changedSource = `${sourceSentence} Local editor verification.`;
         const changedSummary = `${draft.summary} Local editor verification.`;
-        await editPage.getByLabel('来源文本').fill(changedSource);
-        await editPage.getByLabel('摘要').fill(changedSummary);
+        await editPage.getByRole('textbox', { name: '来源文本', exact: true }).fill(changedSource);
+        await editPage.getByRole('textbox', { name: '摘要', exact: true }).fill(changedSummary);
         await editPage.getByText('有未保存修改，请先保存再审核或发布。').waitFor({ state: 'visible' });
         expect(await editPage.getByRole('button', { name: '人工确认并发布' }).isDisabled()).toBe(true);
         expect(await editPage.getByRole('button', { name: '提交审核' }).isDisabled()).toBe(true);
         await editPage.waitForTimeout(2_500);
-        expect(await editPage.getByLabel('来源文本').inputValue()).toBe(changedSource);
-        expect(await editPage.getByLabel('摘要').inputValue()).toBe(changedSummary);
+        expect(await editPage.getByRole('textbox', { name: '来源文本', exact: true }).inputValue()).toBe(changedSource);
+        expect(await editPage.getByRole('textbox', { name: '摘要', exact: true }).inputValue()).toBe(changedSummary);
         await editPage.getByRole('button', { name: '保存修订' }).click();
         await editPage.getByText('已保存。来源或解读内容变更后，需要重新审核。').waitFor({ state: 'visible' });
         expect(await editPage.getByRole('button', { name: '提交审核' }).isEnabled()).toBe(true);
@@ -257,7 +273,7 @@ suite('journal real-browser acceptance against isolated PostgreSQL', () => {
         expect(restrictedSitemap).not.toContain(releaseUrl);
         expect((await fetch(`${baseUrl}${releaseUrl}`)).status).toBe(404);
       } finally {
-        await prisma.journalJob.update({ where: { id: pollJob.id }, data: { state: 'succeeded' } });
+        await cancelJournalJob(pollDeps, ownerId, journalId, pollJob.id);
       }
       expect(browserErrors).toEqual([]);
       await Promise.all([publicContext.close(), ownerContext.close(), adminContext.close()]);
