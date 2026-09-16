@@ -2,11 +2,11 @@
 
 ## 期刊入驻与 AI 解读
 
-当前部署状态和续作约束统一见 [期刊 CURRENT handoff](docs/handoff/2026-09-15-journal-onboarding-handoff.md)。该任务等待其他部署完成；原旧基线开发分支不得直接覆盖线上。下方 Hermes 入口属于并行任务，保留其目标与资产。
+当前部署状态和续作约束统一见 [期刊 CURRENT handoff](docs/handoff/2026-09-15-journal-onboarding-handoff.md)。用户已授权等待并行发布完成后自动部署；原旧基线开发分支不得直接覆盖线上。下方 Hermes 入口属于并行任务，保留其目标与资产。
 
 | 路径 | 用途 |
 |---|---|
-| `docs/handoff/2026-09-15-journal-onboarding-handoff.md` | 唯一期刊 CURRENT：代码、生产整合、暂停与部署证据 |
+| `docs/handoff/2026-09-15-journal-onboarding-handoff.md` | 唯一期刊 CURRENT：代码、生产整合、部署与实际观察证据 |
 | `docs/specs/2026-09-15-journal-onboarding-design.md` | 期刊入驻、权限、来源许可、额度与审核发布需求 |
 | `docs/proposals/2026-09-15-ai-citation-enablement.md` | ACE 商业服务方案与来源 |
 | `docs/proposals/2026-09-15-openscience-scholar-value.md` | 作者、读者及科研生态价值说明 |
@@ -14,7 +14,7 @@
 | `packages/domain/src/journal/` / `apps/api/src/routes/journals.ts` / `apps/api/src/journal-boundary.ts` | 期刊事务、API 与通用入口隔离，兼容生产回收站及独立公开编号 |
 | `apps/agent-worker/src/journal-worker.ts` / `apps/web/components/journals/` / `apps/web/app/journals/` | 持久化加工与期刊界面，复用现有 Gateway/Parser |
 | `infra/journal-models.fragment` / `infra/migrations/20260915000000_journals/` | 期刊模型与增量迁移；不回退既有生产迁移 |
-| `scripts/journals/verify-migration.mjs` / `.github/workflows/journals.yml` | 原分支隔离数据库演练/CI；当前暂停期不执行 |
+| `scripts/journals/verify-migration.mjs` / `.github/workflows/journals.yml` | 原分支隔离数据库演练/CI；按当前 no-tests 部署约束不执行 |
 
 ## Hermes 并行任务入口
 

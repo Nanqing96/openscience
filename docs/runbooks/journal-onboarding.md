@@ -2,7 +2,7 @@
 
 ## 范围与入口
 
-实现依据：[期刊入驻 PRD](../specs/2026-09-15-journal-onboarding-design.md)。已完成首期代码与生产兼容整合；按用户要求等待另一项部署完成。本模块尚未上线，精确版本及续作入口见 [CURRENT handoff](../handoff/2026-09-15-journal-onboarding-handoff.md)。
+实现依据：[期刊入驻 PRD](../specs/2026-09-15-journal-onboarding-design.md)。已完成首期代码与生产兼容整合，用户已恢复部署授权；上线版本、实际观察范围及续作入口统一见 [CURRENT handoff](../handoff/2026-09-15-journal-onboarding-handoff.md)。
 
 | 用户 | 页面 | 用途 |
 |---|---|---|
