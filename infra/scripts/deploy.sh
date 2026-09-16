@@ -7,13 +7,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # Native Windows Node/Git require a drive path even when the Bash runtime does
 # not perform MSYS argument conversion. Linux runners retain their POSIX paths.
-if command -v cygpath >/dev/null 2>&1; then
-  PROJECT_ROOT="$(cygpath -m "$PROJECT_ROOT")"
-fi
-CONFIG_ROOT="${XGS_CONFIG_ROOT:-$PROJECT_ROOT}"
-if command -v cygpath >/dev/null 2>&1; then
-  CONFIG_ROOT="$(cygpath -m "$CONFIG_ROOT")"
-fi
+native_tool_path() {
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -m "$1"
+  elif [[ "${OS:-}" = Windows_NT || "${OSTYPE:-}" = cygwin* || "${OSTYPE:-}" = msys* ]] && [[ "$1" =~ ^/[A-Za-z]/ ]]; then
+    printf '%s:%s\n' "${1:1:1}" "${1:2}"
+  else
+    printf '%s\n' "$1"
+  fi
+}
+PROJECT_ROOT="$(native_tool_path "$PROJECT_ROOT")"
+CONFIG_ROOT="$(native_tool_path "${XGS_CONFIG_ROOT:-$PROJECT_ROOT}")"
 ENV_FILE="$CONFIG_ROOT/.env"
 
 CONFIRM=0
@@ -76,7 +80,7 @@ pick() {
 SSH_HOST="$(pick SERVER_HOST SSH_HOST 公网ip)" || { echo "错误：.env 缺少服务器地址" >&2; exit 66; }
 SSH_USER="$(pick SERVER_USER SSH_USER 用户名)" || { echo "错误：.env 缺少用户名" >&2; exit 66; }
 SSH_PORT="$(pick SERVER_PORT SSH_PORT SSH端口 || true)"; SSH_PORT="${SSH_PORT:-22}"
-SSH_KEY="$HOME/.ssh/id_ed25519_xgs"
+SSH_KEY="$(native_tool_path "$HOME/.ssh/id_ed25519_xgs")"
 SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=2 -i "$SSH_KEY" -p "$SSH_PORT")
 
 log() { printf '%s\n' "$*"; }
