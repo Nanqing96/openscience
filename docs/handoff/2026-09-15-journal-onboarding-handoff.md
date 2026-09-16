@@ -2,7 +2,7 @@
 
 ## Goal / version tuple
 
-- 用户已授权服务器部署；随后明确“先等另一项部署完成”。当前暂停上线，不能因一段时间无版本变化而推断对方已完成。
+- 用户最新授权：现在部署；若其他部署仍进行则监控等待，完成后自动继续。2026-09-16 恢复时远端发布锁空闲、无事务/故障标记，运行版本与已整合的 bdf0d3fa 一致。
 - 当前交付树：项目目录下 `openscience-production-journals`，branch `codex/journals-production`；HEAD 以 Git 元数据为准。
 - 原开发分支 `codex/journal-onboarding` / `261a38fa9fa5e97a099c59a082447ed87b43de05` 及 [PR #1](https://github.com/Nanqing96/openscience/pull/1) 保留；它基于旧版 49ff4fcd，禁止直接覆盖当前生产。
 - 生产最后实读 release `bdf0d3fa3a8e482aaf017ce2fcefa5cd8d34ac3a` / rollback `ba184541bf02067e27444aeb1764f95e42b82805`。这是另一项工作发布的版本；恢复本任务时必须重新定锚。
@@ -14,7 +14,7 @@
 - 已完成静态整合：保留线上搜索/科研工作台/回收站/媒体能力；期刊使用独立公开 publicationNo 与冻结出版元数据，原文作者与平台解读作者分开。
 - 新通用 POST 搜索、回收站及 presentation 参数入口纳入期刊边界；来源上传复用存储清理锁和 retained 状态。上述新增差异独立 high 静态审查 GO。
 - deploy.sh 接受已验证的完整线上 rollback SHA；远端锁、active 精确匹配、不可变目录与镜像身份约束保持。采用当前生产 no-tests 流程，不恢复旧 CI/全套验收政策。
-- 备份命令前的 release 精确匹配发现线上由 ba184541 变为 bdf0d3fa，因此未执行备份、迁移、构建或服务切换。本任务尚未部署。
+- 上次暂停前，版本保护捕获 ba184541 → bdf0d3fa，未切换服务。本次恢复后同源双库备份成功：core 44M、search 3.4M，7/7 轮；备份仅存服务器。准备 canonical 构建/迁移/切换，结果待实际记录。
 - 集成树尚未服务器编译/构建。原分支历史测试不等同此次跨生产版本整合已通过；恢复时以必要服务器构建发现类型/依赖问题并定向修复。
 
 ## Done
@@ -49,7 +49,7 @@
 
 ## Next action / read-first
 
-1. 等用户确认另一项部署完成；重新读取 release/rollback，保留对方新增源码后继续。不要部署旧 261a38f，也不要直接照抄本页最后观察的 rollback。
+1. 当前可继续已授权发布；若锁占用或 active 改变，监控真实事务并重新整合最新源，不覆盖并行部署。不要部署旧 261a38f，也不要跳过远端 exact-active 防护。
 2. 同源备份双库，生成 Git 忽略的 cloud-sync 配置，走现行 canonical deploy 的必要服务器构建/迁移/切换；本次新增期刊迁移不能传 `--skip-migrate`。当前源树共 44 个核心迁移，Search 无期刊新增迁移。
 3. 观察期刊公开入口、登录/管理员门禁、迁移结果与实际运行；真实期刊试点须核验代表授权和来源许可。真实模型/解析与引用效果未观察，不补造成功。
 4. 先读 [运行手册](../runbooks/journal-onboarding.md)、[部署手册](../runbooks/deployment.md) 与 [PRD](../specs/2026-09-15-journal-onboarding-design.md) 对应模块；Hermes handoff 属其他任务，保护其未完成目标，不自动续跑。
