@@ -1,7 +1,34 @@
 # OpenScience (XGS) 项目文件索引
 
 > 维护规则：创建/修改/移动文件后必须更新本索引。创建新文件前先查本表防重复。
-> **CURRENT source/deployment anchor（2026-09-02）：** candidate branch / code HEAD / repository main `codex/scansci-upstream-mcp` / `263fc23ea722637c77fa120f0f67ab66ec3af03c` / `7daff3f57c0714239802ad4085daf8e131a34bc8`；application source/production release `7daff3f57c0714239802ad4085daf8e131a34bc8`；rollback `ab290579ed81f4a30d011dea2a52e8b9b20c50f3`；core/search `34/34` / `2/2`。auth browser proxy candidate 待 CI/部署；ZJU Cookie、机构 PDF、四入口与旧文件清理 pending。Taskmaster 9/12。
+> **CURRENT 期刊交付入口（2026-09-16）：** `docs/handoff/2026-09-15-journal-onboarding-handoff.md`。开发分支 `codex/journal-onboarding`，验收代码 `e7e387b7738be3ca395f29dcd61c6894acb273b7`，交付 [PR #1](https://github.com/Nanqing96/openscience/pull/1)。本轮未读取或改变生产 release/rollback；下方既有生产条目是历史记录，不能作为本次部署证据。
+
+## 期刊入驻与 AI 解读（2026-09-15）
+
+| 路径 | 用途 | 状态 |
+|---|---|---|
+| `docs/specs/2026-09-15-journal-onboarding-design.md` | 用户认可的期刊入驻、授权、AI 解读、人工审核与商业服务需求 | P0 开发依据；P1/P2 保持路线图 |
+| `docs/proposals/2026-09-15-openscience-scholar-value.md` | 学者价值与利他特质，区分已观察能力与建设目标 | 方案资料 |
+| `docs/proposals/2026-09-15-ai-citation-enablement.md` | ACE 服务方案、Ultrafast Science 示例与来源 | 方案资料；不保证引用增长 |
+| `docs/runbooks/journal-onboarding.md` | 运行配置、来源权限、作业额度、公开 API、验证与回退 | CURRENT 操作说明 |
+| `docs/handoff/2026-09-15-journal-onboarding-handoff.md` | 本分支版本、验收和生产未验证项 | CURRENT 期刊交接 |
+| `infra/schema.prisma` / `infra/journal-models.fragment` / `infra/migrations/20260915000000_journals/` | 12 个期刊模型与 8 个数据库业务 CHECK，升级/回退 SQL | 核心迁移 37；Search 无新增迁移 |
+| `packages/domain/src/journal/` / `packages/domain/src/index.ts` | 申请、成员、原始论文身份、来源权限、队列、额度、审核和固定发布 | P0 |
+| `packages/domain/test/journal-onboarding.test.ts` / `packages/domain/test/journal-content.test.ts` / `packages/domain/test/journal-database.test.ts` | 结构化内容与真实 PostgreSQL 并发、授权、发布回归 | 合成测试数据 |
+| `apps/api/src/routes/journals.ts` / `apps/api/src/journal-boundary.ts` / `apps/api/src/routes/research.ts` / `apps/api/src/routes/artifacts.ts` / `apps/api/src/app.ts` / `apps/api/src/error-map.ts` | 期刊 HTTP 契约、旧接口绕过保护、公开版本安全投影 | 根 API 路径；Web 代理加 `/api` |
+| `apps/api/test/journal-boundary.test.ts` / `apps/api/test/journals-database.test.ts` | 权限边界与真实 HTTP 生命周期、公开摘要防泄漏 | 本地隔离 PostgreSQL |
+| `apps/agent-worker/src/journal-worker.ts` / `apps/agent-worker/src/index.ts` / `apps/agent-worker/test/journal-worker.test.ts` | 复用模型网关、存储和解析器的持久化期刊队列 | 真实模型与 sidecar 留待部署验收 |
+| `apps/web/app/journals/` / `apps/web/app/admin/journals/` / `apps/web/components/journals/` | 期刊目录、申请、编辑工作台、人工审核与平台运营 | P0 页面 |
+| `apps/web/lib/journal-api.ts` / `apps/web/lib/public-server-api.ts` / `apps/web/components/landing/SiteHeader.tsx` / `apps/web/app/research/[publicId]/v/[versionNo]/page.tsx` | 会话/CSRF API、服务端公开内容和固定版本衍生解读 | 原 DOI 与平台版本分离 |
+| `apps/web/test/journal-api-contract.test.ts` / `apps/web/test/journal-ui-integration.test.tsx` | API 地址、数据映射和交互回归 | 浏览器 UI 配套测试 |
+| `apps/web/package.json` / `pnpm-lock.yaml` | Web 显式声明 zod，检查失败生成结果的结构后才允许采用为草稿 | 不完整结果仅供私下比较 |
+| `scripts/journals/verify-migration.mjs` | 仅限 loopback 测试库的完整迁移、个人 RO 哨兵、回退与重应用验证 | 实际演练通过，独有临时库已清理 |
+| `apps/web/public/journals-openapi.json` | 公开期刊发现与固定版本解读的 OpenAPI 3.1 契约 | 衍生解读与原始科学来源分离 |
+| `apps/web/components/journals/JournalFeedback.tsx` | 固定版本纠错提交、私密处理记录及编辑回复 | 更正仍须复审发布 |
+| `packages/domain/src/journal/feedback.ts` / `apps/api/test/journal-feedback-database.test.ts` | 复用不可变事件保存工单和处理说明；提交者/刊内编辑隔离、乐观状态及通知幂等 | 本地真实 PostgreSQL 验证 |
+| `apps/web/lib/journal-sitemap.ts` / `apps/web/app/journals/sitemap.xml/route.ts` / `apps/web/app/journals/[slug]/sitemap.xml/route.ts` | 仅列出公开期刊与允许公开的固定版本，分页生成 XML | 无缓存；撤回即移出 |
+| `apps/api/test/journal-browser.test.ts` | 显式启用的本地数据库/API/Web/Chromium 交互与桌面手机检查 | 合成来源与会话；截图不入库 |
+| `.github/workflows/journals.yml` | 独立 PostgreSQL 服务上的期刊测试与 Web 构建 | 任意目标分支 PR 可运行；不部署 |
 
 ## 根目录
 | 路径 | 用途 | 状态 |

@@ -2,6 +2,8 @@ import Fastify, { type FastifyBaseLogger, type FastifyInstance } from 'fastify';
 import cookie from '@fastify/cookie';
 import type { StorageAdapter } from '@openscience/storage';
 import { httpStatusForError } from './error-map';
+import { registerJournalRoutes } from './routes/journals';
+import { registerJournalBoundary } from './journal-boundary';
 import { registerAuthRoutes, type AuthRouteDeps } from './routes/auth';
 import { registerWorkspaceRoutes } from './routes/workspaces';
 import { registerAdminRoutes } from './routes/admin';
@@ -36,6 +38,8 @@ import { registerRateLimit } from './security/rate-limit';
 import { registerSecurity, type SecurityOptions } from './security/security';
 
 export interface BuildAppOptions extends AuthRouteDeps {
+  journalsEnabled?: boolean;
+  journalMetadataFetcher?: typeof fetch;
   cookieSecret: string;
   /** P1A-6：注入结构化 logger（pino 实例满足 FastifyBaseLogger）；缺省关闭（测试现状）。 */
   logger?: FastifyBaseLogger;
@@ -93,7 +97,9 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
     });
   }
 
+  registerJournalBoundary(app, opts);
   await app.register(async (instance) => registerAuthRoutes(instance, opts), { prefix: '/auth' });
+  await app.register(async (instance) => registerJournalRoutes(instance, opts));
   await app.register(async (instance) => registerWorkspaceRoutes(instance, opts), { prefix: '/workspaces' });
   await app.register(async (instance) => registerAdminRoutes(instance, opts), { prefix: '/admin' });
   await app.register(async (instance) => registerAdminUsageRoutes(instance, opts), { prefix: '/admin' });

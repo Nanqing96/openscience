@@ -1,5 +1,8 @@
 import type { PublicEvidenceSource, PublicResearchVersion } from './api';
 import type { EditorialCollectionApi } from './api';
+import type { JournalPublic } from './journal-api';
+import type { JournalSummary } from './journal-api';
+import type { PublicJournalArticle } from './journal-api';
 
 export class PublicServerApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -36,3 +39,10 @@ export async function getLatestPublicResearchVersion(publicId: string) {
 export function getPublicEditorialCollection(slug: string) {
   return serverRequest<{ collection: EditorialCollectionApi }>(`/editorial/collections/${encodeURIComponent(slug)}`);
 }
+
+/** Public journal routes are rendered on the server so crawlers receive the real directory content. */
+export function getServerPublicJournal(slug: string) {
+  return serverRequest<{ journal: JournalPublic }>(`/journals/${encodeURIComponent(slug)}`);
+}
+export function getServerPublicJournals(cursor?: string, limit = 20) { return serverRequest<{ items: JournalSummary[]; nextCursor: string | null }>(`/journals?limit=${limit}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`); }
+export function getServerPublicJournalArticles(id: string, cursor?: string, limit = 20) { return serverRequest<{ items: PublicJournalArticle[]; nextCursor: string | null }>(`/journals/${encodeURIComponent(id)}/articles?limit=${limit}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`); }
