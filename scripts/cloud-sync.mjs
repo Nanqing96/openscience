@@ -25,6 +25,15 @@ const remote = buildReleaseMaterializeCommand(releaseRoot, releaseSha);
 const ssh = spawn('ssh', ['-o', 'BatchMode=yes', '-o', 'IdentitiesOnly=yes', '-o', 'ConnectTimeout=20', '-i', key, '-p', String(cfg.port), `${cfg.user}@${cfg.host}`, remote], { cwd: process.cwd() });
 
 archive.stdout.pipe(ssh.stdin);
+// If SSH rejects the connection, preserve its diagnostic instead of allowing
+// a broken archive pipe to terminate Node before SSH closes.
+ssh.stdin.on('error', (error) => {
+  if (error.code !== 'EPIPE') {
+    console.error('UPLOAD_ERR=' + error.message);
+    process.exitCode = 1;
+  }
+});
+ssh.on('error', (error) => { console.error('SSH_ERR=' + error.message); process.exit(1); });
 let err = '';
 ssh.stderr.on('data', (d) => (err += d));
 ssh.on('close', (code) => {
