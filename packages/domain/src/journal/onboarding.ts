@@ -9,6 +9,10 @@ import {
 } from '@prisma/client';
 import { now as currentTime, type WorkspaceDeps } from '../workspace/types';
 import {
+  JOURNAL_SERVICE_OPTIONS, JOURNAL_APPLICATION_REQUIRED_FIELDS, JOURNAL_HOMEPAGE_REQUIRED_FIELDS,
+  journalEnglishMetadataIssues, type JournalEnglishMetadata, type JournalEnglishField,
+} from './form-contract';
+import {
   JOURNAL_TO_WORKSPACE_ROLE,
   JournalError,
   type JournalApplicationDraftInput,
@@ -99,7 +103,19 @@ function applicationView(row: ApplicationRow): JournalApplicationView {
   };
 }
 
+function assertEnglishMetadata(input: JournalEnglishMetadata, requiredFields: readonly JournalEnglishField[] = []): void {
+  const labels: Record<JournalEnglishField, string> = { nameEn: '英文刊名', publisherName: '出版商', sponsorName: '主办单位', subjects: '学科', description: '期刊简介', applicantName: '申请人姓名', applicantTitle: '申请人职务', representationEvidence: '代表依据说明' };
+  const issue = journalEnglishMetadataIssues(input, requiredFields)[0];
+  if (issue) throw new JournalError('VALIDATION_ERROR', `${labels[issue.field]}${issue.reason === 'required' ? '为必填项，请用英文填写' : '须用英文填写；人名请使用罗马字母拼写'}`);
+}
+
+function serviceSelections(values: string[]): string[] {
+  if (values.some((value) => !JOURNAL_SERVICE_OPTIONS.some((option) => option.value === value))) throw new JournalError('VALIDATION_ERROR', '所选服务已停止提供或不存在，请刷新服务选项');
+  return [...new Set(values)];
+}
+
 function draftData(input: JournalApplicationDraftInput): Record<string, unknown> {
+  assertEnglishMetadata(input);
   const data: Record<string, unknown> = {};
   const set = (key: keyof JournalApplicationDraftInput, value: unknown) => { if (input[key] !== undefined) data[key] = value; };
   set('nameZh', optional(input.nameZh, 200)); set('nameEn', optional(input.nameEn, 200));
@@ -112,7 +128,7 @@ function draftData(input: JournalApplicationDraftInput): Record<string, unknown>
   set('rightsDeclaration', optional(input.rightsDeclaration, 10_000));
   set('rightsDeclarationVersion', optional(input.rightsDeclarationVersion, 100));
   if (input.subjects !== undefined) data.subjects = input.subjects.map((item) => required(item, '学科', 100));
-  if (input.requestedServices !== undefined) data.requestedServices = input.requestedServices.map((item) => required(item, '服务', 100));
+  if (input.requestedServices !== undefined) data.requestedServices = serviceSelections(input.requestedServices);
   if (input.plannedArticleCount !== undefined) {
     if (!Number.isInteger(input.plannedArticleCount) || input.plannedArticleCount < 0) throw new JournalError('VALIDATION_ERROR', '计划导入数量必须是非负整数');
     data.plannedArticleCount = input.plannedArticleCount;
@@ -121,7 +137,7 @@ function draftData(input: JournalApplicationDraftInput): Record<string, unknown>
 }
 
 function validateSubmission(row: ApplicationRow): void {
-  if (!row.nameZh?.trim() && !row.nameEn?.trim()) throw new JournalError('VALIDATION_ERROR', '中文或英文刊名至少填写一项');
+  assertEnglishMetadata(row, JOURNAL_APPLICATION_REQUIRED_FIELDS);
   if (!row.pIssn && !row.eIssn) throw new JournalError('VALIDATION_ERROR', 'pISSN 或 eISSN 至少填写一项');
   required(row.websiteUrl, '期刊官网'); required(row.publisherName, '出版单位');
   if (!row.subjects?.length) throw new JournalError('VALIDATION_ERROR', '至少填写一个学科');
@@ -193,6 +209,7 @@ export async function submitJournalApplication(
       if (reusedKey && reusedKey.id !== row.id) throw new JournalError('IDEMPOTENCY_CONFLICT', '提交键已用于其他申请');
       if (!['draft', 'needs_information'].includes(row.status)) throw new JournalError('INVALID_STATE', '当前申请状态不可提交');
       if (row.revision !== input.revision) throw new JournalError('REVISION_CONFLICT', '申请已更新，请刷新后重试');
+      serviceSelections(row.requestedServices);
       validateSubmission(row);
       const applicant = await tx.user.findUnique({ where: { id: userId } });
       if (!applicant || !['email_verified', 'identity_verified'].includes(applicant.status)) throw new JournalError('FORBIDDEN', '当前账号须先完成邮箱验证');
@@ -259,7 +276,7 @@ export async function verifyJournalApplication(
       }
       validateSubmission(row);
       const verifiedAt = currentTime(deps);
-      const displayName = required(row.nameZh ?? row.nameEn, '刊名', 200);
+      const displayName = required(row.nameEn, '英文刊名', 200);
       const workspace = await tx.workspace.create({ data: { type: 'team', name: displayName, ownerId: row.applicantId, members: { create: { userId: row.applicantId, role: 'owner' } } } });
       const slug = slugValue(required(input.slug, 'slug', 80));
       if (await tx.journal.findUnique({ where: { slug } })) throw new JournalError('SLUG_CONFLICT', '期刊主页地址已被占用');
@@ -294,6 +311,7 @@ export async function updateJournalHomepage(deps: WorkspaceDeps, userId: string,
     const { journal } = await requireJournalMember(tx, journalId, userId, ['owner', 'maintainer'], true);
     if (journal.operationalState === 'closed') throw new JournalError('INVALID_STATE', '已关闭期刊须重新核验后修改');
     if (journal.revision !== input.revision) throw new JournalError('REVISION_CONFLICT', '期刊资料已更新，请刷新后重试');
+    assertEnglishMetadata({ ...journal, ...input }, JOURNAL_HOMEPAGE_REQUIRED_FIELDS);
     const data: Record<string, unknown> = {};
     if (input.nameZh !== undefined) data.nameZh = optional(input.nameZh, 200);
     if (input.nameEn !== undefined) data.nameEn = optional(input.nameEn, 200);
@@ -312,7 +330,7 @@ export async function updateJournalHomepage(deps: WorkspaceDeps, userId: string,
 export async function activateJournalHomepage(deps: WorkspaceDeps, userId: string, journalId: string): Promise<JournalRow> {
   return serializable(deps, async (tx) => {
     await lockJournal(tx, journalId); const { journal } = await requireJournalMember(tx, journalId, userId, ['owner', 'maintainer']);
-    if (!journal.nameZh && !journal.nameEn) throw new JournalError('VALIDATION_ERROR', '期刊主页缺少刊名');
+    assertEnglishMetadata(journal, JOURNAL_HOMEPAGE_REQUIRED_FIELDS);
     const updated = journal.homepagePublished ? journal : await tx.journal.update({ where: { id: journalId }, data: { homepagePublished: true, revision: { increment: 1 } } });
     if (!journal.homepagePublished) await recordJournalEvent(tx, { journalId, actorId: userId, action: 'journal.homepage.activate', targetType: 'journal', targetId: journalId });
     return updated;
@@ -408,7 +426,7 @@ export async function createJournalServiceRequest(deps: WorkspaceDeps, userId: s
     annualVolume: input.annualVolume,
     language: required(input.language, '语言', 100),
     figureScale: required(input.figureScale, '图表规模', 100),
-    services: input.services.map((item) => required(item, '服务', 100)),
+    services: serviceSelections(input.services),
     notes: optional(input.notes),
     requestKey: required(input.requestKey, '请求键', 200),
   };

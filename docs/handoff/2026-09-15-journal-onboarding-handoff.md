@@ -2,7 +2,7 @@
 
 ## Goal / version tuple
 
-- 用户最新授权：现在部署；若其他部署仍进行则监控等待，完成后自动继续。2026-09-16 恢复时远端发布锁空闲、无事务/故障标记，运行版本与已整合的 bdf0d3fa 一致。
+- 用户最新纠正：期刊申请元数据用英语、英文刊名必填/中文选填；移除专业审核服务并解释服务边界；说明实际管理员。提交后须跳转成功页并显示真实申请编号。既有上线授权延续，保留其他任务改动。
 - 当前交付树：项目目录下 `openscience-production-journals`，branch `codex/journals-production`；HEAD 以 Git 元数据为准。
 - 原开发分支 `codex/journal-onboarding` / `261a38fa9fa5e97a099c59a082447ed87b43de05` 及 [PR #1](https://github.com/Nanqing96/openscience/pull/1) 保留；它基于旧版 49ff4fcd，禁止直接覆盖当前生产。
 - 最终线上 release `3cc5bedb4c288d692473f27d1c1e5bdc18130f64` / rollback `3617f154bcbca73e7c671703b682eb400c641a35`。2026-09-16 两轮 canonical 发布均成功，公网 `/__release` 与远端标记一致；后续操作重新定锚。上线前的 bdf0d3fa 版本仍保留。
@@ -10,6 +10,11 @@
 - `.env` 使用用户提供 `D:\00_codex\(1).env` 的 Git 忽略副本；项目 SSH 密钥已可用。没有输出凭据或将配置纳入提交。
 
 ## 当前部署进度
+
+- 新修订待部署：共享英文字符校验覆盖草稿、新提交、通过核验、主页修改和激活；人名支持拉丁重音，英文语义和官方名称仍需人工核验。旧申请保留，不自动翻译或审核。
+- 新修订增加本人申请/补件状态、真实编号和私有回执 `/journals/apply/{applicationId}`；提交成功跳转，响应丢失先只读恢复；已有申请可直接查看回执。英文优先显示，管理员从英文刊名生成并可编辑主页后缀。
+- 新服务列表去除“专业审核”，逐项说明 AI 生成与材料整理的区别。旧草稿再次提交时由域层拒绝退役服务，已提交历史申请的审批和幂等保持。
+- 独立 high 复核已 GO：修复学科输入空格被吞及旧草稿绕过退役服务的问题；未运行本地构建、测试、CI。只读核实用户指定账号不是平台管理员、指定申请仍 submitted；未改权限或生产申请。
 
 - 已完成静态整合：保留线上搜索/科研工作台/回收站/媒体能力；期刊使用独立公开 publicationNo 与冻结出版元数据，原文作者与平台解读作者分开。
 - 新通用 POST 搜索、回收站及 presentation 参数入口纳入期刊边界；来源上传复用存储清理锁和 retained 状态。上述新增差异独立 high 静态审查 GO。
@@ -53,7 +58,7 @@
 
 ## Next action / read-first
 
-1. 本轮服务器部署和 GitHub 交付已完成；不要按历史候选再次部署旧 261a38f。以后发布继续遵循远端锁与 exact-active 防护，保护并行工作。
-2. 下一业务阶段由真实编辑部通过 `/journals/apply` 申请，平台管理员核验代表授权后开通。目录当前为空属于尚无公开期刊，不补造示例身份。
+1. 发布本轮申请修订：当前无数据库迁移，使用 canonical `--no-tests --skip-migrate --reuse-unchanged-capability-images`，rollback 需与最新 active 相符；不要部署旧 261a38f。
+2. 部署后仅观察指定已有申请的真实私有回执、英文必填/中文选填及服务说明；不为验收新增或审批虚构期刊，不变更管理员权限。同步代码至用户 GitHub。
 3. 选获准真实论文完成来源解析、AI 草稿、人工审核及固定版本发布；此项与引用效果仍未验收，不从服务健康推断科学质量。
 4. 先读 [运行手册](../runbooks/journal-onboarding.md)、[部署手册](../runbooks/deployment.md) 与 [PRD](../specs/2026-09-15-journal-onboarding-design.md) 对应模块；Hermes handoff 属其他任务，保护其未完成目标，不自动续跑。

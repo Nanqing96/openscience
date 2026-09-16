@@ -2066,5 +2066,90 @@
     "submitting": "正在提交…",
     "language": "分镜语言",
     "instructionLimit": "分镜指令不得超过 1,000 个字符。"
+  },
+  "journalApplication": {
+    "fields": {
+      "nameEn": "英文刊名 / Journal title",
+      "nameZh": "中文刊名（选填）",
+      "pIssn": "p-ISSN",
+      "eIssn": "e-ISSN",
+      "websiteUrl": "期刊官网",
+      "publisherName": "出版商（英文）",
+      "sponsorName": "主办单位（英文，选填）",
+      "plannedArticleCount": "计划处理论文数",
+      "subjects": "学科（英文，用逗号分隔）",
+      "description": "期刊简介（英文）",
+      "applicantName": "申请人姓名（罗马字母拼写）",
+      "applicantTitle": "职务（英文）",
+      "applicantEmail": "当前账号的已验证邮箱",
+      "representationEvidence": "可代表期刊的依据（英文说明）"
+    },
+    "englishNotice": "请用英文填写期刊与申请人资料。英文刊名必填，中文刊名选填；人名使用罗马字母拼写。平台会在核验时核对官方英文名称。",
+    "reviewProcess": "入驻申请由 OpenScience 平台管理员人工核验。管理员可通过、要求补充材料或拒绝申请；这项核验针对期刊身份及申请人的代表资格。",
+    "login": "登录后提交申请或查看审核状态",
+    "loading": "正在加载我的申请…",
+    "loadFailed": "无法加载申请，请刷新重试。",
+    "myApplications": "我的申请",
+    "untitled": "未命名草稿",
+    "newApplication": "开始新申请",
+    "currentStatus": "当前状态：{status}",
+    "awaitingReview": "申请已进入平台管理员的待核验列表，处理后可在此查看结果。",
+    "reviewReason": "平台审核说明：{reason}",
+    "revise": "请按审核说明修改资料，然后重新提交。",
+    "openJournal": "进入期刊工作台",
+    "status": {
+      "draft": "草稿",
+      "submitted": "待平台审核",
+      "needs_information": "需补充材料",
+      "approved": "已通过",
+      "rejected": "未通过"
+    },
+    "requiredError": "{field}为必填项。",
+    "englishError": "{field}须用英文填写；人名请使用罗马字母拼写。",
+    "issnRequired": "p-ISSN 或 e-ISSN 至少填写一项。",
+    "submitted": "申请已提交，等待 OpenScience 平台管理员核验。可在“我的申请”查看状态。",
+    "saved": "草稿已保存。",
+    "saveFailed": "保存失败，请重试。",
+    "journalSection": "期刊与出版信息",
+    "applicantSection": "申请人与代表依据",
+    "emailNotice": "请使用当前登录账号的已验证邮箱，便于核对申请人身份。",
+    "servicesSection": "拟申请服务（可选）",
+    "services": {
+      "ai": {
+        "title": "AI 标准解读包",
+        "description": "基于已获授权的论文材料，生成摘要、结构化解读、证据主张和 FAQ；来源支持时生成图卡。公开前由期刊编辑确认。"
+      },
+      "import": {
+        "title": "批量导入与材料整理",
+        "description": "协助整理 DOI、论文书目、原文文件与授权记录，并匹配、导入期刊目录；适合历史论文集中迁入。"
+      },
+      "operations": {
+        "title": "持续运营与基础统计",
+        "description": "协助维护期刊目录、跟进加工任务并汇总基础使用数据。"
+      }
+    },
+    "legacyServices": "部分原选服务已停止提供；重新提交时仅保留当前可选服务。",
+    "declaration": "我确认拥有或已取得提交上述信息及后续材料处理所需的授权，并理解公开范围需逐篇确认。",
+    "save": "保存草稿",
+    "submit": "提交核验申请",
+    "applicationNumber": "申请编号：",
+    "viewReceipt": "查看提交回执",
+    "receiptTitle": "期刊入驻申请回执",
+    "receiptHeading": {
+      "draft": "申请草稿",
+      "submitted": "申请提交成功",
+      "needs_information": "请补充申请材料",
+      "approved": "申请已通过核验",
+      "rejected": "申请未通过核验"
+    },
+    "receiptNotice": "请保存本页地址和申请编号。此回执仅供申请人登录后查看，可在“我的申请”重新打开。",
+    "statusLabel": "当前状态",
+    "submittedAt": "提交时间",
+    "refresh": "刷新状态",
+    "editApplication": "修改申请",
+    "applicationUnavailable": "该申请不存在，或不属于当前登录账号。",
+    "slugLabel": "期刊主页地址后缀",
+    "slugHelp": "从英文刊名生成，可在通过前修改。使用 3–80 个小写英文字母、数字和连字符。",
+    "slugError": "请填写有效的英文主页地址后缀（3–80 位小写字母、数字和连字符）。"
   }
 }

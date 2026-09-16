@@ -1,10 +1,130 @@
 'use client';
+
+import Link from 'next/link';
 import * as React from 'react';
+import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { JOURNAL_SERVICE_OPTIONS, JOURNAL_APPLICATION_REQUIRED_FIELDS, journalEnglishMetadataIssues, journalDisplayName } from '@openscience/domain/journal-form-contract';
 import { ApiClientError } from '@/lib/api';
-import { saveApplication, submitApplication, type JournalApplicationInput } from '@/lib/journal-api';
-const services = ['AI 标准解读包', '批量导入与材料整理', '专业审核', '持续运营与基础统计'];
-const declaration = '我确认拥有或已取得提交上述信息及后续材料处理所需的授权，并理解公开范围需逐篇确认。';
-const empty: JournalApplicationInput = { nameZh: '', nameEn: '', pIssn: '', eIssn: '', websiteUrl: '', publisherName: '', sponsorName: '', subjects: [], description: '', logoUrl: '', applicantName: '', applicantTitle: '', applicantEmail: '', representationEvidence: '', plannedArticleCount: 0, requestedServices: [], rightsDeclaration: '', rightsDeclarationVersion: 'v1.0' };
-export function JournalApplicationForm() { const [form, setForm] = React.useState(empty); const [id, setId] = React.useState<string>(); const [revision, setRevision] = React.useState<number>(); const [message, setMessage] = React.useState(''); const [saving, setSaving] = React.useState(false); const set = (key: keyof JournalApplicationInput, value: unknown) => setForm((old) => ({ ...old, [key]: value })); const persist = async (submit = false) => { setSaving(true); setMessage(''); try { const saved = await saveApplication({ ...form, ...(id ? { revision } : {}) }, id); setId(saved.application.id); setRevision(saved.application.revision); if (submit) await submitApplication(saved.application.id, { revision: saved.application.revision, submissionKey: crypto.randomUUID() }); setMessage(submit ? '申请已提交。平台核验后会在此显示处理结果。' : '草稿已保存。'); } catch (e) { if (e instanceof ApiClientError && e.status === 401) { window.location.assign('/auth/login?returnTo=%2Fjournals%2Fapply'); return; } setMessage(e instanceof Error ? e.message : '保存失败，请重试。'); } finally { setSaving(false); } };
- const field = (key: keyof JournalApplicationInput, label: string, required = false, type = 'text') => <label className="grid gap-2 text-sm"><span>{label}{required ? ' *' : ''}</span><input required={required} type={type} value={String(form[key] ?? '')} onChange={(e) => set(key, type === 'number' ? Number(e.target.value) : e.target.value)} className="min-h-11 border border-os-rule-paper bg-transparent px-3" /></label>;
- return <form className="mt-8 grid gap-8" onSubmit={(e) => { e.preventDefault(); void persist(true); }}><fieldset className="grid gap-4 border-0 p-0"><legend className="mb-3 text-xl">期刊与主办信息</legend><div className="grid gap-4 sm:grid-cols-2">{field('nameZh', '中文刊名', true)}{field('nameEn', '英文刊名')}{field('pIssn', 'p-ISSN')}{field('eIssn', 'e-ISSN')}{field('websiteUrl', '期刊官网', true, 'url')}{field('publisherName', '出版者或主管单位', true)}{field('sponsorName', '主办单位')}{field('plannedArticleCount', '计划处理论文数', false, 'number')}</div><label className="grid gap-2 text-sm">学科（用逗号分隔）<input className="min-h-11 border border-os-rule-paper bg-transparent px-3" onChange={(e) => set('subjects', e.target.value.split(',').map((x) => x.trim()).filter(Boolean))} /></label><label className="grid gap-2 text-sm">期刊简介 *<textarea required rows={5} value={form.description} onChange={(e) => set('description', e.target.value)} className="border border-os-rule-paper bg-transparent p-3" /></label></fieldset><fieldset className="grid gap-4 border-0 p-0"><legend className="mb-3 text-xl">申请人与代表依据</legend><div className="grid gap-4 sm:grid-cols-2">{field('applicantName', '姓名', true)}{field('applicantTitle', '职务', true)}{field('applicantEmail', '工作邮箱', true, 'email')}</div><label className="grid gap-2 text-sm">可代表期刊的依据 *<textarea required rows={4} value={form.representationEvidence} onChange={(e) => set('representationEvidence', e.target.value)} className="border border-os-rule-paper bg-transparent p-3" /></label></fieldset><fieldset className="grid gap-3 border-0 p-0"><legend className="mb-2 text-xl">拟申请服务</legend>{services.map((service) => <label className="flex gap-2" key={service}><input type="checkbox" checked={form.requestedServices.includes(service)} onChange={(e) => set('requestedServices', e.target.checked ? [...form.requestedServices, service] : form.requestedServices.filter((v) => v !== service))} />{service}</label>)}</fieldset><label className="flex gap-3 border-t border-os-rule-paper pt-5 text-sm"><input required type="checkbox" checked={form.rightsDeclaration === declaration} onChange={(e) => set('rightsDeclaration', e.target.checked ? declaration : '')} />{declaration}</label>{message ? <p role="status">{message}</p> : null}<div className="flex flex-wrap gap-3"><button type="button" disabled={saving} className="min-h-11 border border-os-rule-paper px-5" onClick={() => void persist(false)}>保存草稿</button><button disabled={saving} className="min-h-11 bg-accent-primary-strong px-5 font-semibold text-os-black-0" type="submit">提交核验申请</button></div></form>; }
+import { getJournalApplication, listApplications, saveApplication, submitApplication, type JournalApplication, type JournalApplicationInput } from '@/lib/journal-api';
+
+const declaration = 'I confirm that I hold or have obtained the authorization needed to submit this information and process subsequent materials, and understand that public access must be confirmed for each article.';
+const empty: JournalApplicationInput = { nameZh: '', nameEn: '', pIssn: '', eIssn: '', websiteUrl: '', publisherName: '', sponsorName: '', subjects: [], description: '', logoUrl: '', applicantName: '', applicantTitle: '', applicantEmail: '', representationEvidence: '', plannedArticleCount: 0, requestedServices: [], rightsDeclaration: '', rightsDeclarationVersion: 'v1.1' };
+const inputClass = 'min-h-11 border border-os-rule-paper bg-transparent px-3 disabled:opacity-70';
+
+function applicationForm(application: JournalApplication): JournalApplicationInput {
+  const result = { ...empty };
+  for (const key of Object.keys(empty) as Array<keyof JournalApplicationInput>) {
+    const value = application[key];
+    if (value !== null && value !== undefined) Object.assign(result, { [key]: value });
+  }
+  return result;
+}
+
+export function JournalApplicationForm() {
+  const t = useTranslations('journalApplication');
+  const router = useRouter();
+  const [form, setForm] = React.useState<JournalApplicationInput>({ ...empty });
+  const [subjectsText, setSubjectsText] = React.useState('');
+  const [applications, setApplications] = React.useState<JournalApplication[]>([]);
+  const [active, setActive] = React.useState<JournalApplication | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [anonymous, setAnonymous] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [message, setMessage] = React.useState('');
+  const [errors, setErrors] = React.useState<string[]>([]);
+  const errorRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => { if (errors.length) errorRef.current?.focus(); }, [errors]);
+  const editable = !active || ['draft', 'needs_information'].includes(active.status);
+  const select = (application: JournalApplication | null) => {
+    setActive(application); setForm(application ? applicationForm(application) : { ...empty });
+    setSubjectsText(application?.subjects?.join(', ') ?? '');
+    setMessage(''); setErrors([]);
+  };
+
+  React.useEffect(() => {
+    let mounted = true;
+    listApplications().then(({ items }) => {
+      if (!mounted) return;
+      setApplications(items);
+      const requestedId = new URLSearchParams(window.location.search).get('applicationId');
+      const selected = requestedId ? items.find((item) => item.id === requestedId) : items[0];
+      if (selected) { setActive(selected); setForm(applicationForm(selected)); setSubjectsText(selected.subjects?.join(', ') ?? ''); }
+      else if (requestedId) setErrors([t('applicationUnavailable')]);
+    }).catch((error) => {
+      if (!mounted) return;
+      if (error instanceof ApiClientError && error.status === 401) setAnonymous(true);
+      else setErrors([error instanceof Error ? error.message : t('loadFailed')]);
+    }).finally(() => { if (mounted) setLoading(false); });
+    return () => { mounted = false; };
+  }, [t]);
+
+  const set = (key: keyof JournalApplicationInput, value: unknown) => setForm((old) => ({ ...old, [key]: value }));
+  const remember = (application: JournalApplication) => {
+    setActive(application);
+    setApplications((old) => [application, ...old.filter((item) => item.id !== application.id)]);
+  };
+
+  async function persist(submit = false) {
+    if (!editable || saving || loading) return;
+    const normalizedForm = { ...form, subjects: subjectsText.split(/[,;，；]/).map((subject) => subject.trim()).filter(Boolean) };
+    const issues = journalEnglishMetadataIssues(normalizedForm, submit ? JOURNAL_APPLICATION_REQUIRED_FIELDS : []);
+    const problems = issues.map((issue) => t(issue.reason === 'required' ? 'requiredError' : 'englishError', { field: t('fields.' + issue.field) }));
+    if (submit && !form.pIssn?.trim() && !form.eIssn?.trim()) problems.push(t('issnRequired'));
+    if (problems.length) { setErrors(problems); setMessage(''); return; }
+    setSaving(true); setErrors([]); setMessage('');
+    let submittedId: string | undefined;
+    try {
+      const input = { ...normalizedForm, requestedServices: form.requestedServices.filter((value) => JOURNAL_SERVICE_OPTIONS.some((option) => option.value === value)), ...(active ? { revision: active.revision } : {}) };
+      const saved = await saveApplication(input, active?.id);
+      remember(saved.application);
+      if (submit) {
+        submittedId = saved.application.id;
+        const result = await submitApplication(saved.application.id, { revision: saved.application.revision, submissionKey: crypto.randomUUID() });
+        remember(result.application);
+        router.push('/journals/apply/' + result.application.id);
+      }
+      setMessage(t(submit ? 'submitted' : 'saved'));
+    } catch (error) {
+      if (error instanceof ApiClientError && error.status === 401) { window.location.assign('/auth/login?returnTo=%2Fjournals%2Fapply'); return; }
+      // A lost response must not turn a successful submission into a new one.
+      if (submittedId) {
+        try {
+          const current = (await getJournalApplication(submittedId)).application;
+          if (!['draft', 'needs_information'].includes(current.status)) {
+            remember(current); router.push('/journals/apply/' + current.id); return;
+          }
+        } catch { /* Keep the saved ID visible so the applicant can reopen it. */ }
+      }
+      setErrors([error instanceof Error ? error.message : t('saveFailed')]);
+    } finally { setSaving(false); }
+  }
+
+  const field = (key: keyof JournalApplicationInput, required = false, type = 'text', maxLength = 200) => <label className="grid gap-2 text-sm"><span>{t('fields.' + key)}{required ? ' *' : ''}</span><input name={key} required={required} type={type} lang={key === 'nameZh' ? 'zh' : 'en'} maxLength={maxLength} min={type === 'number' ? 0 : undefined} step={type === 'number' ? 1 : undefined} value={String(form[key] ?? '')} onChange={(event) => set(key, type === 'number' ? Number(event.target.value) : event.target.value)} className={inputClass} /></label>;
+  const legacyServices = form.requestedServices.some((value) => !JOURNAL_SERVICE_OPTIONS.some((option) => option.value === value));
+
+  return <div className="mt-8">
+    <p className="leading-7 text-os-muted-paper">{t('englishNotice')}</p>
+    <p className="leading-7 text-os-muted-paper">{t('reviewProcess')}</p>
+    {anonymous ? <p><Link href="/auth/login?returnTo=%2Fjournals%2Fapply">{t('login')}</Link></p> : null}
+    {loading ? <p role="status">{t('loading')}</p> : null}
+    {applications.length ? <section aria-label={t('myApplications')} className="my-7 border-y border-os-rule-paper py-5">
+      <h2 className="text-lg font-normal">{t('myApplications')}</h2>
+      <div className="flex flex-wrap gap-3">{applications.map((application) => <button type="button" key={application.id} disabled={saving} aria-pressed={active?.id === application.id} className="min-h-11 border border-os-rule-paper px-3 text-left text-sm" onClick={() => select(application)}>{journalDisplayName(application) || t('untitled')} · {t('status.' + application.status)}</button>)}<button type="button" disabled={saving} className="min-h-11 border border-os-rule-paper px-3 text-sm" onClick={() => select(null)}>{t('newApplication')}</button></div>
+    </section> : null}
+    {active ? <div className="mb-6" role="status"><p>{t('currentStatus', { status: t('status.' + active.status) })}</p><p className="break-all text-sm">{t('applicationNumber')} <code>{active.id}</code></p>{active.status !== 'draft' ? <Link href={'/journals/apply/' + active.id}>{t('viewReceipt')}</Link> : null}{active.status === 'submitted' ? <p>{t('awaitingReview')}</p> : null}{active.reviewReason ? <p className="whitespace-pre-wrap">{t('reviewReason', { reason: active.reviewReason })}</p> : null}{active.status === 'needs_information' ? <p>{t('revise')}</p> : null}{active.status === 'approved' && active.journalId ? <Link href={'/journals/manage/' + active.journalId}>{t('openJournal')}</Link> : null}</div> : null}
+    {errors.length ? <div ref={errorRef} tabIndex={-1} role="alert" className="mb-5 text-os-vermilion-ink"><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div> : null}
+    {message ? <p role="status">{message}</p> : null}
+    <form onSubmit={(event) => { event.preventDefault(); void persist(true); }}>
+      <fieldset disabled={!editable || saving || loading} className="grid gap-8 border-0 p-0">
+        <fieldset className="grid gap-4 border-0 p-0"><legend className="mb-3 text-xl">{t('journalSection')}</legend><div className="grid gap-4 sm:grid-cols-2">
+          {field('nameEn', true)}{field('nameZh')}{field('pIssn', false, 'text', 20)}{field('eIssn', false, 'text', 20)}{field('websiteUrl', true, 'url', 2000)}{field('publisherName', true)}{field('sponsorName')}{field('plannedArticleCount', false, 'number')}
+        </div><label className="grid gap-2 text-sm">{t('fields.subjects')} *<input name="subjects" lang="en" required value={subjectsText} placeholder="Optics, Photonics" className={inputClass} onChange={(event) => setSubjectsText(event.target.value)} /></label><label className="grid gap-2 text-sm">{t('fields.description')} *<textarea name="description" lang="en" required maxLength={5000} rows={5} value={form.description} onChange={(event) => set('description', event.target.value)} className="border border-os-rule-paper bg-transparent p-3" /></label></fieldset>
+        <fieldset className="grid gap-4 border-0 p-0"><legend className="mb-3 text-xl">{t('applicantSection')}</legend><div className="grid gap-4 sm:grid-cols-2">{field('applicantName', true, 'text', 100)}{field('applicantTitle', true, 'text', 100)}{field('applicantEmail', true, 'email', 300)}</div><p className="m-0 text-sm text-os-muted-paper">{t('emailNotice')}</p><label className="grid gap-2 text-sm">{t('fields.representationEvidence')} *<textarea name="representationEvidence" lang="en" required maxLength={10000} rows={4} value={form.representationEvidence} onChange={(event) => set('representationEvidence', event.target.value)} className="border border-os-rule-paper bg-transparent p-3" /></label></fieldset>
+        <fieldset className="grid gap-4 border-0 p-0"><legend className="mb-2 text-xl">{t('servicesSection')}</legend>{JOURNAL_SERVICE_OPTIONS.map((service) => <label className="flex items-start gap-3" key={service.key}><input className="mt-1" type="checkbox" checked={form.requestedServices.includes(service.value)} onChange={(event) => set('requestedServices', event.target.checked ? [...form.requestedServices, service.value] : form.requestedServices.filter((value) => value !== service.value))} /><span><span>{t('services.' + service.key + '.title')}</span><span className="mt-1 block text-sm leading-6 text-os-muted-paper">{t('services.' + service.key + '.description')}</span></span></label>)}{legacyServices ? <p className="text-sm text-os-muted-paper">{t('legacyServices')}</p> : null}</fieldset>
+        <label className="flex gap-3 border-t border-os-rule-paper pt-5 text-sm"><input required type="checkbox" checked={Boolean(form.rightsDeclaration)} onChange={(event) => { set('rightsDeclaration', event.target.checked ? declaration : ''); set('rightsDeclarationVersion', 'v1.1'); }} />{t('declaration')}</label>
+        {editable ? <div className="flex flex-wrap gap-3"><button type="button" className="min-h-11 border border-os-rule-paper px-5" onClick={() => void persist(false)}>{t('save')}</button><button className="min-h-11 bg-accent-primary-strong px-5 font-semibold text-os-black-0" type="submit">{t('submit')}</button></div> : null}
+      </fieldset>
+    </form>
+  </div>;
+}

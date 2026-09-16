@@ -2030,5 +2030,90 @@
     "submitting": "Submitting…",
     "language": "Storyboard language",
     "instructionLimit": "Use at most 1,000 characters for storyboard instructions."
+  },
+  "journalApplication": {
+    "fields": {
+      "nameEn": "Journal title (English)",
+      "nameZh": "Chinese title (optional)",
+      "pIssn": "p-ISSN",
+      "eIssn": "e-ISSN",
+      "websiteUrl": "Journal website",
+      "publisherName": "Publisher (English)",
+      "sponsorName": "Sponsoring institution (English, optional)",
+      "plannedArticleCount": "Planned article count",
+      "subjects": "Subjects (English, comma-separated)",
+      "description": "Journal description (English)",
+      "applicantName": "Applicant name (Roman letters)",
+      "applicantTitle": "Position (English)",
+      "applicantEmail": "Verified account email",
+      "representationEvidence": "Evidence of representation (English explanation)"
+    },
+    "englishNotice": "Use English for journal and applicant metadata. The English title is required; the Chinese title is optional. Use Roman letters for personal names. Staff verify official English names during review.",
+    "reviewProcess": "OpenScience platform administrators review applications manually. They may approve, request more information, or decline after verifying the journal and the applicant’s authority to represent it.",
+    "login": "Sign in to submit an application or view its status",
+    "loading": "Loading your applications…",
+    "loadFailed": "Unable to load applications. Please refresh.",
+    "myApplications": "My applications",
+    "untitled": "Untitled draft",
+    "newApplication": "Start a new application",
+    "currentStatus": "Status: {status}",
+    "awaitingReview": "Your application is in the platform administrator review queue. Return here to view the outcome.",
+    "reviewReason": "Review note: {reason}",
+    "revise": "Update your information according to the review note and submit again.",
+    "openJournal": "Open journal workspace",
+    "status": {
+      "draft": "Draft",
+      "submitted": "Awaiting platform review",
+      "needs_information": "More information required",
+      "approved": "Approved",
+      "rejected": "Declined"
+    },
+    "requiredError": "{field} is required.",
+    "englishError": "Use English for {field}; use Roman letters for personal names.",
+    "issnRequired": "Provide at least one p-ISSN or e-ISSN.",
+    "submitted": "Submitted for review by an OpenScience platform administrator. Track progress under My applications.",
+    "saved": "Draft saved.",
+    "saveFailed": "Unable to save. Please try again.",
+    "journalSection": "Journal and publishing information",
+    "applicantSection": "Applicant and authority to represent the journal",
+    "emailNotice": "Use the verified email address of your signed-in account.",
+    "servicesSection": "Requested services (optional)",
+    "services": {
+      "ai": {
+        "title": "AI interpretation package",
+        "description": "Generate summaries, structured interpretations, evidence-linked claims and FAQs from authorized materials, plus figure cards where sources support them. Journal editors confirm content before publication."
+      },
+      "import": {
+        "title": "Bulk import and material organization",
+        "description": "Help organize DOIs, bibliographic metadata, source files and rights records, then match and import them into the journal directory. Intended for back-catalog onboarding."
+      },
+      "operations": {
+        "title": "Ongoing operations and basic statistics",
+        "description": "Help maintain the journal directory, follow processing tasks and summarize basic usage data."
+      }
+    },
+    "legacyServices": "Some previously selected services have been retired. Only currently available services will be retained when you submit again.",
+    "declaration": "I confirm that I hold or have obtained authorization to submit this information and process subsequent materials, and understand that public access must be confirmed for each article.",
+    "save": "Save draft",
+    "submit": "Submit for review",
+    "applicationNumber": "Application ID:",
+    "viewReceipt": "View submission receipt",
+    "receiptTitle": "Journal application receipt",
+    "receiptHeading": {
+      "draft": "Application draft",
+      "submitted": "Application submitted",
+      "needs_information": "More information required",
+      "approved": "Application approved",
+      "rejected": "Application declined"
+    },
+    "receiptNotice": "Save this page address and your application ID. Only the signed-in applicant can view this receipt. You can reopen it from My applications.",
+    "statusLabel": "Current status",
+    "submittedAt": "Submitted at",
+    "refresh": "Refresh status",
+    "editApplication": "Edit application",
+    "applicationUnavailable": "This application does not exist or belongs to another account.",
+    "slugLabel": "Journal homepage URL suffix",
+    "slugHelp": "Suggested from the English title; edit before approval. Use 3–80 lowercase English letters, digits and hyphens.",
+    "slugError": "Enter a valid homepage suffix using 3–80 lowercase letters, digits and hyphens."
   }
 }

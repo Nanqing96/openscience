@@ -8,6 +8,7 @@
 |---|---|---|
 | 读者 | `/journals`、`/journals/{slug}` | 已公开期刊与论文目录 |
 | 编辑部 | `/journals/apply` | 保存申请、提交身份及代表资格证明 |
+| 申请人 | `/journals/apply/{applicationId}` | 私有提交回执、真实编号、当前审核状态及说明 |
 | 编辑部 | `/journals/manage` | 已加入期刊和申请状态 |
 | 刊内成员 | `/journals/manage/{journalId}` | 论文、成员、额度、服务申请 |
 | 编辑与获指派审核员 | `/journals/manage/{journalId}/articles/{articleId}` | 来源、授权、解读草稿、人工审核 |
@@ -15,6 +16,8 @@
 | 读者与工具 | `/research/{publicId}/v/{versionNo}` | 固定版本解读，优先引用原文 DOI |
 
 期刊负责人、管理员、编辑、审核员分别复用工作空间角色 owner、maintainer、author、reviewer。平台管理员核验权限独立于刊内成员权限。审核员仅能访问指派给自己的论文。
+
+新申请除中文刊名选填外，文字元数据使用英语；英文刊名必填、管理与公开显示优先用英文。旧草稿补齐后可重新提交，已提交申请保留原记录并由平台管理员处理。申请人账号不会因提交申请自动获得平台管理员权限。服务选项已取消“专业审核”；论文公开前的编辑确认仍然必需。
 
 `/admin/journals` 是经原有 Basic Auth 保护的管理页面，Nginx 精确转发到 Web；浏览器管理请求使用 `/api/admin/journals/*`，继续经过 Basic Auth 和平台管理员角色检查。
 

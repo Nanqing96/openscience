@@ -13,14 +13,14 @@ export default async function JournalHome({ params, searchParams }: { params: { 
     if (error instanceof PublicServerApiError && error.status === 404) notFound();
     throw error;
   }
-  const name = journal.nameZh || journal.nameEn;
+  const name = journal.nameEn || journal.nameZh;
   return <PublicShell tone="paper" skipLabel="跳到内容" navigationLabel="主导航" wrapHeaderActionsOnMobile headerActions={<SiteHeader active="journals" context="public-product" tone="paper" />}>
     <article className="mx-auto max-w-[78rem] break-words px-5 py-10 sm:px-8">
       <p className="text-sm text-os-muted-paper">{journal.subjects.join(' · ')}</p>
       <div className="mt-4 border-b border-os-rule-paper pb-8">
         <p className="text-sm text-os-vermilion-ink">{journal.status === 'reverification' ? '编辑部身份复核中' : '编辑部身份已核验'}</p>
         <h1 className="font-reading text-5xl font-normal tracking-[-.04em]">{name}</h1>
-        {journal.nameZh && journal.nameEn ? <p className="text-xl text-os-muted-paper">{journal.nameEn}</p> : null}
+        {journal.nameZh && journal.nameEn ? <p className="text-xl text-os-muted-paper">{journal.nameZh}</p> : null}
         <p className="mt-3 text-sm text-os-muted-paper">{journal.publisherName} · ISSN：{[journal.pIssn, journal.eIssn].filter(Boolean).join(' / ') || '未提供'}</p>
         {['paused', 'closed'].includes(journal.status) ? <p className="text-sm text-os-muted-paper">该期刊已暂停新增平台服务，既有公开内容按其授权状态保留。</p> : null}
         <p className="mt-5 max-w-3xl leading-7 text-os-muted-paper">{journal.description}</p>
