@@ -2162,6 +2162,22 @@
     "forbidden": "当前账号没有平台管理员权限。",
     "loginRequired": "请先登录平台管理员账号，再处理期刊申请。",
     "noApplications": "暂无期刊入驻申请。",
-    "loadFailed": "暂时无法加载审核数据，请重试。"
+    "loadFailed": "暂时无法加载审核数据，请重试。",
+    "applications": "入驻申请",
+    "reasonLabel": "审核原因",
+    "reasonPlaceholder": "要求补件或拒绝时，请填写申请人可见的原因。",
+    "reasonRequired": "尚未提交审核：要求补件或拒绝时，请先填写审核原因。",
+    "previousReason": "上次审核原因：{reason}",
+    "englishNotice": "这条申请还需要补充英文资料",
+    "englishRequired": "尚未通过审核：请先补齐或改为英文——{fields}。可先要求补件，让申请人修改后重新提交。",
+    "correctionHelp": "可以先要求补件，让申请人在“我的申请”修改后重新提交。",
+    "correctionReason": "请将以下资料补齐或改为英文后重新提交：{fields}。人名使用罗马字母拼写，机构名称请采用官方英文名称。",
+    "fillReason": "将上述问题填入补件原因",
+    "processing": "正在提交…",
+    "reviewCompleted": "审核操作成功，当前状态：{status}。",
+    "reviewFailed": "未能确认审核完成：{detail}。请刷新状态确认后再重试。",
+    "refreshStatus": "刷新申请状态",
+    "refreshFailed": "列表暂时未能刷新。已确认的审核结果已保留，请稍后刷新页面。",
+    "decision": { "approved": "通过", "needs_information": "要求补件", "rejected": "拒绝" }
   }
 }

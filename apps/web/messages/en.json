@@ -2126,6 +2126,22 @@
     "forbidden": "This account does not have platform administrator access.",
     "loginRequired": "Sign in with a platform administrator account to review journal applications.",
     "noApplications": "No journal applications yet.",
-    "loadFailed": "Unable to load review data. Please try again."
+    "loadFailed": "Unable to load review data. Please try again.",
+    "applications": "Applications",
+    "reasonLabel": "Review reason",
+    "reasonPlaceholder": "Give an applicant-visible reason when requesting changes or rejecting an application.",
+    "reasonRequired": "No decision was submitted. Enter a reason before requesting changes or rejecting the application.",
+    "previousReason": "Previous review reason: {reason}",
+    "englishNotice": "This application needs English metadata",
+    "englishRequired": "Not approved: complete these fields in English first: {fields}. Request changes so the applicant can revise and resubmit.",
+    "correctionHelp": "Request changes so the applicant can revise and resubmit under My applications.",
+    "correctionReason": "Please complete or translate these fields into English and resubmit: {fields}. Use Roman letters for names and official English institution names.",
+    "fillReason": "Use these issues as the revision reason",
+    "processing": "Submitting…",
+    "reviewCompleted": "Review completed. Current status: {status}.",
+    "reviewFailed": "Review completion could not be confirmed: {detail}. Refresh the application status before retrying.",
+    "refreshStatus": "Refresh application status",
+    "refreshFailed": "The list could not be refreshed. Confirmed review results have been retained. Refresh the page later.",
+    "decision": { "approved": "Approve", "needs_information": "Request changes", "rejected": "Reject" }
   }
 }

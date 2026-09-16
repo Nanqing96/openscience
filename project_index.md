@@ -15,6 +15,7 @@
 | `apps/agent-worker/src/journal-worker.ts` / `apps/web/components/journals/` / `apps/web/app/journals/` | 持久化加工与期刊界面，复用现有 Gateway/Parser |
 | `packages/domain/src/journal/form-contract.ts` / `apps/web/components/journals/JournalApplicationReceipt.tsx` / `apps/web/app/journals/apply/[applicationId]/page.tsx` | 前后台共享英文元数据与服务规则；本人可见申请编号、提交回执和审核状态 |
 | `apps/web/components/journals/JournalAdminLink.tsx` / `apps/web/components/journals/JournalAdminConsole.tsx` / `docs/decisions/ADR-003-admin-strong-auth.md` | 站内管理员入口与审核工作台；期刊审核登录例外及其独立批准范围 |
+| `apps/web/components/journals/JournalApplicationReviewCard.tsx` | 申请审核的本行反馈、英文资料预检查、处理中/防重及仅填入补件说明；后台规则仍为最终约束 |
 | `infra/journal-models.fragment` / `infra/migrations/20260915000000_journals/` | 期刊模型与增量迁移；不回退既有生产迁移 |
 | `scripts/journals/verify-migration.mjs` / `.github/workflows/journals.yml` | 原分支隔离数据库演练/CI；按当前 no-tests 部署约束不执行 |
 
