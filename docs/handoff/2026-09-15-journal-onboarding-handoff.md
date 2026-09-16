@@ -5,7 +5,7 @@
 - 用户最新授权：现在部署；若其他部署仍进行则监控等待，完成后自动继续。2026-09-16 恢复时远端发布锁空闲、无事务/故障标记，运行版本与已整合的 bdf0d3fa 一致。
 - 当前交付树：项目目录下 `openscience-production-journals`，branch `codex/journals-production`；HEAD 以 Git 元数据为准。
 - 原开发分支 `codex/journal-onboarding` / `261a38fa9fa5e97a099c59a082447ed87b43de05` 及 [PR #1](https://github.com/Nanqing96/openscience/pull/1) 保留；它基于旧版 49ff4fcd，禁止直接覆盖当前生产。
-- 生产最后实读 release `bdf0d3fa3a8e482aaf017ce2fcefa5cd8d34ac3a` / rollback `ba184541bf02067e27444aeb1764f95e42b82805`。这是另一项工作发布的版本；恢复本任务时必须重新定锚。
+- 首次上线 release `3617f154bcbca73e7c671703b682eb400c641a35` / rollback `bdf0d3fa3a8e482aaf017ce2fcefa5cd8d34ac3a`，canonical runner 已成功结束。期刊管理页面路由小修复需第二次发布；恢复时重新定锚。
 - 集成树基于 6684e448，另保存 ba184541 的 9 文件、bdf0d3fa 的 4 文件线上增量；1988 个源文件逐一按发布清单核验哈希。原 SHA 未在 GitHub 可获取，快照提交明确记录来源，不冒称恢复原提交对象。
 - `.env` 使用用户提供 `D:\00_codex\(1).env` 的 Git 忽略副本；项目 SSH 密钥已可用。没有输出凭据或将配置纳入提交。
 
@@ -15,9 +15,9 @@
 - 新通用 POST 搜索、回收站及 presentation 参数入口纳入期刊边界；来源上传复用存储清理锁和 retained 状态。上述新增差异独立 high 静态审查 GO。
 - deploy.sh 接受已验证的完整线上 rollback SHA；远端锁、active 精确匹配、不可变目录与镜像身份约束保持。采用当前生产 no-tests 流程，不恢复旧 CI/全套验收政策。
 - 上次暂停前，版本保护捕获 ba184541 → bdf0d3fa，未切换服务。本次恢复后同源双库备份成功：core 44M、search 3.4M，7/7 轮；备份仅存服务器。
-- 已修复 Windows 本机部署路径和 Git SSH 对含单引号用户目录的兼容；候选 `3617f154bcbca73e7c671703b682eb400c641a35` 已上传并推至用户 GitHub。服务器必要构建及镜像构建均成功；10:19:50 开始等待旧 API/Worker 退出（既有 600 秒期限），迁移/服务切换结果尚待记录，日志位于项目 `.work/journal-deploy-3617f154.log`。
+- 已修复 Windows 本机部署路径和 Git SSH 对含单引号用户目录的兼容；服务器必要构建及镜像构建成功，核心新增期刊迁移成功、Search 无待迁移项。10:33 canonical 切换完成、服务启动健康、Nginx 配置通过、active CAS 完成且事务清除，日志位于项目 `.work/journal-deploy-3617f154.log`。
 - 原分支历史测试不等同此次跨生产版本整合已通过；本次仅必要服务器构建及已知阻塞的定向修复，不运行全套测试。
-- 部署观察准备时发现 Nginx `/admin/` 将期刊管理页发往 API；新增 `/admin/journals` 精确 Web 路由并保留原 Basic Auth、API 角色门禁，独立 high 静态复审 GO。第一轮结束后需发布此修复；确认期刊迁移成功后第二轮可 `--skip-migrate`，避免重复停写。
+- 部署观察准备时发现 Nginx `/admin/` 将期刊管理页发往 API；新增 `/admin/journals` 精确 Web 路由并保留原 Basic Auth、API 角色门禁，独立 high 静态复审 GO。第一轮迁移已成功，第二轮发布此修复使用 `--skip-migrate`，不重复迁移停写。
 
 ## Done
 
