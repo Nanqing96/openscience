@@ -8,6 +8,7 @@
 
 | 产品目的 / 能力 | 实现与实际调用入口（仓库相对路径） | 结果依据与边界 |
 |---|---|---|
+| 期刊入驻与 AI 解读 | `apps/web/app/journals/`、`apps/api/src/routes/journals.ts` → `packages/domain/src/journal/` → `apps/agent-worker/src/journal-worker.ts`，复用既有 Gateway/Parser | 已部署：申请/核验、权限与许可、持久化作业和额度、审核及固定公开版本；目录和申请页已真实查看，管理员路由与匿名门禁已核对。尚无真实期刊模型/解析端到端产物，不声称提升引用；版本/证据独立见[期刊 CURRENT](../handoff/2026-09-15-journal-onboarding-handoff.md) |
 | 上传、全文取得、解析 | `apps/api/src/routes/ingestion.ts` → `apps/agent-worker/src/ingestion-parser.ts`；全文发现走 `apps/agent-worker/src/retrieval/handler.ts`，解析选择走 `apps/agent-worker/src/parsers/cascade-orchestrator.ts` | 既有SourceMap/页码与原始文件是下游来源；解析可读不代表公式正确。复用ScanSci、Docling、Tesseract，资源见服务器清单 |
 | 文献语义理解 | `apps/agent-worker/src/extractor.ts` 的 `semanticReductionGuard`/综合链；引用 `skills/paper-analysis.ts`、`scientific-critical-thinking.ts`；经Gateway | 已有semanticStage、条件/算例/操作/来源关系；后续应沿用经审核结果，不能将先前有错候选当成权威。历史d5c6整稿未通过，当前不重跑 |
 | 共享科学推理规则 | `skills/scientific-critical-thinking.ts` → `extractor.ts` 的reduce/bridge及科学审校 | K-Dense方法的项目runtime v2，确有调用；并非安装整个K-Dense包。`skills/installed-media-skills.ts` science/review直接引用同一常量并记录id/version，已上线；真实配图1da6/a38的请求与provenance已消费共享规则，效果与缺口见CURRENT |

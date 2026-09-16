@@ -5,7 +5,7 @@
 - 用户最新授权：现在部署；若其他部署仍进行则监控等待，完成后自动继续。2026-09-16 恢复时远端发布锁空闲、无事务/故障标记，运行版本与已整合的 bdf0d3fa 一致。
 - 当前交付树：项目目录下 `openscience-production-journals`，branch `codex/journals-production`；HEAD 以 Git 元数据为准。
 - 原开发分支 `codex/journal-onboarding` / `261a38fa9fa5e97a099c59a082447ed87b43de05` 及 [PR #1](https://github.com/Nanqing96/openscience/pull/1) 保留；它基于旧版 49ff4fcd，禁止直接覆盖当前生产。
-- 首次上线 release `3617f154bcbca73e7c671703b682eb400c641a35` / rollback `bdf0d3fa3a8e482aaf017ce2fcefa5cd8d34ac3a`，canonical runner 已成功结束。期刊管理页面路由小修复需第二次发布；恢复时重新定锚。
+- 最终线上 release `3cc5bedb4c288d692473f27d1c1e5bdc18130f64` / rollback `3617f154bcbca73e7c671703b682eb400c641a35`。2026-09-16 两轮 canonical 发布均成功，公网 `/__release` 与远端标记一致；后续操作重新定锚。上线前的 bdf0d3fa 版本仍保留。
 - 集成树基于 6684e448，另保存 ba184541 的 9 文件、bdf0d3fa 的 4 文件线上增量；1988 个源文件逐一按发布清单核验哈希。原 SHA 未在 GitHub 可获取，快照提交明确记录来源，不冒称恢复原提交对象。
 - `.env` 使用用户提供 `D:\00_codex\(1).env` 的 Git 忽略副本；项目 SSH 密钥已可用。没有输出凭据或将配置纳入提交。
 
@@ -17,7 +17,9 @@
 - 上次暂停前，版本保护捕获 ba184541 → bdf0d3fa，未切换服务。本次恢复后同源双库备份成功：core 44M、search 3.4M，7/7 轮；备份仅存服务器。
 - 已修复 Windows 本机部署路径和 Git SSH 对含单引号用户目录的兼容；服务器必要构建及镜像构建成功，核心新增期刊迁移成功、Search 无待迁移项。10:33 canonical 切换完成、服务启动健康、Nginx 配置通过、active CAS 完成且事务清除，日志位于项目 `.work/journal-deploy-3617f154.log`。
 - 原分支历史测试不等同此次跨生产版本整合已通过；本次仅必要服务器构建及已知阻塞的定向修复，不运行全套测试。
-- 部署观察准备时发现 Nginx `/admin/` 将期刊管理页发往 API；新增 `/admin/journals` 精确 Web 路由并保留原 Basic Auth、API 角色门禁，独立 high 静态复审 GO。第一轮迁移已成功，第二轮发布此修复使用 `--skip-migrate`，不重复迁移停写。
+- 部署观察准备时发现 Nginx `/admin/` 将期刊管理页发往 API；新增 `/admin/journals` 精确 Web 路由并保留原 Basic Auth、API 角色门禁，独立 high 静态复审 GO。第二轮已成功上线此修复，使用 `--skip-migrate`；日志 `.work/journal-deploy-3cc5bedb.log`。
+- 最终实读：active/rollback 精确匹配，实际 Nginx 文件与最终源一致，无部署事务、失败或保留待办标记；API/Worker/Parser/ScanSci/BGE 及数据服务健康，Web 运行。管理前端内部 HTTP 200；公网期刊目录/申请页 200、管理页/API 匿名 401、管理页尾斜杠 308。
+- 真实 Edge 已打开期刊目录和入驻申请，页面布局可见；目录正确显示暂无公开期刊，申请表完整。公开目录 API/站点地图 200，未登录刊内接口 401。未创建假期刊、未提交申请或改动已有论文；未使用管理员身份完成业务操作验收。
 
 ## Done
 
@@ -46,12 +48,12 @@
 - 所有数据库及内容测试为本地合成材料；真实模型与生产 PDF/OCR sidecar 的端到端验收尚未执行，不声明已提高引用。
 - 当前提供书目和平台交付/调用统计；未采集访客时返回 null，调用次数不代表 AI 引用。
 - 个人对象关联/复制按 PRD 首期人工协助留存版本化授权，不自动迁移私有对象。支付、外部监测、Topic Hub、知识图谱、认证仍属后续产品范围。
-- 生产启用前须按运行手册验证模型、扫描/解析、存储、会话和真实来源。新表有业务数据时优先关闭功能/回退应用，不直接执行会删除期刊数据的 SQL rollback。
+- 功能已部署并默认启用；真实试点前按运行手册核实代表授权、来源许可及模型/解析实际质量。新表有业务数据时优先关闭功能/回退应用，不直接执行会删除期刊数据的 SQL rollback。
 - `sources/` 与同步项目资料只读；密钥由部署程序使用，不进入对话、日志或 Git。
 
 ## Next action / read-first
 
-1. 当前可继续已授权发布；若锁占用或 active 改变，监控真实事务并重新整合最新源，不覆盖并行部署。不要部署旧 261a38f，也不要跳过远端 exact-active 防护。
-2. 同源备份双库，生成 Git 忽略的 cloud-sync 配置，走现行 canonical deploy 的必要服务器构建/迁移/切换；本次新增期刊迁移不能传 `--skip-migrate`。当前源树共 44 个核心迁移，Search 无期刊新增迁移。
-3. 观察期刊公开入口、登录/管理员门禁、迁移结果与实际运行；真实期刊试点须核验代表授权和来源许可。真实模型/解析与引用效果未观察，不补造成功。
+1. 本轮服务器部署和 GitHub 交付已完成；不要按历史候选再次部署旧 261a38f。以后发布继续遵循远端锁与 exact-active 防护，保护并行工作。
+2. 下一业务阶段由真实编辑部通过 `/journals/apply` 申请，平台管理员核验代表授权后开通。目录当前为空属于尚无公开期刊，不补造示例身份。
+3. 选获准真实论文完成来源解析、AI 草稿、人工审核及固定版本发布；此项与引用效果仍未验收，不从服务健康推断科学质量。
 4. 先读 [运行手册](../runbooks/journal-onboarding.md)、[部署手册](../runbooks/deployment.md) 与 [PRD](../specs/2026-09-15-journal-onboarding-design.md) 对应模块；Hermes handoff 属其他任务，保护其未完成目标，不自动续跑。

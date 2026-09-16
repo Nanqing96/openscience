@@ -2,7 +2,7 @@
 
 ## 范围与入口
 
-实现依据：[期刊入驻 PRD](../specs/2026-09-15-journal-onboarding-design.md)。已完成首期代码与生产兼容整合，用户已恢复部署授权；上线版本、实际观察范围及续作入口统一见 [CURRENT handoff](../handoff/2026-09-15-journal-onboarding-handoff.md)。
+实现依据：[期刊入驻 PRD](../specs/2026-09-15-journal-onboarding-design.md)。首期代码与生产兼容整合已部署，期刊迁移及入口实际观察已完成；上线版本、观察边界及真实试点后续统一见 [CURRENT handoff](../handoff/2026-09-15-journal-onboarding-handoff.md)。
 
 | 用户 | 页面 | 用途 |
 |---|---|---|
@@ -15,6 +15,8 @@
 | 读者与工具 | `/research/{publicId}/v/{versionNo}` | 固定版本解读，优先引用原文 DOI |
 
 期刊负责人、管理员、编辑、审核员分别复用工作空间角色 owner、maintainer、author、reviewer。平台管理员核验权限独立于刊内成员权限。审核员仅能访问指派给自己的论文。
+
+`/admin/journals` 是经原有 Basic Auth 保护的管理页面，Nginx 精确转发到 Web；浏览器管理请求使用 `/api/admin/journals/*`，继续经过 Basic Auth 和平台管理员角色检查。
 
 ## 首次启用
 
