@@ -60,6 +60,7 @@ import { createTavilyAdapter } from './retrieval/tavily';
 import { createScanSciAdapter } from './retrieval/scansci';
 import { createSourceRetrieveHandler } from './retrieval/handler';
 import { collectExpiredTemporaryDocuments } from './retrieval/garbage-collector';
+import { startJournalWorker } from './journal-worker';
 import { createPresentationGenerationHandler, requireIllustrationReviewAuthority, requireIllustrationReviewSubmission } from './presentation/handler';
 
 const spoolTaskExecution = new AsyncLocalStorage<{ taskId: string; executionAttempt: number }>();
@@ -767,6 +768,9 @@ async function main(): Promise<void> {
   const pollers = await Promise.all(Array.from({ length: workerConcurrency }, (_, index) => (
     createPollOnce(handlers, { runMaintenance: index === 0 })
   )));
+  const stopJournalWorker = startJournalWorker(deps, gateway, parserCascade);
+  process.once('SIGTERM', stopJournalWorker);
+  process.once('SIGINT', stopJournalWorker);
   await recoverProcessingQueue(deps);
   let cleanupRunning = false;
   const cleanupTimer = setInterval(() => {

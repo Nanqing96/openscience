@@ -1,5 +1,6 @@
 import type { PublicEvidenceSource, PublicResearchVersion } from './api';
 import type { EditorialCollectionApi, ResearchIndexPageApi } from './api';
+import type { JournalPublic, JournalSummary, PublicJournalArticle } from './journal-api';
 
 export class PublicServerApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -38,3 +39,9 @@ export function getPublicEditorialCollection(slug: string) {
 export function getServerResearchIndex(limit = 20) {
   return serverRequest<ResearchIndexPageApi>(`/explore?limit=${limit}`, 8000);
 }
+
+export function getServerPublicJournal(slug: string) {
+  return serverRequest<{ journal: JournalPublic }>(`/journals/${encodeURIComponent(slug)}`);
+}
+export function getServerPublicJournals(cursor?: string, limit = 20) { return serverRequest<{ items: JournalSummary[]; nextCursor: string | null }>(`/journals?limit=${limit}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`); }
+export function getServerPublicJournalArticles(id: string, cursor?: string, limit = 20) { return serverRequest<{ items: PublicJournalArticle[]; nextCursor: string | null }>(`/journals/${encodeURIComponent(id)}/articles?limit=${limit}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`); }

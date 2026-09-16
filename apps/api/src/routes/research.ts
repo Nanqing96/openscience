@@ -179,6 +179,17 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     const publicPath = `/research/${encodeURIComponent(publicId)}/v/${versionNo}`;
     reply.header('Content-Location', `/api${publicPath}`);
     const publication = version.publications[0] ?? null;
+    const journalRelease = await deps.prisma.journalRelease?.findUnique({ where: { versionId: version.id }, include: { article: true } });
+    let journalPackage: Record<string, unknown> | null = null;
+    if (journalRelease) {
+      reply.header('Cache-Control', 'no-store');
+      const rights = journalRelease.article.rights as Record<string, unknown>;
+      if (journalRelease.article.contentState !== 'active' || rights.publicDerivative !== true) return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '内容当前不公开' } });
+      journalPackage = { ...(journalRelease.snapshot as Record<string, unknown>), articleId: journalRelease.articleId };
+      if (rights.publicSource !== true) {
+        const source = { ...(journalPackage.source as Record<string, unknown>) }; delete source.text; journalPackage.source = source;
+      }
+    }
     const metadata = readPublicationMetadata(version.researchRecord);
     const contentAvailable = version.status === 'published' || version.status === 'revised';
     const { claims, evidence } = frozenPublicGraph(version.researchRecord);
@@ -235,6 +246,7 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
           ? { status: version.aiReview.status, hardBlocks: version.aiReview.hardBlocks, warnings: version.aiReview.warnings }
           : null,
         citation: metadata.citation.text ?? '',
+        ...(journalPackage ? { journalPackage } : {}),
         artifactPaths: (contentAvailable ? readPublicArtifactManifest(version.researchRecord, { publicId, versionNo, researchObjectId: ro.id, versionId: version.id }) : []).map(({ logicalPath, artifactId, blobSha256, downloadAccess, downloadUrl }) => ({ logicalPath, artifactId, blobSha256, downloadAccess, ...(downloadUrl ? { downloadUrl } : {}) })),
         claims: orderPublicClaims(contentAvailable ? claims : []).map((claim) => ({
           id: claim.id,

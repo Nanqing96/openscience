@@ -1,5 +1,10 @@
 # CURRENT Progress Window
 
+## 2026-09-16 — 期刊生产整合，等待其他部署完成
+
+- 用户授权上线后，发现原期刊代码基线落后于真实生产；已保留发布清单哈希一致的两次生产增量，整合独立公开编号、冻结身份、回收站与检索权限、上传清理锁。新增差异独立 high 静态审查通过；没有运行测试、CI或本机构建。
+- 备份前版本保护捕获另一任务更新，未执行本任务备份/迁移/服务切换。用户随后明确“先等另一项部署完成”，暂停本次上线。精确 branch/HEAD/release/rollback、历史验收范围和续作步骤仅见 [期刊 CURRENT](handoff/2026-09-15-journal-onboarding-handoff.md)。
+
 ## 2026-09-15 — 修复能力接线并追查真实空结果
 - `ba184541` 已部署（rollback `6684e448`），仅跳过全套验收；按原资格恢复两篇 confirmed 来源任务，真实完成 deep 58/58 dense、Quantization 42/42 dense，当前 generation 均 active。Weyl UI POST 200、hybrid，实际召回两篇论文，页面无横向溢出。任务4索引闭环已实证；不等同科学或审美质量完成。
 

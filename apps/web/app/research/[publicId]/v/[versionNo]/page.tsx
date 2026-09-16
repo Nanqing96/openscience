@@ -6,6 +6,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import SiteHeader from '@/components/landing/SiteHeader';
 import { PublicShell } from '@/components/shell/PublicShell';
+import { PublicJournalRelease, type PublicJournalPackageData } from '@/components/journals/PublicJournalRelease';
 
 /** P1D-9：公开版本页（§6.1 /research/OSR-YYYY-NNNNNN/v/N，SSR 可索引 §4.3）。 */
 
@@ -17,14 +18,17 @@ export async function generateMetadata({ params }: { params: { publicId: string;
   try {
     const res = await getServerPublicResearchVersion(params.publicId, versionNo);
     const r = res.research;
-    const authors = r.authors.map((a) => a.displayName).join(', ');
+    const journalPackage = (r as typeof r & { journalPackage?: PublicJournalPackageData }).journalPackage;
+    const authors = journalPackage?.metadata.authors.join(', ') || r.authors.map((a) => a.displayName).join(', ');
+    const pageTitle = journalPackage ? `${journalPackage.metadata.title} · 期刊衍生解读 v${r.version.versionNo}` : `${r.title} v${r.version.versionNo}`;
+    const description = withoutInternalSourceMarkers(journalPackage?.draft?.summary ?? r.version.core.problem ?? '').substring(0, 160);
     return {
-      title: `${r.title} v${r.version.versionNo} | OpenScience`,
-      description: withoutInternalSourceMarkers(r.version.core.problem ?? '').substring(0, 160),
+      title: `${pageTitle} | OpenScience`,
+      description,
       alternates: { canonical: r.url, types: { 'application/json': `/api/research/${encodeURIComponent(r.publicId)}/v/${r.version.versionNo}` } },
       openGraph: {
-        title: `${r.title} v${r.version.versionNo}`,
-        description: withoutInternalSourceMarkers(r.version.core.problem ?? '').substring(0, 160),
+        title: pageTitle,
+        description,
         type: 'article',
         authors: authors ? [authors] : [],
         publishedTime: r.version.publishedAt ?? undefined,
@@ -65,5 +69,6 @@ export default async function Page({ params }: { params: { publicId: string; ver
   }
   // Keep corrected legacy URLs temporary: a later real v10 must remain usable.
   if (result.research.version.versionNo !== versionNo) redirect(result.research.url);
-  return publicShell(<div className="pub-page-tabbed"><PublicReadingSurface research={result.research} /></div>);
+  const journalPackage = (result.research as typeof result.research & { journalPackage?: PublicJournalPackageData }).journalPackage;
+  return publicShell(<div className="pub-page-tabbed">{journalPackage ? <PublicJournalRelease value={journalPackage} /> : <PublicReadingSurface research={result.research} />}</div>);
 }
