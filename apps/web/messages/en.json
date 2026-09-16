@@ -2115,5 +2115,17 @@
     "slugLabel": "Journal homepage URL suffix",
     "slugHelp": "Suggested from the English title; edit before approval. Use 3–80 lowercase English letters, digits and hyphens.",
     "slugError": "Enter a valid homepage suffix using 3–80 lowercase letters, digits and hyphens."
+  },
+  "journalAdmin": {
+    "navigation": "Journal review",
+    "heading": "Journal verification and operations",
+    "platform": "Administration",
+    "loading": "Loading journal administration…",
+    "retry": "Reload",
+    "login": "Sign in as an administrator",
+    "forbidden": "This account does not have platform administrator access.",
+    "loginRequired": "Sign in with a platform administrator account to review journal applications.",
+    "noApplications": "No journal applications yet.",
+    "loadFailed": "Unable to load review data. Please try again."
   }
 }

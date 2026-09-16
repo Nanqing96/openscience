@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { useSession } from '@/components/auth/SessionProvider';
+import { JournalAdminLink } from '@/components/journals/JournalAdminLink';
 import { cn } from '@/lib/utils';
 
 interface SiteHeaderProps {
@@ -39,6 +40,7 @@ export default function SiteHeader({ active, context = 'landing', tone = 'dark' 
       <Link href="/journals" aria-current={active === 'journals' ? 'page' : undefined} data-reading-role="control" className={linkClassName}>期刊</Link>
       <Link data-reading-role="control" href="/research-objects/new" className={linkClassName}>{t('nav.create')}</Link>
       <Link href="/developers" aria-current={active === 'developers' ? 'page' : undefined} aria-label={t('nav.developersLabel')} data-reading-role="control" className={cn(linkClassName, 'max-[359px]:inline-flex')}>{t('nav.developers')}</Link>
+      <JournalAdminLink className={cn(linkClassName, 'max-[359px]:inline-flex font-semibold')} />
       <Link
         data-reading-role="control"
         href={accountHref}

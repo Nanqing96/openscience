@@ -21,6 +21,7 @@ import {
 import type { AuditContext } from '@openscience/observability';
 import { RESEARCH_IDENTITIES, validateResearchIdentityProfile } from '@openscience/domain';
 import { refreshSessionCookie, requireCurrentUser, SESSION_COOKIE, sessionTokenFrom } from './session-guard';
+import { requirePlatformAdmin } from './admin';
 
 export interface AuthRouteDeps extends AuthDeps {
   secureCookies: boolean;
@@ -159,8 +160,17 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthRouteDeps): v
     const token = sessionTokenFrom(req);
     const me = await requireCurrentUser(deps, req, reply);
     if (!me || !token) return;
+    const account = await deps.prisma.user.findUnique({ where: { id: me.userId }, select: { platformRole: true } });
     refreshSessionCookie(reply, token, deps.secureCookies);
-    return reply.send(me);
+    return reply.send({ ...me, platformRole: account?.platformRole ?? 'user' });
+  });
+
+  // Nginx uses this read-only check for journal administration. Never trust a
+  // role supplied by the browser or cache the result of an administrator check.
+  app.get('/journal-admin-access', async (req, reply) => {
+    void reply.header('Cache-Control', 'private, no-store').header('Vary', 'Cookie');
+    if (!(await requirePlatformAdmin(deps, req, reply))) return;
+    return reply.status(204).send();
   });
 
   app.get('/academic-identity', async (req, reply) => {

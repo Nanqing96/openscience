@@ -29,6 +29,7 @@ export class ApiClientError extends Error {
 
 export interface CurrentUser {
   userId: string;
+  platformRole?: 'user' | 'moderator' | 'platform_admin';
   email: string;
   displayName: string;
   status: string;

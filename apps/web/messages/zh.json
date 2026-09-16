@@ -2151,5 +2151,17 @@
     "slugLabel": "期刊主页地址后缀",
     "slugHelp": "从英文刊名生成，可在通过前修改。使用 3–80 个小写英文字母、数字和连字符。",
     "slugError": "请填写有效的英文主页地址后缀（3–80 位小写字母、数字和连字符）。"
+  },
+  "journalAdmin": {
+    "navigation": "期刊审核",
+    "heading": "期刊核验与运营",
+    "platform": "平台管理",
+    "loading": "正在加载期刊管理数据…",
+    "retry": "重新加载",
+    "login": "登录管理员账号",
+    "forbidden": "当前账号没有平台管理员权限。",
+    "loginRequired": "请先登录平台管理员账号，再处理期刊申请。",
+    "noApplications": "暂无期刊入驻申请。",
+    "loadFailed": "暂时无法加载审核数据，请重试。"
   }
 }
