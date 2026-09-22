@@ -1,4 +1,5 @@
 import { AuthError, type AuthErrorCode } from '@openscience/auth';
+import { JournalError } from '@openscience/domain';
 import { AgentError, AppealError, ApprovalError, ArtifactError, AuthorError, BranchError, ClaimEvidenceError, CommitError, EditorialError, ForkError, IngestionError, IssueError, LicenseError, NotificationError, PrError, PublicEvidenceSourceError, PublishError, ReadingPreferenceError, ResearchIdentityProfileError, ResearchIntelligenceValidationError, ResearchObjectError, ReviewError, UsageError, VisibilityError, WorkspaceError, type ReadingPreferenceErrorCode, type ResearchIdentityProfileErrorCode, type WorkspaceErrorCode } from '@openscience/domain';
 import { buildErrorBody, type ErrorBody } from '@openscience/observability';
 
@@ -214,6 +215,7 @@ export type { ErrorBody };
 
 /** 统一错误映射（2.6 扩展为全局标准前的最小版：/auth + /workspaces + /usage）；requestId 三方串联（Spec §17）。 */
 export function httpStatusForError(err: unknown, requestId?: string): { status: number; body: ErrorBody } {
+  if (err instanceof JournalError) return { status: err.status, body: buildErrorBody(err.code, err.message, requestId) };
   if (err instanceof PublicEvidenceSourceError) {
     return { status: err.code === 'SOURCE_UNAVAILABLE' ? 503 : 404, body: buildErrorBody(err.code, err.message, requestId) };
   }

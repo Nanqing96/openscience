@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { AuthDeps } from '@openscience/auth';
 import type { StorageAdapter } from '@openscience/storage';
-import { getPublicEvidenceSource, PublicEvidenceSourceError } from '@openscience/domain';
+import { canReadCurrentPublicResearch, getPublicEvidenceSource, PublicEvidenceSourceError } from '@openscience/domain';
 
 /** /research 公开路由依赖：AuthDeps（仅用 prisma）。 */
 export type ResearchRouteDeps = AuthDeps & { storage?: StorageAdapter };
@@ -86,6 +86,9 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     if (!latestVersion) {
       return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '未找到' } });
     }
+    if (!await canReadCurrentPublicResearch(deps, { researchObjectId: ro.id, versionId: latestVersion.id })) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '未找到' } });
+    }
     return reply.send({
       research: {
         publicId,
@@ -118,7 +121,20 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     if (!version) {
       return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '版本未找到' } });
     }
+    if (!await canReadCurrentPublicResearch(deps, { researchObjectId: ro.id, versionId: version.id })) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '版本未找到' } });
+    }
     const publication = version.publications[0] ?? null;
+    const journalRelease = await deps.prisma.journalRelease?.findUnique({ where: { versionId: version.id }, include: { article: true } });
+    let journalPackage: Record<string, unknown> | null = null;
+    if (journalRelease) {
+      reply.header('Cache-Control', 'no-store');
+      const rights = journalRelease.article.rights as Record<string, unknown>;
+      journalPackage = { ...(journalRelease.snapshot as Record<string, unknown>), articleId: journalRelease.articleId };
+      if (rights.publicSource !== true) {
+        const source = { ...(journalPackage.source as Record<string, unknown>) }; delete source.text; journalPackage.source = source;
+      }
+    }
     // P1D-9：§4.3 必显数据聚合
     const [authors, contributions, licenses, claims, evidence, presentationAssets, history] = await Promise.all([
       deps.prisma.author.findMany({
@@ -181,12 +197,15 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
       }),
     ]);
     const core = (version.manifest?.coreJson ?? {}) as Record<string, string>;
-    const citation = `${authors.map((a) => a.user.displayName).join(', ')}. ${ro.title}. ${publicId}-v${versionNo}. ${ro.createdAt.getUTCFullYear()}.`;
+    const journalMetadata = journalPackage?.metadata as { title: string; authors: string[]; publishedDate?: string; doi?: string; originalUrl: string } | undefined;
+    const citation = journalMetadata
+      ? `${journalMetadata.authors.join(', ')}. ${journalMetadata.title}. ${journalMetadata.publishedDate ?? ''}. ${journalMetadata.doi ? `https://doi.org/${journalMetadata.doi}` : journalMetadata.originalUrl}`
+      : `${authors.map((a) => a.user.displayName).join(', ')}. ${ro.title}. ${publicId}-v${versionNo}. ${ro.createdAt.getUTCFullYear()}.`;
 
     return reply.send({
       research: {
         publicId,
-        title: ro.title,
+        title: journalMetadata?.title ?? ro.title,
         url: `/research/${publicId}/v/${versionNo}`,
         visibility: ro.visibility,
         version: {
@@ -205,6 +224,7 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
           ? { status: version.aiReview.status, hardBlocks: version.aiReview.hardBlocks, warnings: version.aiReview.warnings }
           : null,
         citation,
+        ...(journalPackage ? { journalPackage } : {}),
         artifactPaths: (version.manifest?.entries ?? []).map((e) => ({ logicalPath: e.logicalPath, blobSha256: e.blobSha256 })),
         claims: orderPublicClaims(claims).map((claim) => ({
           id: claim.id,
@@ -272,6 +292,9 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
       select: { id: true },
     });
     if (!version) throw new PublicEvidenceSourceError('NOT_FOUND', 'published asset not found');
+    if (!await canReadCurrentPublicResearch(deps, { researchObjectId: ro.id, versionId: version.id })) {
+      throw new PublicEvidenceSourceError('NOT_FOUND', 'published asset not found');
+    }
     const asset = await deps.prisma.presentationAsset.findFirst({ where: {
       id: assetId, researchObjectId: ro.id, versionId: version.id, status: 'approved',
     } });
