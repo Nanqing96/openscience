@@ -1,7 +1,7 @@
 # OpenScience (XGS) 项目文件索引
 
 > 维护规则：创建/修改/移动文件后必须更新本索引。创建新文件前先查本表防重复。
-> **CURRENT 期刊交付入口（2026-09-16）：** `docs/handoff/2026-09-15-journal-onboarding-handoff.md`。开发分支 `codex/journal-onboarding`，验收代码 `e7e387b7738be3ca395f29dcd61c6894acb273b7`，交付 [PR #1](https://github.com/Nanqing96/openscience/pull/1)。本轮未读取或改变生产 release/rollback；下方既有生产条目是历史记录，不能作为本次部署证据。
+> **CURRENT 期刊交付入口（2026-09-22）：** `docs/handoff/2026-09-15-journal-onboarding-handoff.md`。开发分支 `codex/journal-onboarding`，增量基线 `261a38f`；本轮开发来源矩阵、加工优先级及服务额度页面，验收与交付状态见交接及 Git 元数据。[PR #1](https://github.com/Nanqing96/openscience/pull/1) 为既有交付入口。本轮未读取或改变生产 release/rollback；下方既有生产条目是历史记录，不能作为本次部署证据。
 
 ## 期刊入驻与 AI 解读（2026-09-15）
 
@@ -20,7 +20,7 @@
 | `apps/agent-worker/src/journal-worker.ts` / `apps/agent-worker/src/index.ts` / `apps/agent-worker/test/journal-worker.test.ts` | 复用模型网关、存储和解析器的持久化期刊队列 | 真实模型与 sidecar 留待部署验收 |
 | `apps/web/app/journals/` / `apps/web/app/admin/journals/` / `apps/web/components/journals/` | 期刊目录、申请、编辑工作台、人工审核与平台运营 | P0 页面 |
 | `apps/web/lib/journal-api.ts` / `apps/web/lib/public-server-api.ts` / `apps/web/components/landing/SiteHeader.tsx` / `apps/web/app/research/[publicId]/v/[versionNo]/page.tsx` | 会话/CSRF API、服务端公开内容和固定版本衍生解读 | 原 DOI 与平台版本分离 |
-| `apps/web/test/journal-api-contract.test.ts` / `apps/web/test/journal-ui-integration.test.tsx` | API 地址、数据映射和交互回归 | 浏览器 UI 配套测试 |
+| `apps/web/test/journal-api-contract.test.ts` / `apps/web/test/journal-ui-integration.test.tsx` / `apps/web/test/journal-source-matrix.test.tsx` | API 地址、数据映射、修订绑定及交互回归 | 浏览器 UI 配套测试 |
 | `apps/web/package.json` / `pnpm-lock.yaml` | Web 显式声明 zod，检查失败生成结果的结构后才允许采用为草稿 | 不完整结果仅供私下比较 |
 | `scripts/journals/verify-migration.mjs` | 仅限 loopback 测试库的完整迁移、个人 RO 哨兵、回退与重应用验证 | 实际演练通过，独有临时库已清理 |
 | `apps/web/public/journals-openapi.json` | 公开期刊发现与固定版本解读的 OpenAPI 3.1 契约 | 衍生解读与原始科学来源分离 |
@@ -29,6 +29,11 @@
 | `apps/web/lib/journal-sitemap.ts` / `apps/web/app/journals/sitemap.xml/route.ts` / `apps/web/app/journals/[slug]/sitemap.xml/route.ts` | 仅列出公开期刊与允许公开的固定版本，分页生成 XML | 无缓存；撤回即移出 |
 | `apps/api/test/journal-browser.test.ts` | 显式启用的本地数据库/API/Web/Chromium 交互与桌面手机检查 | 合成来源与会话；截图不入库 |
 | `.github/workflows/journals.yml` | 独立 PostgreSQL 服务上的期刊测试与 Web 构建 | 任意目标分支 PR 可运行；不部署 |
+| `packages/domain/src/journal/enhancements.ts` | 多来源权限矩阵与加工范围、可解释优先级及服务额度投影 | 2026-09-22 增量，沿用迁移 37 的 JSON 与事件账本 |
+| `packages/domain/test/journal-enhancements.test.ts` / `packages/domain/test/journal-enhancement-review.test.ts` / `apps/api/test/journal-enhancements-database.test.ts` | 授权范围、绑定、到期、刊内角色与公开书目保留回归 | 纯规则及本地真实 PostgreSQL |
+| `packages/domain/src/visibility/current-public-access.ts` / `packages/domain/src/visibility/access.ts` / `packages/domain/src/explore/explore.ts` / `packages/domain/src/editorial/editorial.ts` / `packages/domain/src/fork/forks.ts` / `packages/domain/src/export/packager.ts` / `packages/domain/src/research-intelligence/public-evidence-source.ts` / `apps/api/test/research-routes.test.ts` | 通用公开读取同步期刊当前授权，防止到期后从其他入口读取固定内容 | 个人研究对象维持原访问规则；共享假数据同步支持新检查 |
+| `apps/web/components/journals/JournalSourceRightsMatrix.tsx` / `apps/web/components/journals/JournalProcessingQueue.tsx` / `apps/web/components/journals/JournalServices.tsx` | 来源逐项核验、显式入队与服务方案申请 | 第一批增强；Topic Hub/机器访问分析仍为第二批 |
+| `apps/web/app/journals/manage/[id]/articles/[articleId]/sources/page.tsx` / `apps/web/app/journals/manage/[id]/processing/page.tsx` / `apps/web/app/journals/manage/[id]/services/page.tsx` | 三个新增管理入口 | 沿用会话、角色与 CSRF |
 
 ## 根目录
 | 路径 | 用途 | 状态 |

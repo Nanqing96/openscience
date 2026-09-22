@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { AuthDeps } from '@openscience/auth';
 import type { StorageAdapter } from '@openscience/storage';
-import { getPublicEvidenceSource, PublicEvidenceSourceError } from '@openscience/domain';
+import { canReadCurrentPublicResearch, getPublicEvidenceSource, PublicEvidenceSourceError } from '@openscience/domain';
 
 /** /research 公开路由依赖：AuthDeps（仅用 prisma）。 */
 export type ResearchRouteDeps = AuthDeps & { storage?: StorageAdapter };
@@ -86,6 +86,9 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     if (!latestVersion) {
       return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '未找到' } });
     }
+    if (!await canReadCurrentPublicResearch(deps, { researchObjectId: ro.id, versionId: latestVersion.id })) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '未找到' } });
+    }
     return reply.send({
       research: {
         publicId,
@@ -118,13 +121,15 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
     if (!version) {
       return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '版本未找到' } });
     }
+    if (!await canReadCurrentPublicResearch(deps, { researchObjectId: ro.id, versionId: version.id })) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '版本未找到' } });
+    }
     const publication = version.publications[0] ?? null;
     const journalRelease = await deps.prisma.journalRelease?.findUnique({ where: { versionId: version.id }, include: { article: true } });
     let journalPackage: Record<string, unknown> | null = null;
     if (journalRelease) {
       reply.header('Cache-Control', 'no-store');
       const rights = journalRelease.article.rights as Record<string, unknown>;
-      if (journalRelease.article.contentState !== 'active' || rights.publicDerivative !== true) return reply.status(404).send({ error: { code: 'NOT_FOUND', message: '内容当前不公开' } });
       journalPackage = { ...(journalRelease.snapshot as Record<string, unknown>), articleId: journalRelease.articleId };
       if (rights.publicSource !== true) {
         const source = { ...(journalPackage.source as Record<string, unknown>) }; delete source.text; journalPackage.source = source;
@@ -287,6 +292,9 @@ export function registerResearchRoutes(app: FastifyInstance, deps: ResearchRoute
       select: { id: true },
     });
     if (!version) throw new PublicEvidenceSourceError('NOT_FOUND', 'published asset not found');
+    if (!await canReadCurrentPublicResearch(deps, { researchObjectId: ro.id, versionId: version.id })) {
+      throw new PublicEvidenceSourceError('NOT_FOUND', 'published asset not found');
+    }
     const asset = await deps.prisma.presentationAsset.findFirst({ where: {
       id: assetId, researchObjectId: ro.id, versionId: version.id, status: 'approved',
     } });

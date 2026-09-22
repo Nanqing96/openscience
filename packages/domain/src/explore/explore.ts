@@ -1,5 +1,6 @@
 import type { Prisma, SdfNodeType } from '@prisma/client';
 import type { WorkspaceDeps } from '../workspace/types';
+import { canReadCurrentPublicResearch } from '../visibility/current-public-access';
 
 export const EXPLORE_ARTIFACT_TYPES = ['document', 'image', 'data', 'code', 'video', 'other'] as const;
 export type ExploreArtifactType = (typeof EXPLORE_ARTIFACT_TYPES)[number];
@@ -84,8 +85,19 @@ export async function listPublicResearchIndex(
     take: input.limit + 1,
   });
 
-  const hasMore = rows.length > input.limit;
-  const visible = rows.slice(0, input.limit);
+  const allowed = (await Promise.all(rows.map(async (row) => ({
+    row,
+    allowed: !!row.versions[0] && await canReadCurrentPublicResearch(deps, {
+      researchObjectId: row.id,
+      versionId: row.versions[0].id,
+    }),
+  })))).filter((item) => item.allowed).map((item) => item.row);
+  const visible = allowed.slice(0, input.limit);
+  const nextCursor = allowed.length > input.limit
+    ? visible.at(-1)?.publicId ?? null
+    : rows.length > input.limit
+      ? rows.at(-1)?.publicId ?? null
+      : null;
   const items = visible.map((row): ResearchIndexItem => {
     const version = row.versions[0];
     const nodes = row.sdfDocument?.nodes.filter((node) => node.content.trim()) ?? [];
@@ -103,5 +115,5 @@ export async function listPublicResearchIndex(
       authors: row.authors.map((author) => author.user.displayName),
     };
   });
-  return { items, nextCursor: hasMore ? items.at(-1)?.publicId ?? null : null };
+  return { items, nextCursor };
 }
