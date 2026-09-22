@@ -66,3 +66,11 @@ jobs:
           JOURNAL_BROWSER_TEST: '1'
       - name: Documentation consistency
         run: pnpm audit:docs-sync && pnpm docs:lint
+      - name: Preserve synthetic browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: journal-browser-evidence
+          path: apps/web/test/visual/out/journals/
+          if-no-files-found: ignore
+          retention-days: 7

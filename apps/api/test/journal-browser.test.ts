@@ -179,8 +179,18 @@ suite('journal real-browser acceptance against isolated PostgreSQL', () => {
             await sourceLink.waitFor({ state: 'visible' });
             expect(await sourceLink.getAttribute('href')).toBe(source.url);
           }
-          expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${surface.name} overflows at ${viewport.width}px`).toBe(true);
           await page.screenshot({ path: resolve(outputDir, `${surface.name}-${viewport.name}.png`), fullPage: true });
+          const layout = await page.evaluate(() => ({
+            width: window.innerWidth,
+            scrollWidth: document.documentElement.scrollWidth,
+            offenders: [...document.querySelectorAll('body *')].flatMap((element) => {
+              const rect = element.getBoundingClientRect();
+              return rect.width && (rect.right > window.innerWidth + 1 || rect.left < -1)
+                ? [{ tag: element.tagName, className: element.className, width: Math.round(rect.width), text: element.textContent?.slice(0, 100) }]
+                : [];
+            }).slice(-12),
+          }));
+          expect(layout.scrollWidth <= layout.width + 1, `${surface.name} overflows at ${viewport.width}px: ${JSON.stringify(layout)}`).toBe(true);
           await page.close();
         }
       }

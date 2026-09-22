@@ -6,7 +6,7 @@
 
 - 当前任务：期刊来源版权矩阵、AI 加工优先级、服务包额度页面。
 - Branch：`codex/journal-onboarding`；增量基线：`261a38fa9fa5e97a099c59a082447ed87b43de05`。
-- 验收代码：`6fd90237ebda4094eefb6b947a797e4fdcecc6ae`；交付另含验收文档提交。
+- 验收代码：`6fd90237ebda4094eefb6b947a797e4fdcecc6ae`；交付另含公开版本页手机排版修复及验收文档。
 - Base branch：`release/academic-identity-ror-20260902`；沿用 [PR #1](https://github.com/Nanqing96/openscience/pull/1)。
 - Production release / rollback：未读取、未修改、未验收；本地结果不代表部署。
 - 唯一期刊交接入口：`docs/handoff/2026-09-15-journal-onboarding-handoff.md`。

@@ -60,7 +60,7 @@ export default async function Page({ params }: { params: { publicId: string; ver
   try {
     const { research } = await getServerPublicResearchVersion(params.publicId, versionNo);
     const journalPackage = (research as typeof research & { journalPackage?: PublicJournalPackageData }).journalPackage;
-    return publicShell(<div className="pub-page-tabbed"><PublicReadingSurface research={research} />{journalPackage ? <PublicJournalRelease value={journalPackage} /> : null}</div>);
+    return publicShell(<div className="pub-page-tabbed min-w-0 max-w-full"><PublicReadingSurface research={research} />{journalPackage ? <PublicJournalRelease value={journalPackage} /> : null}</div>, 'min-w-0 max-w-full');
   } catch (err) {
     if (err instanceof PublicServerApiError && err.status === 404) notFound();
     const limited = err instanceof PublicServerApiError && err.status === 429;

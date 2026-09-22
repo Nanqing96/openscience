@@ -4,7 +4,7 @@
 
 - 用户要求：在既有 journal-onboarding 分支优先跑通来源版权矩阵、AI 加工优先级、服务额度页；Topic Hub 和机器访问分析第二批。
 - Branch：`codex/journal-onboarding`；增量基线：`261a38fa9fa5e97a099c59a082447ed87b43de05`。
-- 验收代码：`6fd90237ebda4094eefb6b947a797e4fdcecc6ae`；交付另含本验收文档提交，以分支 Git 元数据为准。
+- 验收代码：`6fd90237ebda4094eefb6b947a797e4fdcecc6ae`；交付另含公开版本页手机排版修复及验收文档，以分支 Git 元数据为准。
 - 交付入口：[既有 PR #1](https://github.com/Nanqing96/openscience/pull/1)；base 为 `release/academic-identity-ror-20260902`。不自动合并或部署。
 - Production release / rollback：本轮未读取、未修改、未验收；不能将本地结果表述为生产上线。
 
@@ -19,6 +19,7 @@
 - 服务页：真实有效余额、预占、消耗、到期、月度使用、批次、账本和存储；Free/Starter/Pro/Premium/Custom 为人工申请方案。
 - 沿用整数账本：成功草稿消耗 1 篇，失败/取消释放预占；服务申请不自动开通或扣款。
 - 复用现有 JSON、事件及账本；没有新迁移、依赖或生产配置变更。独立期刊 CI 增加真实浏览器流程。
+- 针对 Linux 375px 验收发现的公开版本页长文本越界，补充网格收缩与换行；保留原溢出断言，CI 始终保存合成截图及诊断。
 
 ## Evidence — 2026-09-22 local
 
